@@ -238,7 +238,7 @@ export function Map() {
         </div>
 
         {/* Quick Stats Bar */}
-        <div className="absolute bottom-4 left-4 right-4 z-10">
+        {/* <div className="absolute bottom-4 left-4 right-4 z-10">
           <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-xl p-6 border border-gray-200">
             <div className="flex justify-between items-center">
               <div className="flex space-x-8">
@@ -274,7 +274,7 @@ export function Map() {
               )}
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   );

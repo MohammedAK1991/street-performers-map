@@ -31,7 +31,7 @@ export function GooglePlacesAutocomplete({
   // Initialize Google Maps API
   useEffect(() => {
     const initializeGoogleMaps = async () => {
-      const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+      const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || 'AIzaSyCkm_qSNWEQ0o95mRsqjM8ClF288s6s6qY'
       
       if (!apiKey || apiKey === 'your_google_maps_api_key_here') {
         setError('Google Maps API key is required. Please add VITE_GOOGLE_MAPS_API_KEY to your .env file.');

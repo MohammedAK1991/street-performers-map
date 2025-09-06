@@ -9,6 +9,25 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+// Validate Cloudinary configuration
+const validateCloudinaryConfig = () => {
+  const { cloud_name, api_key, api_secret } = process.env;
+  
+  if (!cloud_name || !api_key || !api_secret) {
+    throw new Error(
+      'Cloudinary configuration missing. Please set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET environment variables.'
+    );
+  }
+  
+  if (cloud_name === 'your-cloudinary-cloud-name' || 
+      api_key === 'your-cloudinary-api-key' || 
+      api_secret === 'your-cloudinary-api-secret') {
+    throw new Error(
+      'Cloudinary configuration contains placeholder values. Please set real Cloudinary credentials.'
+    );
+  }
+};
+
 export interface VideoUploadResult {
   public_id: string;
   url: string;
@@ -44,6 +63,30 @@ export class CloudinaryService {
     }
   ): Promise<VideoUploadResult> {
     const { userId, performanceId, filename } = options;
+    
+    // Check if Cloudinary is configured
+    const { cloud_name, api_key, api_secret } = process.env;
+    const isConfigured = cloud_name && api_key && api_secret && 
+                        cloud_name !== 'your-cloudinary-cloud-name' && 
+                        api_key !== 'your-cloudinary-api-key' && 
+                        api_secret !== 'your-cloudinary-api-secret';
+    
+    if (!isConfigured) {
+      // Return mock result for development
+      console.warn('⚠️  Cloudinary not configured. Returning mock video upload result for development.');
+      return Promise.resolve({
+        public_id: `mock_video_${Date.now()}`,
+        url: `https://via.placeholder.com/400x300/purple/white?text=Mock+Video`,
+        secure_url: `https://via.placeholder.com/400x300/purple/white?text=Mock+Video`,
+        format: 'mp4',
+        resource_type: 'video',
+        duration: 30,
+        bytes: buffer.length,
+        width: 720,
+        height: 720,
+        created_at: new Date().toISOString(),
+      });
+    }
     
     return new Promise((resolve, reject) => {
       const uploadOptions = {
@@ -96,6 +139,12 @@ export class CloudinaryService {
    * Delete video from Cloudinary
    */
   async deleteVideo(publicId: string): Promise<void> {
+    // Skip deletion for mock videos
+    if (publicId.startsWith('mock_video_')) {
+      console.log('Skipping deletion of mock video:', publicId);
+      return;
+    }
+    
     try {
       await cloudinary.uploader.destroy(publicId, { resource_type: 'video' });
     } catch (error) {
@@ -108,6 +157,11 @@ export class CloudinaryService {
    * Get video thumbnail URL
    */
   getThumbnailUrl(publicId: string): string {
+    // Return placeholder for mock videos
+    if (publicId.startsWith('mock_video_')) {
+      return 'https://via.placeholder.com/400x400/purple/white?text=Video+Thumbnail';
+    }
+    
     return cloudinary.url(publicId, {
       resource_type: 'video',
       format: 'jpg',
@@ -121,6 +175,11 @@ export class CloudinaryService {
    * Get optimized video URL
    */
   getOptimizedVideoUrl(publicId: string): string {
+    // Return placeholder for mock videos
+    if (publicId.startsWith('mock_video_')) {
+      return 'https://via.placeholder.com/720x720/purple/white?text=Mock+Video';
+    }
+    
     return cloudinary.url(publicId, {
       resource_type: 'video',
       format: 'mp4',
