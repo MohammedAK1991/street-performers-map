@@ -23,10 +23,17 @@ export class CloudinaryService {
   private uploadPreset: string;
 
   constructor() {
-    // For now, we'll use a demo cloud name and preset
-    // In production, these should come from environment variables
+    // Load from environment variables
     this.cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'demo';
     this.uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || 'ml_default';
+    
+    console.log('🔧 Cloudinary Service initialized:');
+    console.log('  Cloud name:', this.cloudName);
+    console.log('  Upload preset:', this.uploadPreset);
+    console.log('  Environment vars:', {
+      VITE_CLOUDINARY_CLOUD_NAME: import.meta.env.VITE_CLOUDINARY_CLOUD_NAME,
+      VITE_CLOUDINARY_UPLOAD_PRESET: import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET
+    });
   }
 
   /**
@@ -43,8 +50,9 @@ export class CloudinaryService {
     const { onProgress, userId, performanceId } = options;
 
     // Check if Cloudinary is configured
-    if (this.cloudName === 'demo' || this.uploadPreset === 'ml_default') {
+    if (this.cloudName === 'demo' || !this.cloudName || !this.uploadPreset) {
       console.warn('⚠️ Cloudinary not configured for client-side upload. Using mock response.');
+      console.log('Cloud name:', this.cloudName, 'Upload preset:', this.uploadPreset);
       
       // Simulate upload progress for better UX
       if (onProgress) {
