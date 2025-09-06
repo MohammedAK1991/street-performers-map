@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { useUser } from '@clerk/clerk-react';
 import type { Video } from '@spm/shared-types';
 import { cloudinaryService, type UploadProgress } from '@/services/cloudinary';
+import { useSaveClientUpload } from '@/hooks/useVideoUpload';
 
 interface VideoUploadProps {
   eligibility?: {
@@ -27,6 +28,7 @@ export function VideoUpload({
   const [uploadProgress, setUploadProgress] = useState<UploadProgress | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { user } = useUser();
+  const saveClientUploadMutation = useSaveClientUpload();
 
   console.log('eligibility', eligibility);
 
@@ -52,40 +54,36 @@ export function VideoUpload({
     setUploadProgress(null);
 
     try {
-      // Upload directly to Cloudinary
+      // Step 1: Upload to Cloudinary
+      console.log('📤 Starting Cloudinary upload...');
       const cloudinaryResult = await cloudinaryService.uploadVideo(file, {
         userId: user?.id,
         performanceId,
         onProgress: setUploadProgress,
       });
 
-      // Convert Cloudinary result to Video format
-      const video: Video = {
-        _id: cloudinaryResult.public_id, // Temporary ID, will be replaced by backend
-        userId: user?.id || '',
-        performanceId,
+      console.log('✅ Cloudinary upload successful:', cloudinaryResult);
+
+      // Step 2: Save video metadata to database
+      console.log('💾 Saving video to database...');
+      const videoData = {
         cloudinaryPublicId: cloudinaryResult.public_id,
         cloudinaryUrl: cloudinaryResult.url,
         secureUrl: cloudinaryResult.secure_url,
         thumbnailUrl: cloudinaryService.getThumbnailUrl(cloudinaryResult.public_id),
         filename: file.name,
         format: cloudinaryResult.format,
-        duration: cloudinaryResult.duration,
+        duration: cloudinaryResult.duration || 0,
         size: cloudinaryResult.bytes,
-        width: cloudinaryResult.width,
-        height: cloudinaryResult.height,
-        uploadedAt: new Date().toISOString(),
-        status: 'ready' as const,
-        uploadDate: new Date().toISOString().split('T')[0],
-        moderationStatus: 'approved' as const,
-        views: 0,
-        totalWatchTime: 0,
-        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        width: cloudinaryResult.width || 0,
+        height: cloudinaryResult.height || 0,
+        performanceId, // This will be null initially, but can be linked later
       };
+
+      const savedVideo = await saveClientUploadMutation.mutateAsync(videoData);
+      console.log('✅ Video saved to database:', savedVideo);
       
-      onUploadSuccess(video);
+      onUploadSuccess(savedVideo);
     } catch (error: any) {
       console.error('Video upload error:', error);
       const errorMessage = error?.response?.data?.error?.message || 

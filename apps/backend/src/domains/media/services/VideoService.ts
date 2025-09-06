@@ -157,6 +157,37 @@ export class VideoService {
   }
 
   /**
+   * Save client-uploaded video to database
+   */
+  async saveClientUpload(videoData: any): Promise<VideoDocument> {
+    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    
+    const createData = {
+      userId: videoData.userId,
+      performanceId: videoData.performanceId,
+      cloudinaryPublicId: videoData.cloudinaryPublicId,
+      cloudinaryUrl: videoData.cloudinaryUrl,
+      secureUrl: videoData.secureUrl,
+      thumbnailUrl: videoData.thumbnailUrl,
+      filename: videoData.filename,
+      format: videoData.format,
+      duration: videoData.duration,
+      size: videoData.size,
+      width: videoData.width,
+      height: videoData.height,
+      uploadDate: today,
+    };
+
+    const video = await this.videoRepository.create(createData);
+    
+    // Update status to ready and approve
+    await this.videoRepository.updateStatus((video._id as any).toString(), 'ready');
+    await this.videoRepository.approve((video._id as any).toString());
+    
+    return await this.videoRepository.findById((video._id as any).toString()) || video;
+  }
+
+  /**
    * Link video to performance (user can only link their own videos)
    */
   async linkVideoToPerformance(videoId: string, performanceId: string, userId: string): Promise<VideoDocument | null> {

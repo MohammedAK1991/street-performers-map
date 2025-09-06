@@ -86,6 +86,9 @@ export function CreatePerformance() {
       // If there's an uploaded video, link it to the performance
       if (uploadedVideo && newPerformance._id) {
         console.log('🔗 Attempting to link video to performance...');
+        console.log('🎥 Video ID:', uploadedVideo._id);
+        console.log('🎭 Performance ID:', newPerformance._id);
+        
         try {
           const linkedVideo = await linkVideoMutation.mutateAsync({
             videoId: uploadedVideo._id,
@@ -94,14 +97,16 @@ export function CreatePerformance() {
           console.log('✅ Video successfully linked to performance:', linkedVideo);
         } catch (linkError) {
           console.error('❌ Failed to link video to performance:', linkError);
+          console.error('❌ Link error details:', linkError);
           // Don't fail the entire process if video linking fails
         }
       } else {
         console.warn('⚠️ Cannot link video:', {
           hasVideo: !!uploadedVideo,
           hasPerformanceId: !!newPerformance._id,
+          videoId: uploadedVideo?._id,
+          performanceId: newPerformance._id,
           uploadedVideo,
-          performanceId: newPerformance._id
         });
       }
       

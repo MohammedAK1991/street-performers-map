@@ -200,6 +200,37 @@ export class VideoController {
   };
 
   /**
+   * Save client-uploaded video to database
+   */
+  saveClientUpload = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    try {
+      const userId = req.user!.userId;
+      const videoData = req.body;
+
+      // Validate required fields
+      if (!videoData.cloudinaryPublicId || !videoData.filename) {
+        return res.status(400).json({
+          success: false,
+          error: { message: 'Missing required video data' },
+        });
+      }
+
+      const video = await this.videoService.saveClientUpload({
+        ...videoData,
+        userId,
+      });
+
+      res.status(201).json({
+        success: true,
+        data: video,
+        meta: { timestamp: new Date().toISOString() },
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /**
    * Link video to performance
    */
   linkVideoToPerformance = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {

@@ -69,6 +69,22 @@ export const useMyVideos = () => {
 };
 
 // Hook to link video to performance
+export const useSaveClientUpload = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (videoData: any) => {
+      const response = await api.post('/media/videos/save-client-upload', videoData);
+      return response.data.data as Video;
+    },
+    onSuccess: () => {
+      // Refresh video-related queries
+      queryClient.invalidateQueries({ queryKey: ['videos'] });
+      queryClient.invalidateQueries({ queryKey: ['upload-eligibility'] });
+    },
+  });
+};
+
 export const useLinkVideoToPerformance = () => {
   const queryClient = useQueryClient();
 

@@ -20,6 +20,7 @@ router.get('/videos/analytics', authenticate, videoController.getVideoAnalytics)
 router.get('/videos/upload-eligibility', authenticate, videoController.checkUploadEligibility);
 router.delete('/videos/:videoId', authenticate, videoController.deleteVideo);
 router.patch('/videos/:videoId/link-performance', authenticate, videoController.linkVideoToPerformance);
+router.post('/videos/save-client-upload', authenticate, videoController.saveClientUpload);
 
 // Public video routes
 router.get('/videos/:videoId', videoController.getVideo);
