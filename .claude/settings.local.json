@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm lint:*)",
+      "Bash(npx eslint:*)",
+      "Bash(pnpm build:*)",
+      "Bash(pnpm dev:*)",
+      "Bash(lsof:*)",
+      "Bash(pnpm stop:*)",
+      "Bash(pkill:*)",
+      "Bash(curl:*)",
+      "Bash(pnpm type-check:*)",
+      "Bash(find:*)",
+      "Bash(pnpm add:*)",
+      "Bash(pgs:*)",
+      "Read(//var/folders/tm/f_5g_tz90x5b44kdndcf44pc0000gn/T/TemporaryItems/NSIRD_screencaptureui_Xz67bL/**)",
+      "Bash(pnpm seed:*)",
+      "Bash(PORT=3002 pnpm dev)",
+      "Read(//Users/mohammedabdulkhader/THE-PARTY-FORECAST-APP/src/components/Search/**)",
+      "Bash(pnpm tsc:*)",
+      "Bash(npm ls:*)",
+      "Bash(git checkout:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
