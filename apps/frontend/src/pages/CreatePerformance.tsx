@@ -36,7 +36,7 @@ export function CreatePerformance() {
         endTime: ''
       }]
     },
-    scheduledFor: new Date().toISOString().split('T')[0] // Today
+    scheduledFor: new Date().toISOString() // Today
   });
 
   // Redirect if not authenticated
@@ -277,7 +277,7 @@ export function CreatePerformance() {
                     type="time"
                     value={stop.startTime.split('T')[1]?.substring(0, 5) || ''}
                     onChange={(e) => {
-                      const date = formData.scheduledFor;
+                      const date = formData.scheduledFor.split('T')[0];
                       const datetime = `${date}T${e.target.value}:00.000Z`;
                       updateStop(index, 'startTime', datetime);
                     }}
@@ -293,7 +293,7 @@ export function CreatePerformance() {
                     type="time"
                     value={stop.endTime.split('T')[1]?.substring(0, 5) || ''}
                     onChange={(e) => {
-                      const date = formData.scheduledFor;
+                      const date = formData.scheduledFor.split('T')[0];
                       const datetime = `${date}T${e.target.value}:00.000Z`;
                       updateStop(index, 'endTime', datetime);
                     }}
