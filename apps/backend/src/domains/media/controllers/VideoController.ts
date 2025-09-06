@@ -251,8 +251,8 @@ export class VideoController {
         data: {
           canUpload,
           todayCount,
-          dailyLimit: 1,
-          remainingUploads: Math.max(0, 1 - todayCount),
+          dailyLimit: 5,
+          remainingUploads: Math.max(0, 5 - todayCount),
         },
         meta: { timestamp: new Date().toISOString() },
       });

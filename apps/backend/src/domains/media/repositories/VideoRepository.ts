@@ -94,12 +94,12 @@ export class VideoRepository {
   }
 
   /**
-   * Check if user can upload today (limit: 1 per day)
+   * Check if user can upload today (limit: 5 per day for development)
    */
   async canUserUploadToday(userId: string): Promise<boolean> {
     const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
     const count = await this.getDailyUploadCount(userId, today);
-    return count < 1; // Limit of 1 video per day
+    return count < 5; // Limit of 5 videos per day for development
   }
 
   /**

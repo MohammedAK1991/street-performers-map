@@ -28,10 +28,9 @@ export class VideoService {
     
     // Check daily upload limit
     const canUpload = await this.videoRepository.canUserUploadToday(userId);
-    console.log('canUpload', canUpload);
-    // if (!canUpload) {
-    //   throw new Error('Daily upload limit reached. You can only upload 1 video per day.');
-    // }
+    if (!canUpload) {
+      throw new Error('Daily upload limit reached. You can only upload 5 videos per day.');
+    }
 
     // Validate file
     const validation = this.validateVideoFile(file);

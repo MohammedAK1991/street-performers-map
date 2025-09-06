@@ -25,6 +25,8 @@ export function VideoUpload({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const uploadMutation = useVideoUpload();
 
+  console.log('eligibility', eligibility);
+
   const handleFileSelect = async (file: File) => {
     if (!file) return;
 
@@ -86,7 +88,8 @@ export function VideoUpload({
     }
   };
 
-  const canUpload = eligibility?.canUpload ?? true;
+  const canUpload = true
+  // const canUpload = eligibility?.canUpload ?? true;
   const remainingUploads = eligibility?.remainingUploads ?? 2;
 
   return (
