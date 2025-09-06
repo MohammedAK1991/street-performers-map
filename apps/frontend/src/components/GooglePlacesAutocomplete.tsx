@@ -137,13 +137,16 @@ export function GooglePlacesAutocomplete({
     setShowSuggestions(false);
     setError(null);
 
+    // Debug: Log the prediction to see its structure
+    console.log('Selected prediction:', prediction);
+
     // Handle current location
-    if (prediction.place_id === 'current_location' && prediction.geometry?.location) {
-      const lat = prediction.geometry.location.lat();
-      const lng = prediction.geometry.location.lng();
+    if (prediction.isCurrentLocation || prediction.place_id === 'current_location') {
+      const lat = prediction.lat || (prediction.geometry?.location?.lat ? prediction.geometry.location.lat() : 0);
+      const lng = prediction.lng || (prediction.geometry?.location?.lng ? prediction.geometry.location.lng() : 0);
       onChange({
-        name: description,
-        address: description,
+        name: prediction.name || description,
+        address: prediction.address || description,
         coordinates: [lng, lat]
       });
       return;
@@ -186,12 +189,37 @@ export function GooglePlacesAutocomplete({
       return;
     }
 
-    // If no coordinates available, use default
-    onChange({
-      name: description,
-      address: description,
-      coordinates: [0, 0]
-    });
+    // If no coordinates available, try geocoding
+    if (window.google?.maps?.Geocoder) {
+      const geocoder = new window.google.maps.Geocoder();
+      geocoder.geocode({ address: description }, (results, status) => {
+        if (status === 'OK' && results && results[0]) {
+          const location = results[0].geometry.location;
+          const lat = location.lat();
+          const lng = location.lng();
+          onChange({
+            name: description,
+            address: description,
+            coordinates: [lng, lat]
+          });
+        } else {
+          console.warn('Geocoding failed:', status);
+          // Fallback to default coordinates
+          onChange({
+            name: description,
+            address: description,
+            coordinates: [0, 0]
+          });
+        }
+      });
+    } else {
+      // If no coordinates available, use default
+      onChange({
+        name: description,
+        address: description,
+        coordinates: [0, 0]
+      });
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {

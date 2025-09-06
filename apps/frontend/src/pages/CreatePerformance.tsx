@@ -63,6 +63,19 @@ export function CreatePerformance() {
     setError(null);
 
     try {
+      // Debug: Log the form data being sent
+      console.log('Submitting form data:', JSON.stringify(formData, null, 2));
+      
+      // Validate that all required fields are filled
+      const hasEmptyTimes = formData.route.stops.some(stop => 
+        !stop.startTime || !stop.endTime || stop.startTime === '' || stop.endTime === ''
+      );
+      
+      if (hasEmptyTimes) {
+        setError('Please fill in all start and end times for your route stops');
+        return;
+      }
+
       await createPerformanceMutation.mutateAsync(formData);
       
       // Redirect to map to see the created performance
@@ -492,7 +505,11 @@ export function CreatePerformance() {
                   onClick={() => setStep(step + 1)}
                   disabled={
                     (step === 1 && !formData.title) ||
-                    (step === 2 && formData.route.stops.some(stop => !stop.startTime || !stop.endTime))
+                    (step === 2 && formData.route.stops.some(stop => 
+                      !stop.startTime || !stop.endTime || 
+                      stop.startTime === '' || stop.endTime === '' ||
+                      !stop.location.address || stop.location.address === ''
+                    ))
                   }
                   className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
                 >
