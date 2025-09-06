@@ -12,12 +12,12 @@ router.get('/:id', performanceController.getPerformance);
 // Protected routes (authenticated users)
 router.post('/:id/like', authenticate, performanceController.likePerformance);
 
-// Performer-only routes
-router.post('/', authenticate, authorize(['performer']), performanceController.createPerformance);
-router.get('/my/performances', authenticate, authorize(['performer']), performanceController.getMyPerformances);
-router.put('/:id', authenticate, authorize(['performer']), performanceController.updatePerformance);
-router.delete('/:id', authenticate, authorize(['performer']), performanceController.deletePerformance);
-router.post('/:id/start', authenticate, authorize(['performer']), performanceController.startPerformance);
-router.post('/:id/end', authenticate, authorize(['performer']), performanceController.endPerformance);
+// Performer-only routes (temporarily allowing all authenticated users)
+router.post('/', authenticate, performanceController.createPerformance);
+router.get('/my/performances', authenticate, performanceController.getMyPerformances);
+router.put('/:id', authenticate, performanceController.updatePerformance);
+router.delete('/:id', authenticate, performanceController.deletePerformance);
+router.post('/:id/start', authenticate, performanceController.startPerformance);
+router.post('/:id/end', authenticate, performanceController.endPerformance);
 
 export { router as performanceRoutes };
