@@ -79,18 +79,30 @@ export function CreatePerformance() {
 
       const newPerformance = await createPerformanceMutation.mutateAsync(formData);
       
+      // Debug: Log the performance and video data
+      console.log('🎭 Created performance:', newPerformance);
+      console.log('🎥 Uploaded video:', uploadedVideo);
+      
       // If there's an uploaded video, link it to the performance
       if (uploadedVideo && newPerformance._id) {
+        console.log('🔗 Attempting to link video to performance...');
         try {
-          await linkVideoMutation.mutateAsync({
+          const linkedVideo = await linkVideoMutation.mutateAsync({
             videoId: uploadedVideo._id,
             performanceId: newPerformance._id,
           });
-          console.log('Video successfully linked to performance');
+          console.log('✅ Video successfully linked to performance:', linkedVideo);
         } catch (linkError) {
-          console.warn('Failed to link video to performance:', linkError);
+          console.error('❌ Failed to link video to performance:', linkError);
           // Don't fail the entire process if video linking fails
         }
+      } else {
+        console.warn('⚠️ Cannot link video:', {
+          hasVideo: !!uploadedVideo,
+          hasPerformanceId: !!newPerformance._id,
+          uploadedVideo,
+          performanceId: newPerformance._id
+        });
       }
       
       // Redirect to map to see the created performance
