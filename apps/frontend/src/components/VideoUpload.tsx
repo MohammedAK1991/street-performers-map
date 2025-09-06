@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
+import { useUser } from '@clerk/clerk-react';
 import type { Video } from '@spm/shared-types';
-import { useVideoUpload } from '@/hooks/useVideoUpload';
+import { cloudinaryService, type UploadProgress } from '@/services/cloudinary';
 
 interface VideoUploadProps {
   eligibility?: {
@@ -22,8 +23,10 @@ export function VideoUpload({
   className = "" 
 }: VideoUploadProps) {
   const [dragActive, setDragActive] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<UploadProgress | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const uploadMutation = useVideoUpload();
+  const { user } = useUser();
 
   console.log('eligibility', eligibility);
 
@@ -45,12 +48,42 @@ export function VideoUpload({
     }
 
     onUploadError(''); // Clear any previous errors
+    setUploading(true);
+    setUploadProgress(null);
 
     try {
-      const video = await uploadMutation.mutateAsync({ 
-        file, 
-        performanceId 
+      // Upload directly to Cloudinary
+      const cloudinaryResult = await cloudinaryService.uploadVideo(file, {
+        userId: user?.id,
+        performanceId,
+        onProgress: setUploadProgress,
       });
+
+      // Convert Cloudinary result to Video format
+      const video: Video = {
+        _id: cloudinaryResult.public_id, // Temporary ID, will be replaced by backend
+        userId: user?.id || '',
+        performanceId,
+        cloudinaryPublicId: cloudinaryResult.public_id,
+        cloudinaryUrl: cloudinaryResult.url,
+        secureUrl: cloudinaryResult.secure_url,
+        thumbnailUrl: cloudinaryService.getThumbnailUrl(cloudinaryResult.public_id),
+        filename: file.name,
+        format: cloudinaryResult.format,
+        duration: cloudinaryResult.duration,
+        size: cloudinaryResult.bytes,
+        width: cloudinaryResult.width,
+        height: cloudinaryResult.height,
+        uploadedAt: new Date().toISOString(),
+        status: 'ready' as const,
+        uploadDate: new Date().toISOString().split('T')[0],
+        moderationStatus: 'approved' as const,
+        views: 0,
+        totalWatchTime: 0,
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
       
       onUploadSuccess(video);
     } catch (error: any) {
@@ -59,6 +92,9 @@ export function VideoUpload({
                           error?.message || 
                           'Failed to upload video. Please try again.';
       onUploadError(errorMessage);
+    } finally {
+      setUploading(false);
+      setUploadProgress(null);
     }
   };
 
@@ -89,8 +125,9 @@ export function VideoUpload({
   };
 
   const canUpload = true
-  // const canUpload = eligibility?.canUpload ?? true;
+  //   const canUpload = eligibility?.canUpload ?? true;
   const remainingUploads = eligibility?.remainingUploads ?? 2;
+  const isUploading = uploading;
 
   return (
     <div className={`space-y-4 ${className}`}>
@@ -100,30 +137,42 @@ export function VideoUpload({
           dragActive
             ? 'border-purple-500 bg-purple-50'
             : 'border-gray-300 hover:border-purple-400'
-        } ${!canUpload ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+        } ${!canUpload || isUploading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
         onDragEnter={handleDrag}
         onDragLeave={handleDrag}
         onDragOver={handleDrag}
         onDrop={handleDrop}
-        onClick={() => canUpload && fileInputRef.current?.click()}
+        onClick={() => canUpload && !isUploading && fileInputRef.current?.click()}
       >
         <div className="text-4xl mb-4">🎥</div>
         <h3 className="text-lg font-semibold text-gray-900 mb-2">
-          {uploadMutation.isPending ? 'Uploading Video...' : 'Upload Performance Video'}
+          {isUploading ? 'Uploading Video...' : 'Upload Performance Video'}
         </h3>
         <p className="text-gray-600 mb-4">
           Max 30 seconds, {remainingUploads} uploads remaining today
         </p>
         
-        {uploadMutation.isPending ? (
-          <div className="flex items-center justify-center space-x-2">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-600"></div>
-            <span className="text-sm text-gray-600">Uploading to Cloudinary...</span>
+        {isUploading ? (
+          <div className="space-y-3">
+            <div className="flex items-center justify-center space-x-2">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-600"></div>
+              <span className="text-sm text-gray-600">
+                {uploadProgress ? `Uploading... ${uploadProgress.percentage}%` : 'Uploading to Cloudinary...'}
+              </span>
+            </div>
+            {uploadProgress && (
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div 
+                  className="bg-purple-600 h-2 rounded-full transition-all duration-300"
+                  style={{ width: `${uploadProgress.percentage}%` }}
+                ></div>
+              </div>
+            )}
           </div>
         ) : (
           <button
             type="button"
-            disabled={!canUpload || uploadMutation.isPending}
+            disabled={!canUpload || isUploading}
             className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
           >
             📱 Choose Video File
