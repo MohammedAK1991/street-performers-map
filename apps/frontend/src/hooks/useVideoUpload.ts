@@ -68,6 +68,25 @@ export const useMyVideos = () => {
   });
 };
 
+// Hook to link video to performance
+export const useLinkVideoToPerformance = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ videoId, performanceId }: { videoId: string; performanceId: string }) => {
+      const response = await api.patch(`/media/videos/${videoId}/link-performance`, {
+        performanceId,
+      });
+      return response.data.data as Video;
+    },
+    onSuccess: () => {
+      // Refresh video-related queries
+      queryClient.invalidateQueries({ queryKey: ['videos'] });
+      queryClient.invalidateQueries({ queryKey: ['performances'] });
+    },
+  });
+};
+
 // Hook to refresh video data
 export const useRefreshVideoData = () => {
   const queryClient = useQueryClient();

@@ -200,6 +200,41 @@ export class VideoController {
   };
 
   /**
+   * Link video to performance
+   */
+  linkVideoToPerformance = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    try {
+      const userId = req.user!.userId;
+      const { videoId } = req.params;
+      const { performanceId } = req.body;
+
+      if (!performanceId) {
+        return res.status(400).json({
+          success: false,
+          error: { message: 'Performance ID is required' },
+        });
+      }
+
+      const video = await this.videoService.linkVideoToPerformance(videoId, performanceId, userId);
+
+      if (!video) {
+        return res.status(404).json({
+          success: false,
+          error: { message: 'Video not found or you do not have permission to modify it' },
+        });
+      }
+
+      res.status(200).json({
+        success: true,
+        data: video,
+        meta: { timestamp: new Date().toISOString() },
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /**
    * Check upload eligibility
    */
   checkUploadEligibility = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {

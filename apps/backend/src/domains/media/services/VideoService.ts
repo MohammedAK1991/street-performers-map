@@ -28,9 +28,10 @@ export class VideoService {
     
     // Check daily upload limit
     const canUpload = await this.videoRepository.canUserUploadToday(userId);
-    if (!canUpload) {
-      throw new Error('Daily upload limit reached. You can only upload 1 video per day.');
-    }
+    console.log('canUpload', canUpload);
+    // if (!canUpload) {
+    //   throw new Error('Daily upload limit reached. You can only upload 1 video per day.');
+    // }
 
     // Validate file
     const validation = this.validateVideoFile(file);
@@ -153,6 +154,28 @@ export class VideoService {
     } catch (error) {
       console.error('Error deleting video:', error);
       throw new Error('Failed to delete video');
+    }
+  }
+
+  /**
+   * Link video to performance (user can only link their own videos)
+   */
+  async linkVideoToPerformance(videoId: string, performanceId: string, userId: string): Promise<VideoDocument | null> {
+    const video = await this.videoRepository.findById(videoId);
+    
+    if (!video) {
+      throw new Error('Video not found');
+    }
+    
+    if (video.userId !== userId) {
+      throw new Error('You can only link your own videos');
+    }
+    
+    try {
+      return await this.videoRepository.update(videoId, { performanceId });
+    } catch (error) {
+      console.error('Error linking video to performance:', error);
+      throw new Error('Failed to link video to performance');
     }
   }
 

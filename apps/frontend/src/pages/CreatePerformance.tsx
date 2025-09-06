@@ -4,7 +4,7 @@ import { useUser } from '@clerk/clerk-react';
 import { useCreatePerformance } from '@/hooks/usePerformances';
 import { GooglePlacesAutocomplete } from '@/components/GooglePlacesAutocomplete';
 import { VideoUpload } from '@/components/VideoUpload';
-import { useUploadEligibility, useRefreshVideoData } from '@/hooks/useVideoUpload';
+import { useUploadEligibility, useRefreshVideoData, useLinkVideoToPerformance } from '@/hooks/useVideoUpload';
 import type { CreatePerformanceDto, Video } from '@spm/shared-types';
 
 
@@ -16,6 +16,7 @@ export function CreatePerformance() {
   const createPerformanceMutation = useCreatePerformance();
   const { data: uploadEligibility } = useUploadEligibility();
   const { refreshMyVideos } = useRefreshVideoData();
+  const linkVideoMutation = useLinkVideoToPerformance();
   
   const [step, setStep] = useState(1);
   const [error, setError] = useState<string | null>(null);
@@ -76,7 +77,21 @@ export function CreatePerformance() {
         return;
       }
 
-      await createPerformanceMutation.mutateAsync(formData);
+      const newPerformance = await createPerformanceMutation.mutateAsync(formData);
+      
+      // If there's an uploaded video, link it to the performance
+      if (uploadedVideo && newPerformance._id) {
+        try {
+          await linkVideoMutation.mutateAsync({
+            videoId: uploadedVideo._id,
+            performanceId: newPerformance._id,
+          });
+          console.log('Video successfully linked to performance');
+        } catch (linkError) {
+          console.warn('Failed to link video to performance:', linkError);
+          // Don't fail the entire process if video linking fails
+        }
+      }
       
       // Redirect to map to see the created performance
       navigate('/map');

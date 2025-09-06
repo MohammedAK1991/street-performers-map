@@ -22,6 +22,7 @@ export interface UpdateVideoData {
   moderationReason?: string;
   views?: number;
   totalWatchTime?: number;
+  performanceId?: string;
 }
 
 export class VideoRepository {

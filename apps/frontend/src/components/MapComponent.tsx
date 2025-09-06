@@ -85,6 +85,7 @@ function PerformanceMarker({ performance, onClick }: PerformanceMarkerProps) {
 }
 
 export function MapComponent({ userLocation, performances, filters }: MapComponentProps) {
+  console.log('performances', performances);
   const { isSignedIn } = useUser();
   const likePerformanceMutation = useLikePerformance();
   const [selectedPerformance, setSelectedPerformance] = useState<Performance | null>(null);
