@@ -27,7 +27,7 @@ JWT_SECRET=your-super-secret-jwt-key-change-in-production
 JWT_EXPIRES_IN=7d
 
 # Google Maps
-GOOGLE_MAPS_API_KEY=AIzaSyCkm_qSNWEQ0o95mRsqjM8ClF288s6s6qY
+GOOGLE_MAPS_API_KEY=api_key
 
 # File Upload
 MAX_FILE_SIZE=100MB
