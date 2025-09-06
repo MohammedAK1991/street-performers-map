@@ -124,8 +124,7 @@ export function VideoUpload({
     }
   };
 
-  const canUpload = true
-  //   const canUpload = eligibility?.canUpload ?? true;
+  const canUpload = eligibility?.canUpload ?? true;
   const remainingUploads = eligibility?.remainingUploads ?? 2;
   const isUploading = uploading;
 
@@ -191,7 +190,7 @@ export function VideoUpload({
         accept="video/mp4,video/quicktime,video/x-msvideo,video/webm"
         onChange={handleFileInput}
         className="hidden"
-        disabled={!canUpload || uploadMutation.isPending}
+        disabled={!canUpload || isUploading}
       />
 
       {/* Guidelines */}
