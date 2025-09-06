@@ -3,9 +3,10 @@ import type { Performance } from '@spm/shared-types';
 interface PerformanceListProps {
   performances: Performance[];
   onClose: () => void;
+  onPerformanceClick: (performance: Performance) => void;
 }
 
-export function PerformanceList({ performances, onClose }: PerformanceListProps) {
+export function PerformanceList({ performances, onClose, onPerformanceClick }: PerformanceListProps) {
   const formatTime = (date: Date) => {
     return new Intl.DateTimeFormat('en-US', {
       hour: 'numeric',
@@ -67,6 +68,7 @@ export function PerformanceList({ performances, onClose }: PerformanceListProps)
                 <div
                   key={performance._id}
                   className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
+                  onClick={() => onPerformanceClick(performance)}
                 >
                   {/* Status Badge */}
                   <div className="flex justify-between items-start mb-3">
@@ -101,13 +103,32 @@ export function PerformanceList({ performances, onClose }: PerformanceListProps)
 
                   {/* Action Buttons */}
                   <div className="flex space-x-2">
-                    <button className="flex-1 btn-primary text-sm py-2">
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        // Handle like functionality here
+                      }}
+                      className="flex-1 btn-primary text-sm py-2"
+                    >
                       ❤️ Interested
                     </button>
-                    <button className="flex-1 btn-secondary text-sm py-2">
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const url = `https://www.google.com/maps/dir/?api=1&destination=${currentStop.location.coordinates[1]},${currentStop.location.coordinates[0]}`;
+                        window.open(url, '_blank');
+                      }}
+                      className="flex-1 btn-secondary text-sm py-2"
+                    >
                       🧭 Directions
                     </button>
-                    <button className="px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50">
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        // Handle video play
+                      }}
+                      className="px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50"
+                    >
                       ▶️
                     </button>
                   </div>

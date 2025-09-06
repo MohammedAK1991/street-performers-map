@@ -95,27 +95,72 @@ export function useLikePerformance() {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async (performanceId: string) => {
+    mutationFn: async ({ performanceId }: { performanceId: string; userId?: string }) => {
       const response = await api.post(`/performances/${performanceId}/like`);
       return response.data.data as Performance;
     },
+    onMutate: async ({ performanceId, userId }) => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['performances'] });
+
+      // Snapshot the previous value
+      const previousPerformances = queryClient.getQueryData(['performances', 'nearby']);
+
+      // Optimistically update the cache
+      queryClient.setQueriesData(
+        { queryKey: ['performances', 'nearby'] },
+        (oldData: Performance[] | undefined) => {
+          if (!oldData || !Array.isArray(oldData)) return oldData;
+          return oldData.map(perf => {
+            if (perf._id === performanceId) {
+              // Toggle the like optimistically
+              const isCurrentlyLiked = userId ? perf.engagement.likedBy.includes(userId) : false;
+              return {
+                ...perf,
+                engagement: {
+                  ...perf.engagement,
+                  likes: isCurrentlyLiked ? perf.engagement.likes - 1 : perf.engagement.likes + 1,
+                  likedBy: isCurrentlyLiked 
+                    ? perf.engagement.likedBy.filter(id => id !== userId)
+                    : userId ? [...perf.engagement.likedBy, userId] : perf.engagement.likedBy
+                }
+              };
+            }
+            return perf;
+          });
+        }
+      );
+
+      // Return a context object with the snapshotted value
+      return { previousPerformances };
+    },
+    onError: (err, { performanceId }, context) => {
+      // If the mutation fails, use the context returned from onMutate to roll back
+      if (context?.previousPerformances) {
+        queryClient.setQueryData(['performances', 'nearby'], context.previousPerformances);
+      }
+    },
     onSuccess: (updatedPerformance) => {
-      // Update the performance in all relevant caches
+      // Update the performance in all relevant caches with real data
       queryClient.setQueryData(
         performanceKeys.detail(updatedPerformance._id),
         updatedPerformance
       );
       
-      // Update in nearby performances cache
+      // Update in nearby performances cache with real data
       queryClient.setQueriesData(
-        { queryKey: performanceKeys.all },
+        { queryKey: ['performances', 'nearby'] },
         (oldData: Performance[] | undefined) => {
-          if (!oldData) return oldData;
+          if (!oldData || !Array.isArray(oldData)) return oldData;
           return oldData.map(perf => 
             perf._id === updatedPerformance._id ? updatedPerformance : perf
           );
         }
       );
+    },
+    onSettled: () => {
+      // Always refetch after error or success to ensure we have the latest data
+      queryClient.invalidateQueries({ queryKey: ['performances'] });
     },
   });
 }

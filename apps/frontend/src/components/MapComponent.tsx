@@ -1,8 +1,6 @@
 import { useState, useCallback } from 'react';
 import { APIProvider, Map, AdvancedMarker } from '@vis.gl/react-google-maps';
 import type { Performance } from '@spm/shared-types';
-import { useUser } from '@clerk/clerk-react';
-import { PerformanceModal } from './PerformanceModal';
 
 interface MapComponentProps {
   userLocation: [number, number];
@@ -13,6 +11,7 @@ interface MapComponentProps {
     distance: number;
     popularity: string;
   };
+  onPerformanceClick: (performance: Performance) => void;
 }
 
 interface PerformanceMarkerProps {
@@ -111,10 +110,125 @@ function PerformanceMarker({ performance, onClick }: PerformanceMarkerProps) {
   );
 }
 
-export function MapComponent({ userLocation, performances, filters }: MapComponentProps) {
+interface PerformanceStopMarkerProps {
+  performance: Performance;
+  stop: any;
+  stopIndex: number;
+  totalStops: number;
+  onClick: () => void;
+}
+
+function PerformanceStopMarker({ performance, stop, stopIndex, totalStops, onClick }: PerformanceStopMarkerProps) {
+  const position = {
+    lat: stop.location.coordinates[1],
+    lng: stop.location.coordinates[0]
+  };
+
+  const getStopColor = () => {
+    if (stop.status === 'active') return '#ef4444'; // red for active
+    if (stop.status === 'completed') return '#6b7280'; // gray for completed
+    return '#3b82f6'; // blue for upcoming
+  };
+
+  const getGenreIcon = () => {
+    switch (performance.genre) {
+      case 'jazz': return '🎷';
+      case 'rock': return '🎸';
+      case 'classical': return '🎻';
+      case 'pop': return '🎤';
+      case 'folk': return '🪕';
+      case 'blues': return '🎵';
+      default: return '🎭';
+    }
+  };
+
+  return (
+    <AdvancedMarker
+      position={position}
+      onClick={onClick}
+      title={`${performance.title} - Stop ${stopIndex + 1}/${totalStops}`}
+    >
+      <div style={{ position: 'relative' }}>
+        <div 
+          style={{
+            backgroundColor: getStopColor(),
+            color: 'white',
+            borderRadius: '50%',
+            width: '36px',
+            height: '36px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '16px',
+            border: '2px solid white',
+            boxShadow: '0 2px 6px rgba(0,0,0,0.3)',
+            cursor: 'pointer',
+            transition: 'transform 0.2s ease'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'scale(1.1)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'scale(1)';
+          }}
+        >
+          {getGenreIcon()}
+        </div>
+        
+        {/* Stop number indicator */}
+        <div 
+          style={{
+            position: 'absolute',
+            bottom: '-8px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            backgroundColor: '#1f2937',
+            color: 'white',
+            borderRadius: '10px',
+            padding: '2px 6px',
+            fontSize: '10px',
+            fontWeight: 'bold',
+            border: '1px solid white',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.3)'
+          }}
+        >
+          {stopIndex + 1}
+        </div>
+      </div>
+    </AdvancedMarker>
+  );
+}
+
+interface PerformanceRouteLineProps {
+  performance: Performance;
+}
+
+function PerformanceRouteLine({ performance }: PerformanceRouteLineProps) {
+  // For now, we'll skip the route lines since Polyline is not available
+  // This can be implemented later with a different approach
+  return null;
+}
+
+// Helper function for status text
+function getStatusText(performance: Performance) {
+  if (performance.status === 'live') {
+    return 'Live now!';
+  }
+  if (performance.status === 'scheduled' && performance.route.stops.length > 0) {
+    const nextStop = performance.route.stops.find(stop => stop.status !== 'completed');
+    if (nextStop && nextStop.scheduledTime) {
+      return `Starts at ${new Intl.DateTimeFormat('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+      }).format(new Date(nextStop.scheduledTime))}`;
+    }
+  }
+  return performance.status;
+}
+
+export function MapComponent({ userLocation, performances, filters, onPerformanceClick }: MapComponentProps) {
   console.log('performances', performances);
-  const [selectedPerformance, setSelectedPerformance] = useState<Performance | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [mapCenter, setMapCenter] = useState({
     lat: userLocation[1],
     lng: userLocation[0]
@@ -147,19 +261,13 @@ export function MapComponent({ userLocation, performances, filters }: MapCompone
   });
 
   const handleMarkerClick = useCallback((performance: Performance) => {
-    setSelectedPerformance(performance);
-    setIsModalOpen(true);
+    onPerformanceClick(performance);
     const currentStop = performance.route.stops.find(stop => stop.status === 'active') || performance.route.stops[0];
     setMapCenter({
       lat: currentStop.location.coordinates[1],
       lng: currentStop.location.coordinates[0]
     });
-  }, []);
-
-  const handleCloseModal = useCallback(() => {
-    setIsModalOpen(false);
-    setSelectedPerformance(null);
-  }, []);
+  }, [onPerformanceClick]);
 
 
   const handleMyLocationClick = () => {
@@ -267,12 +375,25 @@ export function MapComponent({ userLocation, performances, filters }: MapCompone
           </div>
         </AdvancedMarker>
 
-        {/* Performance Markers */}
+        {/* Performance Route Markers */}
+        {filteredPerformances.map(performance => 
+          performance.route.stops.map((stop, index) => (
+            <PerformanceStopMarker
+              key={`${performance._id}-stop-${index}`}
+              performance={performance}
+              stop={stop}
+              stopIndex={index}
+              totalStops={performance.route.stops.length}
+              onClick={() => handleMarkerClick(performance)}
+            />
+          ))
+        )}
+
+        {/* Route Lines */}
         {filteredPerformances.map(performance => (
-          <PerformanceMarker
-            key={performance._id}
+          <PerformanceRouteLine
+            key={`${performance._id}-route`}
             performance={performance}
-            onClick={() => handleMarkerClick(performance)}
           />
         ))}
 
@@ -316,15 +437,6 @@ export function MapComponent({ userLocation, performances, filters }: MapCompone
 
       </Map>
       </APIProvider>
-      
-      {/* Performance Modal */}
-      {selectedPerformance && (
-        <PerformanceModal
-          performance={selectedPerformance}
-          isOpen={isModalOpen}
-          onClose={handleCloseModal}
-        />
-      )}
     </div>
   );
 }

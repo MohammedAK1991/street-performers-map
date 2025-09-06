@@ -27,23 +27,23 @@ export function FilterPanel({ filters, onFiltersChange, onClose }: FilterPanelPr
   };
 
   return (
-    <div className="h-full flex flex-col bg-white">
+    <div className="h-full flex flex-col bg-card">
       {/* Header */}
-      <div className="p-4 border-b border-gray-200 flex justify-between items-center">
-        <h2 className="text-lg font-bold text-gray-900">🔍 Find Performances</h2>
+      <div className="p-4 border-b border-border flex justify-between items-center">
+        <h2 className="text-lg font-bold text-foreground">🔍 Find Performances</h2>
         <button
           onClick={onClose}
-          className="text-gray-400 hover:text-gray-600"
+          className="text-muted-foreground hover:text-foreground"
         >
           ✕
         </button>
       </div>
 
       {/* Filter Content */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-6">
+      <div className="flex-1 overflow-y-auto p-4 space-y-6 max-h-[calc(100vh-200px)]">
         {/* Genre Filter */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-3">
+          <label className="block text-sm font-medium text-foreground mb-3">
             🎵 Genre
           </label>
           <div className="grid grid-cols-2 gap-2">
@@ -53,8 +53,8 @@ export function FilterPanel({ filters, onFiltersChange, onClose }: FilterPanelPr
                 onClick={() => handleFilterChange('genre', genre)}
                 className={`p-2 text-sm rounded-lg border transition-colors ${
                   filters.genre === genre
-                    ? 'bg-purple-600 text-white border-purple-600'
-                    : 'bg-white text-gray-700 border-gray-300 hover:border-gray-400'
+                    ? 'bg-primary text-primary-foreground border-primary'
+                    : 'bg-card text-foreground border-border hover:border-primary/50'
                 }`}
               >
                 {genre.charAt(0).toUpperCase() + genre.slice(1)}
@@ -65,7 +65,7 @@ export function FilterPanel({ filters, onFiltersChange, onClose }: FilterPanelPr
 
         {/* Time Filter */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-3">
+          <label className="block text-sm font-medium text-foreground mb-3">
             ⏰ Time
           </label>
           <div className="space-y-2">
@@ -75,8 +75,8 @@ export function FilterPanel({ filters, onFiltersChange, onClose }: FilterPanelPr
                 onClick={() => handleFilterChange('timeRange', timeRange.value)}
                 className={`w-full p-3 text-sm rounded-lg border transition-colors text-left ${
                   filters.timeRange === timeRange.value
-                    ? 'bg-purple-600 text-white border-purple-600'
-                    : 'bg-white text-gray-700 border-gray-300 hover:border-gray-400'
+                    ? 'bg-primary text-primary-foreground border-primary'
+                    : 'bg-card text-foreground border-border hover:border-primary/50'
                 }`}
               >
                 {timeRange.label}
@@ -87,7 +87,7 @@ export function FilterPanel({ filters, onFiltersChange, onClose }: FilterPanelPr
 
         {/* Distance Filter */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-3">
+          <label className="block text-sm font-medium text-foreground mb-3">
             📍 Distance
           </label>
           <div className="grid grid-cols-3 gap-2">
@@ -97,8 +97,8 @@ export function FilterPanel({ filters, onFiltersChange, onClose }: FilterPanelPr
                 onClick={() => handleFilterChange('distance', distance)}
                 className={`p-2 text-sm rounded-lg border transition-colors ${
                   filters.distance === distance
-                    ? 'bg-purple-600 text-white border-purple-600'
-                    : 'bg-white text-gray-700 border-gray-300 hover:border-gray-400'
+                    ? 'bg-primary text-primary-foreground border-primary'
+                    : 'bg-card text-foreground border-border hover:border-primary/50'
                 }`}
               >
                 {distance}km
@@ -109,7 +109,7 @@ export function FilterPanel({ filters, onFiltersChange, onClose }: FilterPanelPr
 
         {/* Popularity Filter */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-3">
+          <label className="block text-sm font-medium text-foreground mb-3">
             🔥 Popularity
           </label>
           <div className="space-y-2">
@@ -124,8 +124,8 @@ export function FilterPanel({ filters, onFiltersChange, onClose }: FilterPanelPr
                 onClick={() => handleFilterChange('popularity', option.value)}
                 className={`w-full p-3 text-sm rounded-lg border transition-colors text-left ${
                   filters.popularity === option.value
-                    ? 'bg-purple-600 text-white border-purple-600'
-                    : 'bg-white text-gray-700 border-gray-300 hover:border-gray-400'
+                    ? 'bg-primary text-primary-foreground border-primary'
+                    : 'bg-card text-foreground border-border hover:border-primary/50'
                 }`}
               >
                 {option.label}
@@ -135,15 +135,15 @@ export function FilterPanel({ filters, onFiltersChange, onClose }: FilterPanelPr
         </div>
 
         {/* Clear Filters */}
-        <div className="pt-4 border-t border-gray-200">
+        <div className="pt-4 border-t border-border">
           <button
             onClick={() => onFiltersChange({
               genre: 'all',
               timeRange: 'all',
-              distance: 5,
+              distance: 25,
               popularity: 'all'
             })}
-            className="w-full btn-secondary"
+            className="w-full bg-card hover:bg-muted text-foreground border border-border px-4 py-2 rounded-lg font-medium transition-colors"
           >
             Clear All Filters
           </button>
@@ -151,8 +151,8 @@ export function FilterPanel({ filters, onFiltersChange, onClose }: FilterPanelPr
       </div>
 
       {/* Results Count */}
-      <div className="p-4 border-t border-gray-200 bg-gray-50">
-        <p className="text-sm text-gray-600 text-center">
+      <div className="p-4 border-t border-border bg-muted/50">
+        <p className="text-sm text-muted-foreground text-center">
           Filter performances by genre and time
         </p>
       </div>

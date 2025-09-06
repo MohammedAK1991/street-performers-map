@@ -10,7 +10,8 @@ router.get('/nearby', performanceController.getNearbyPerformances);
 router.get('/:id', performanceController.getPerformance);
 
 // Protected routes (authenticated users)
-router.post('/:id/like', authenticate, performanceController.likePerformance);
+router.post('/:id/like', authenticate, performanceController.toggleLikePerformance);
+router.post('/:id/like-toggle', authenticate, performanceController.toggleLikePerformance);
 
 // Performer-only routes (temporarily allowing all authenticated users)
 router.post('/', authenticate, performanceController.createPerformance);

@@ -146,7 +146,7 @@ export class PerformanceRepository {
     }
   }
 
-  async likePerformance(performanceId: string, userId: string): Promise<PerformanceDocument | null> {
+  async likePerformance(performanceId: string, userId: string): Promise<any | null> {
     try {
       const performance = await PerformanceModel.findByIdAndUpdate(
         performanceId,
@@ -168,7 +168,7 @@ export class PerformanceRepository {
     }
   }
 
-  async unlikePerformance(performanceId: string, userId: string): Promise<PerformanceDocument | null> {
+  async unlikePerformance(performanceId: string, userId: string): Promise<any | null> {
     try {
       const performance = await PerformanceModel.findByIdAndUpdate(
         performanceId,

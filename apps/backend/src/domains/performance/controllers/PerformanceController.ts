@@ -186,6 +186,31 @@ export class PerformanceController {
     }
   };
 
+  toggleLikePerformance = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const userId = (req as any).user?.userId;
+      const { id } = req.params;
+      
+      if (!userId) {
+        throw new ApiError(401, 'Authentication required');
+      }
+
+      const performance = await this.performanceService.toggleLikePerformance(id, userId);
+
+      if (!performance) {
+        throw new ApiError(404, 'Performance not found');
+      }
+
+      res.json({
+        success: true,
+        data: performance,
+        meta: { timestamp: new Date().toISOString() },
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
   likePerformance = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const userId = (req as any).user?.userId;

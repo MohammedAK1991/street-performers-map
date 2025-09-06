@@ -202,7 +202,7 @@ export class PerformanceService {
         this.logger.info('Performance liked', { performanceId, userId });
       }
 
-      return updatedPerformance ? (updatedPerformance.toJSON() as Performance) : null;
+      return updatedPerformance as Performance | null;
     } catch (error) {
       this.logger.error('Failed to toggle like performance', { error, performanceId, userId });
       throw error;

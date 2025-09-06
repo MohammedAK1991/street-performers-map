@@ -43,15 +43,15 @@ export function CreatePerformance() {
   // Redirect if not authenticated
   if (!isSignedIn) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-orange-50 flex items-center justify-center">
-        <div className="text-center p-8 bg-white rounded-lg shadow-lg max-w-md">
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center p-8 bg-card border border-border rounded-lg shadow-lg max-w-md">
           <div className="text-4xl mb-4">🎭</div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Login Required</h2>
-          <p className="text-gray-600 mb-6">
+          <h2 className="text-2xl font-bold text-foreground mb-4">Login Required</h2>
+          <p className="text-muted-foreground mb-6">
             You need to be logged in to create performances.
           </p>
           <div className="space-y-3">
-            <Link to="/" className="btn-primary w-full block text-center">
+            <Link to="/" className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-3 rounded-lg font-medium transition-colors w-full block text-center">
               Go to Home
             </Link>
           </div>
@@ -154,34 +154,34 @@ export function CreatePerformance() {
   const renderStep1 = () => (
     <div className="space-y-6">
       <div className="text-center mb-8">
-        <h2 className="text-2xl font-bold text-gray-900">Create New Performance</h2>
+        <h2 className="text-2xl font-bold text-foreground">Create New Performance</h2>
         <div className="mt-4 flex justify-center">
           <div className="flex space-x-2">
-            <div className="w-8 h-2 bg-purple-600 rounded"></div>
-            <div className="w-8 h-2 bg-gray-300 rounded"></div>
-            <div className="w-8 h-2 bg-gray-300 rounded"></div>
-            <div className="w-8 h-2 bg-gray-300 rounded"></div>
+            <div className="w-8 h-2 bg-primary rounded"></div>
+            <div className="w-8 h-2 bg-muted rounded"></div>
+            <div className="w-8 h-2 bg-muted rounded"></div>
+            <div className="w-8 h-2 bg-muted rounded"></div>
           </div>
         </div>
-        <p className="mt-2 text-sm text-gray-600">Step 1 of 4: Basic Info</p>
+        <p className="mt-2 text-sm text-muted-foreground">Step 1 of 4: Basic Info</p>
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-foreground mb-2">
           🎵 Performance Title
         </label>
         <input
           type="text"
           value={formData.title}
           onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500"
+          className="w-full px-3 py-2 bg-card border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:ring-primary focus:border-primary"
           placeholder="e.g., Jazz by the Fountain"
           maxLength={100}
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-foreground mb-2">
           🎼 Genre
         </label>
         <div className="grid grid-cols-3 gap-2">
@@ -192,8 +192,8 @@ export function CreatePerformance() {
               onClick={() => setFormData(prev => ({ ...prev, genre }))}
               className={`p-2 text-sm rounded-lg border transition-colors ${
                 formData.genre === genre
-                  ? 'bg-purple-600 text-white border-purple-600'
-                  : 'bg-white text-gray-700 border-gray-300 hover:border-gray-400'
+                  ? 'bg-primary text-primary-foreground border-primary'
+                  : 'bg-card text-foreground border-border hover:border-primary/50'
               }`}
             >
               {genre.charAt(0).toUpperCase() + genre.slice(1)}
@@ -203,31 +203,31 @@ export function CreatePerformance() {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-foreground mb-2">
           📝 Description (Optional)
         </label>
         <textarea
           value={formData.description || ''}
           onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500"
+          className="w-full px-3 py-2 bg-card border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:ring-primary focus:border-primary"
           placeholder="Tell people about your performance..."
           rows={3}
           maxLength={500}
         />
-        <p className="mt-1 text-xs text-gray-500">
+        <p className="mt-1 text-xs text-muted-foreground">
           {(formData.description?.length || 0)}/500 characters
         </p>
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-foreground mb-2">
           📅 Performance Date
         </label>
         <input
           type="date"
           value={formData.scheduledFor.split('T')[0]}
           onChange={(e) => setFormData(prev => ({ ...prev, scheduledFor: e.target.value }))}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500"
+          className="w-full px-3 py-2 bg-card border border-border rounded-lg text-foreground focus:ring-primary focus:border-primary"
           min={new Date().toISOString().split('T')[0]}
         />
       </div>
@@ -237,33 +237,33 @@ export function CreatePerformance() {
   const renderStep2 = () => (
     <div className="space-y-6">
       <div className="text-center mb-8">
-        <h2 className="text-2xl font-bold text-gray-900">Plan Your Route</h2>
+        <h2 className="text-2xl font-bold text-foreground">Plan Your Route</h2>
         <div className="mt-4 flex justify-center">
           <div className="flex space-x-2">
-            <div className="w-8 h-2 bg-purple-600 rounded"></div>
-            <div className="w-8 h-2 bg-purple-600 rounded"></div>
-            <div className="w-8 h-2 bg-gray-300 rounded"></div>
-            <div className="w-8 h-2 bg-gray-300 rounded"></div>
+            <div className="w-8 h-2 bg-primary rounded"></div>
+            <div className="w-8 h-2 bg-primary rounded"></div>
+            <div className="w-8 h-2 bg-muted rounded"></div>
+            <div className="w-8 h-2 bg-muted rounded"></div>
           </div>
         </div>
-        <p className="mt-2 text-sm text-gray-600">Step 2 of 4: Route Planning</p>
+        <p className="mt-2 text-sm text-muted-foreground">Step 2 of 4: Route Planning</p>
       </div>
 
-      <div className="bg-blue-50 p-4 rounded-lg">
-        <h3 className="font-semibold text-gray-900 mb-2">📍 Route Stops ({formData.route.stops.length}/5 used)</h3>
-        <p className="text-sm text-gray-600">Plan your performance locations and times for the day.</p>
+      <div className="bg-primary/10 border border-primary/20 p-4 rounded-lg">
+        <h3 className="font-semibold text-foreground mb-2">📍 Route Stops ({formData.route.stops.length}/5 used)</h3>
+        <p className="text-sm text-muted-foreground">Plan your performance locations and times for the day.</p>
       </div>
 
       <div className="space-y-4">
         {formData.route.stops.map((stop, index) => (
-          <div key={index} className="p-4 border border-gray-200 rounded-lg">
+          <div key={index} className="p-4 border border-border rounded-lg bg-card">
             <div className="flex justify-between items-center mb-3">
-              <h4 className="font-medium text-gray-900">Stop {index + 1}</h4>
+              <h4 className="font-medium text-foreground">Stop {index + 1}</h4>
               {formData.route.stops.length > 1 && (
                 <button
                   type="button"
                   onClick={() => removeStop(index)}
-                  className="text-red-600 hover:text-red-700 text-sm"
+                  className="text-destructive hover:text-destructive/80 text-sm"
                 >
                   Remove
                 </button>
@@ -272,7 +272,7 @@ export function CreatePerformance() {
 
             <div className="space-y-3">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-foreground mb-1">
                   Search Location
                 </label>
                 <GooglePlacesAutocomplete
@@ -286,13 +286,13 @@ export function CreatePerformance() {
                   }}
                   placeholder="Search for a location (e.g., Bethesda Fountain, Central Park)"
                 />
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                   Start typing to search for locations. Coordinates will be automatically saved.
                 </p>
                 {stop.location.coordinates && (
-                  <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded text-xs">
-                    <span className="text-green-700 font-medium">📍 Location saved:</span>
-                    <div className="text-green-600 mt-1">
+                  <div className="mt-2 p-2 bg-green-500/10 border border-green-500/20 rounded text-xs">
+                    <span className="text-green-400 font-medium">📍 Location saved:</span>
+                    <div className="text-green-300 mt-1">
                       Lat: {stop.location.coordinates[1].toFixed(6)}, 
                       Lng: {stop.location.coordinates[0].toFixed(6)}
                     </div>
@@ -302,7 +302,7 @@ export function CreatePerformance() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-foreground mb-1">
                     Start Time
                   </label>
                   <input
@@ -313,12 +313,12 @@ export function CreatePerformance() {
                       const datetime = `${date}T${e.target.value}:00.000Z`;
                       updateStop(index, 'startTime', datetime);
                     }}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500"
+                    className="w-full px-3 py-2 bg-card border border-border rounded-lg text-foreground focus:ring-primary focus:border-primary"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-foreground mb-1">
                     End Time
                   </label>
                   <input
@@ -329,7 +329,7 @@ export function CreatePerformance() {
                       const datetime = `${date}T${e.target.value}:00.000Z`;
                       updateStop(index, 'endTime', datetime);
                     }}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500"
+                    className="w-full px-3 py-2 bg-card border border-border rounded-lg text-foreground focus:ring-primary focus:border-primary"
                   />
                 </div>
               </div>
@@ -341,16 +341,16 @@ export function CreatePerformance() {
           <button
             type="button"
             onClick={addStop}
-            className="w-full p-4 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-purple-500 hover:text-purple-600 transition-colors"
+            className="w-full p-4 border-2 border-dashed border-border rounded-lg text-muted-foreground hover:border-primary hover:text-primary transition-colors"
           >
             ➕ Add Another Stop
           </button>
         )}
       </div>
 
-      <div className="bg-yellow-50 p-4 rounded-lg">
-        <h4 className="font-semibold text-gray-900 mb-2">✨ Route Tips:</h4>
-        <ul className="text-sm text-gray-700 space-y-1">
+      <div className="bg-secondary/10 border border-secondary/20 p-4 rounded-lg">
+        <h4 className="font-semibold text-foreground mb-2">✨ Route Tips:</h4>
+        <ul className="text-sm text-muted-foreground space-y-1">
           <li>• Allow 15-30 min travel time between stops</li>
           <li>• Peak hours: 12-2 PM, 5-7 PM have more foot traffic</li>
           <li>• Check for permits if required in your area</li>
@@ -373,29 +373,29 @@ export function CreatePerformance() {
     return (
       <div className="space-y-6">
         <div className="text-center mb-8">
-          <h2 className="text-2xl font-bold text-gray-900">Upload Performance Video</h2>
+          <h2 className="text-2xl font-bold text-foreground">Upload Performance Video</h2>
           <div className="mt-4 flex justify-center">
             <div className="flex space-x-2">
-              <div className="w-8 h-2 bg-purple-600 rounded"></div>
-              <div className="w-8 h-2 bg-purple-600 rounded"></div>
-              <div className="w-8 h-2 bg-purple-600 rounded"></div>
-              <div className="w-8 h-2 bg-gray-300 rounded"></div>
+              <div className="w-8 h-2 bg-primary rounded"></div>
+              <div className="w-8 h-2 bg-primary rounded"></div>
+              <div className="w-8 h-2 bg-primary rounded"></div>
+              <div className="w-8 h-2 bg-muted rounded"></div>
             </div>
           </div>
-          <p className="mt-2 text-sm text-gray-600">Step 3 of 4: Video Upload (Optional)</p>
+          <p className="mt-2 text-sm text-muted-foreground">Step 3 of 4: Video Upload (Optional)</p>
         </div>
 
         {/* Success Message */}
         {uploadedVideo && (
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+          <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4 mb-6">
             <div className="flex items-start">
-              <div className="text-green-500 mr-3 mt-0.5">✅</div>
+              <div className="text-green-400 mr-3 mt-0.5">✅</div>
               <div>
-                <h4 className="text-green-800 font-medium">Video Uploaded Successfully!</h4>
-                <p className="text-green-700 text-sm mt-1">
+                <h4 className="text-green-400 font-medium">Video Uploaded Successfully!</h4>
+                <p className="text-green-300 text-sm mt-1">
                   Your video <strong>{uploadedVideo.filename}</strong> has been uploaded and will be visible to your audience.
                 </p>
-                <p className="text-green-600 text-xs mt-1">
+                <p className="text-green-400/80 text-xs mt-1">
                   Video expires in 24 hours • {uploadedVideo.views} views so far
                 </p>
               </div>
@@ -413,11 +413,11 @@ export function CreatePerformance() {
 
         {/* Skip Option */}
         {!uploadedVideo && (
-          <div className="bg-gray-50 p-4 rounded-lg text-center">
-            <p className="text-sm text-gray-600 mb-3">
+          <div className="bg-muted/50 border border-border p-4 rounded-lg text-center">
+            <p className="text-sm text-muted-foreground mb-3">
               Don't have a video ready? No problem!
             </p>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-muted-foreground/80">
               You can skip this step and add a video later from your performance dashboard.
             </p>
           </div>
@@ -429,43 +429,43 @@ export function CreatePerformance() {
   const renderStep4 = () => (
     <div className="space-y-6">
       <div className="text-center mb-8">
-        <h2 className="text-2xl font-bold text-gray-900">Review & Publish</h2>
+        <h2 className="text-2xl font-bold text-foreground">Review & Publish</h2>
         <div className="mt-4 flex justify-center">
           <div className="flex space-x-2">
-            <div className="w-8 h-2 bg-purple-600 rounded"></div>
-            <div className="w-8 h-2 bg-purple-600 rounded"></div>
-            <div className="w-8 h-2 bg-purple-600 rounded"></div>
-            <div className="w-8 h-2 bg-purple-600 rounded"></div>
+            <div className="w-8 h-2 bg-primary rounded"></div>
+            <div className="w-8 h-2 bg-primary rounded"></div>
+            <div className="w-8 h-2 bg-primary rounded"></div>
+            <div className="w-8 h-2 bg-primary rounded"></div>
           </div>
         </div>
-        <p className="mt-2 text-sm text-gray-600">Step 4 of 4: Review & Publish</p>
+        <p className="mt-2 text-sm text-muted-foreground">Step 4 of 4: Review & Publish</p>
       </div>
 
-      <div className="bg-white border border-gray-200 rounded-lg p-6">
-        <h3 className="font-semibold text-gray-900 mb-4">🎯 Performance Summary</h3>
+      <div className="bg-card border border-border rounded-lg p-6">
+        <h3 className="font-semibold text-foreground mb-4">🎯 Performance Summary</h3>
         
         <div className="space-y-3">
           <div>
-            <span className="font-medium text-gray-700">Title:</span> {formData.title}
+            <span className="font-medium text-foreground">Title:</span> <span className="text-muted-foreground">{formData.title}</span>
           </div>
           <div>
-            <span className="font-medium text-gray-700">Genre:</span> {formData.genre}
+            <span className="font-medium text-foreground">Genre:</span> <span className="text-muted-foreground">{formData.genre}</span>
           </div>
           <div>
-            <span className="font-medium text-gray-700">Date:</span> {formData.scheduledFor}
+            <span className="font-medium text-foreground">Date:</span> <span className="text-muted-foreground">{formData.scheduledFor}</span>
           </div>
           {formData.description && (
             <div>
-              <span className="font-medium text-gray-700">Description:</span> {formData.description}
+              <span className="font-medium text-foreground">Description:</span> <span className="text-muted-foreground">{formData.description}</span>
             </div>
           )}
         </div>
 
         <div className="mt-4">
-          <h4 className="font-medium text-gray-700 mb-2">📍 Route ({formData.route.stops.length} stops):</h4>
+          <h4 className="font-medium text-foreground mb-2">📍 Route ({formData.route.stops.length} stops):</h4>
           <div className="space-y-2">
             {formData.route.stops.map((stop, index) => (
-              <div key={index} className="text-sm text-gray-600 bg-gray-50 p-2 rounded">
+              <div key={index} className="text-sm text-muted-foreground bg-muted/50 p-2 rounded">
                 • {stop.startTime.split('T')[1]?.substring(0, 5)} - {stop.endTime.split('T')[1]?.substring(0, 5)}: {stop.location.name || stop.location.address}
               </div>
             ))}
@@ -473,9 +473,9 @@ export function CreatePerformance() {
         </div>
       </div>
 
-      <div className="bg-yellow-50 p-4 rounded-lg">
-        <h4 className="font-semibold text-gray-900 mb-2">⚠️ Important:</h4>
-        <ul className="text-sm text-gray-700 space-y-1">
+      <div className="bg-secondary/10 border border-secondary/20 p-4 rounded-lg">
+        <h4 className="font-semibold text-foreground mb-2">⚠️ Important:</h4>
+        <ul className="text-sm text-muted-foreground space-y-1">
           <li>• Performance will auto-delete after 24 hours</li>
           <li>• You can update location during performance</li>
           <li>• Check local regulations for street performing</li>
@@ -485,12 +485,12 @@ export function CreatePerformance() {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-orange-50 py-8">
+    <div className="min-h-screen bg-background py-8">
       <div className="max-w-2xl mx-auto px-4">
-        <div className="bg-white rounded-lg shadow-lg p-8">
+        <div className="bg-card border border-border rounded-lg shadow-lg p-8">
           {error && (
-            <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
-              <div className="text-red-600 text-sm">{error}</div>
+            <div className="mb-6 bg-destructive/10 border border-destructive/20 rounded-lg p-4">
+              <div className="text-destructive text-sm">{error}</div>
             </div>
           )}
 
@@ -506,7 +506,7 @@ export function CreatePerformance() {
                 <button
                   type="button"
                   onClick={() => setStep(step - 1)}
-                  className="btn-secondary"
+                  className="bg-card hover:bg-muted text-foreground border border-border px-4 py-2 rounded-lg font-medium transition-colors"
                 >
                   ← Back
                 </button>
@@ -514,7 +514,7 @@ export function CreatePerformance() {
             </div>
 
             <div className="flex space-x-3">
-              <Link to="/map" className="btn-secondary">
+              <Link to="/map" className="bg-card hover:bg-muted text-foreground border border-border px-4 py-2 rounded-lg font-medium transition-colors">
                 Cancel
               </Link>
               
@@ -530,7 +530,7 @@ export function CreatePerformance() {
                       !stop.location.address || stop.location.address === ''
                     ))
                   }
-                  className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Next: {step === 1 ? 'Route' : step === 2 ? 'Video' : 'Review'} →
                 </button>
@@ -539,7 +539,7 @@ export function CreatePerformance() {
                   type="button"
                   onClick={handleSubmit}
                   disabled={createPerformanceMutation.isPending}
-                  className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {createPerformanceMutation.isPending ? (
                     <>

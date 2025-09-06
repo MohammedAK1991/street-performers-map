@@ -254,9 +254,9 @@ export function GooglePlacesAutocomplete({
             coordinates: [0, 0] // Default coordinates
           })}
           placeholder="Enter location manually (Google Places API key required)"
-          className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500 ${className}`}
+          className={`w-full px-3 py-2 bg-card border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:ring-primary focus:border-primary ${className}`}
         />
-        <div className="mt-1 text-xs text-gray-500">
+        <div className="mt-1 text-xs text-muted-foreground">
           Google Places API key required for autocomplete. Enter location manually.
         </div>
       </div>
@@ -276,29 +276,29 @@ export function GooglePlacesAutocomplete({
           onFocus={() => setShowSuggestions(true)}
           placeholder={isLoaded ? placeholder : "Loading Google Places..."}
           disabled={!isLoaded}
-          className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500 ${className} ${
-            !isLoaded ? 'bg-gray-100' : ''
-          } ${error ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : ''}`}
+          className={`w-full px-3 py-2 bg-card border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:ring-primary focus:border-primary ${className} ${
+            !isLoaded ? 'bg-muted' : ''
+          } ${error ? 'border-destructive focus:border-destructive focus:ring-destructive' : ''}`}
         />
         {isLoading && (
           <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-600"></div>
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
           </div>
         )}
       </div>
 
       {/* Suggestions dropdown */}
       {showSuggestions && (suggestions.length > 0 || currentLocation) && (
-        <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+        <div className="absolute z-50 w-full mt-1 bg-card border border-border rounded-lg shadow-lg max-h-60 overflow-y-auto">
           {/* Current location first */}
           {currentLocation && (
             <button
               key="current_location"
               type="button"
               onClick={() => handleSelect(currentLocation)}
-              className="w-full px-3 py-2 text-left hover:bg-gray-50 focus:bg-gray-50 focus:outline-none border-b border-gray-100"
+              className="w-full px-3 py-2 text-left hover:bg-muted focus:bg-muted focus:outline-none border-b border-border"
             >
-              <div className="text-sm text-gray-900 flex items-center">
+              <div className="text-sm text-foreground flex items-center">
                 <span className="mr-2">📍</span>
                 {currentLocation.description}
               </div>
@@ -319,9 +319,9 @@ export function GooglePlacesAutocomplete({
                 key={key}
                 type="button"
                 onClick={() => handleSelect(prediction)}
-                className="w-full px-3 py-2 text-left hover:bg-gray-50 focus:bg-gray-50 focus:outline-none border-b border-gray-100 last:border-b-0"
+                className="w-full px-3 py-2 text-left hover:bg-muted focus:bg-muted focus:outline-none border-b border-border last:border-b-0"
               >
-                <div className="text-sm text-gray-900">{description}</div>
+                <div className="text-sm text-foreground">{description}</div>
               </button>
             );
           })}
@@ -330,7 +330,7 @@ export function GooglePlacesAutocomplete({
 
       {/* Error message */}
       {error && (
-        <div className="mt-1 text-sm text-red-600">
+        <div className="mt-1 text-sm text-destructive">
           {error}
         </div>
       )}

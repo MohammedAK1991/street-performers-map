@@ -4,8 +4,10 @@ import { useUser } from '@clerk/clerk-react';
 import { MapComponent } from '@/components/MapComponent';
 import { FilterPanel } from '@/components/FilterPanel';
 import { PerformanceList } from '@/components/PerformanceList';
+import { PerformanceModal } from '@/components/PerformanceModal';
 import { useNearbyPerformances } from '@/hooks/usePerformances';
-import type { PerformanceFilters } from '@spm/shared-types';
+import { Search, Filter, List, Plus, MapPin } from 'lucide-react';
+import type { PerformanceFilters, Performance } from '@spm/shared-types';
 
 
 export function Map() {
@@ -14,10 +16,12 @@ export function Map() {
   const [locationPermission, setLocationPermission] = useState<'granted' | 'denied' | 'prompt'>('prompt');
   const [showFilters, setShowFilters] = useState(false);
   const [showList, setShowList] = useState(false);
+  const [selectedPerformance, setSelectedPerformance] = useState<Performance | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [filters, setFilters] = useState({
     genre: 'all',
-    timeRange: 'now',
-    distance: 5,
+    timeRange: 'all',
+    distance: 25,
     popularity: 'all'
   });
 
@@ -36,6 +40,17 @@ export function Map() {
 
   // Use real data from backend
   const performances = nearbyPerformances;
+
+  // Modal handlers
+  const handlePerformanceClick = (performance: Performance) => {
+    setSelectedPerformance(performance);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedPerformance(null);
+  };
 
   // Request location permission
   useEffect(() => {
@@ -72,10 +87,10 @@ export function Map() {
     ];
 
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-orange-50 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center max-w-md">
           <div className="text-6xl mb-6 animate-bounce">🎵</div>
-          <h2 className="text-3xl font-bold text-gray-900 mb-6">Loading StreetPerformersMap</h2>
+          <h2 className="text-3xl font-bold text-foreground mb-6">Loading StreetPerformersMap</h2>
           
           {/* Loading steps */}
           <div className="space-y-4 mb-6">
@@ -84,11 +99,11 @@ export function Map() {
                 <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
                   complete 
                     ? 'bg-green-500 border-green-500 text-white' 
-                    : step <= 2 ? 'border-purple-500 text-purple-500' : 'border-gray-300 text-gray-300'
+                    : step <= 2 ? 'border-primary text-primary' : 'border-muted text-muted-foreground'
                 }`}>
                   {complete ? '✓' : step}
                 </div>
-                <span className={`text-sm ${complete ? 'text-green-600' : 'text-gray-600'}`}>
+                <span className={`text-sm ${complete ? 'text-green-600' : 'text-muted-foreground'}`}>
                   {label}
                 </span>
               </div>
@@ -97,21 +112,21 @@ export function Map() {
 
           {/* Error handling */}
           {performancesError && (
-            <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-              <p className="text-yellow-800 text-sm">
+            <div className="mb-6 p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
+              <p className="text-yellow-400 text-sm">
                 Unable to load live performances. Showing demo data.
               </p>
             </div>
           )}
           
           {locationPermission === 'denied' && (
-            <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <p className="text-blue-800 text-sm mb-3">
+            <div className="mt-6 p-4 bg-primary/10 border border-primary/20 rounded-lg">
+              <p className="text-primary text-sm mb-3">
                 Location access denied. You can still browse the map!
               </p>
               <button 
                 onClick={() => setUserLocation([-73.9712, 40.7831])}
-                className="btn-primary text-sm"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg text-sm transition-colors"
               >
                 📍 Continue with New York City
               </button>
@@ -119,7 +134,7 @@ export function Map() {
           )}
 
           {/* Quick stats during loading */}
-          <div className="mt-8 text-sm text-gray-500">
+          <div className="mt-8 text-sm text-muted-foreground">
             <p>🎭 Connecting street performers worldwide</p>
             <p>🌍 Real-time performance discovery</p>
           </div>
@@ -129,14 +144,16 @@ export function Map() {
   }
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden">
+    <div className="h-screen flex flex-col overflow-hidden bg-background">
       {/* Header */}
-      <header className="bg-white/95 backdrop-blur-sm shadow-lg border-b border-gray-200 z-20">
+      <header className="bg-background/95 backdrop-blur-sm shadow-lg border-b border-border z-20">
         <div className="px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-6">
-              <Link to="/" className="flex items-center space-x-2 text-xl font-bold text-purple-600 hover:text-purple-700 transition-colors">
-                <span className="text-2xl">🎵</span>
+              <Link to="/" className="flex items-center space-x-2 text-xl font-bold text-foreground hover:text-primary transition-colors">
+                <div className="w-8 h-8 rounded-full street-gradient flex items-center justify-center">
+                  <MapPin className="w-5 h-5 text-white" />
+                </div>
                 <span>StreetPerformersMap</span>
               </Link>
               
@@ -146,12 +163,10 @@ export function Map() {
                   <input
                     type="text"
                     placeholder="Search performances..."
-                    className="w-80 px-4 py-2 pl-10 border border-gray-300 rounded-full focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 shadow-sm"
+                    className="w-80 px-4 py-2 pl-10 bg-card border border-border rounded-full text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 shadow-sm"
                   />
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
+                    <Search className="h-4 w-4 text-muted-foreground" />
                   </div>
                 </div>
               </div>
@@ -161,43 +176,43 @@ export function Map() {
               {/* Filter Toggle */}
               <button
                 onClick={() => setShowFilters(!showFilters)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 flex items-center gap-2 ${
                   showFilters 
-                    ? 'bg-purple-100 text-purple-700 border-2 border-purple-200' 
-                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                    ? 'bg-primary text-primary-foreground' 
+                    : 'bg-card text-foreground border border-border hover:bg-muted'
                 }`}
               >
-                <span className="mr-2">🎭</span>
+                <Filter className="w-4 h-4" />
                 Filters
               </button>
               
               {/* List Toggle */}
               <button
                 onClick={() => setShowList(!showList)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 flex items-center gap-2 ${
                   showList 
-                    ? 'bg-purple-100 text-purple-700 border-2 border-purple-200' 
-                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                    ? 'bg-primary text-primary-foreground' 
+                    : 'bg-card text-foreground border border-border hover:bg-muted'
                 }`}
               >
-                <span className="mr-2">📋</span>
+                <List className="w-4 h-4" />
                 List
               </button>
               
               {/* User Menu */}
               {isSignedIn ? (
                 <div className="flex items-center space-x-3">
-                  <span className="text-sm text-gray-600 hidden sm:block">
-                    Welcome, <span className="font-medium">{clerkUser?.fullName || clerkUser?.username}</span>!
+                  <span className="text-sm text-muted-foreground hidden sm:block">
+                    Welcome, <span className="font-medium text-foreground">{clerkUser?.fullName || clerkUser?.username}</span>!
                   </span>
-                  <Link to="/create-performance" className="btn-primary flex items-center space-x-2">
-                    <span>➕</span>
+                  <Link to="/create-performance" className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2">
+                    <Plus className="w-4 h-4" />
                     <span className="hidden sm:inline">Create Performance</span>
                   </Link>
                 </div>
               ) : (
                 <div className="flex space-x-2">
-                  <Link to="/" className="btn-secondary">Go to Home</Link>
+                  <Link to="/" className="bg-card hover:bg-muted text-foreground border border-border px-4 py-2 rounded-lg font-medium transition-colors">Go to Home</Link>
                 </div>
               )}
             </div>
@@ -207,34 +222,78 @@ export function Map() {
 
       {/* Main Content */}
       <div className="flex-1 relative overflow-hidden">
-        {/* Filter Panel */}
-        {showFilters && (
-          <div className="absolute top-0 left-0 z-20 w-80 h-full bg-white shadow-lg">
-            <FilterPanel 
-              filters={filters}
-              onFiltersChange={setFilters}
-              onClose={() => setShowFilters(false)}
-            />
-          </div>
-        )}
-
-        {/* Performance List */}
-        {showList && (
-          <div className="absolute top-0 right-0 z-20 w-80 h-full bg-white shadow-lg">
-            <PerformanceList 
-              performances={performances}
-              onClose={() => setShowList(false)}
-            />
-          </div>
-        )}
-
         {/* Map */}
-        <div className="h-full w-full overflow-hidden">
+        <div className="h-full w-full overflow-hidden relative">
           <MapComponent 
             userLocation={userLocation}
             performances={performances}
             filters={filters}
+            onPerformanceClick={handlePerformanceClick}
           />
+          
+          {/* Filter Panel (when showFilters is true) */}
+          {showFilters && (
+            <div className="absolute top-4 left-4 z-10 bg-card border border-border rounded-lg shadow-lg p-4 w-80">
+              <FilterPanel 
+                filters={filters}
+                onFiltersChange={setFilters}
+                onClose={() => setShowFilters(false)}
+              />
+            </div>
+          )}
+          
+          {/* Performances Panel (when showList is true) */}
+          {showList && (
+            <div className="absolute top-4 right-4 z-10 bg-card border border-border rounded-lg shadow-lg p-4 w-80">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-lg font-semibold text-foreground">Performances</h3>
+                <button
+                  onClick={() => setShowList(false)}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  ✕
+                </button>
+              </div>
+              
+              {performances.length === 0 ? (
+                <div className="text-center py-8">
+                  <div className="text-4xl mb-3">🎭</div>
+                  <p className="text-muted-foreground text-sm">
+                    No performances found. Try adjusting your filters or check back later!
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3 max-h-64 overflow-y-auto">
+                  {performances.slice(0, 5).map((performance, index) => (
+                    <div 
+                      key={performance._id || index}
+                      className="p-3 bg-muted/50 rounded-lg cursor-pointer hover:bg-muted transition-colors"
+                      onClick={() => handlePerformanceClick(performance)}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <h4 className="font-medium text-foreground text-sm">{performance.title}</h4>
+                          <p className="text-xs text-muted-foreground mt-1">{performance.genre}</p>
+                          <div className="flex items-center gap-2 mt-2">
+                            <span className={`text-xs px-2 py-1 rounded-full ${
+                              performance.status === 'live' 
+                                ? 'bg-red-500/20 text-red-400' 
+                                : 'bg-blue-500/20 text-blue-400'
+                            }`}>
+                              {performance.status === 'live' ? 'LIVE' : 'SCHEDULED'}
+                            </span>
+                            <span className="text-xs text-muted-foreground">
+                              {performance.engagement?.likes || 0} ❤️
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Quick Stats Bar */}
@@ -276,6 +335,15 @@ export function Map() {
           </div>
         </div> */}
       </div>
+
+      {/* Performance Modal */}
+      {selectedPerformance && (
+        <PerformanceModal
+          performance={selectedPerformance}
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+        />
+      )}
     </div>
   );
 }
