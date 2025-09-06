@@ -174,7 +174,8 @@ const createSamplePerformances = (userIds: string[]) => [
         }
       ]
     },
-    videos: [],
+    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+    videoThumbnail: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg',
     engagement: {
       likes: 127,
       views: 340,
@@ -190,6 +191,8 @@ const createSamplePerformances = (userIds: string[]) => [
     title: 'Street Guitar Vibes',
     description: 'Acoustic rock and folk covers with original compositions. Experience the energy of live street music in the bustling heart of Puerta del Sol.',
     genre: 'rock',
+    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+    videoThumbnail: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg',
     route: {
       stops: [
         {
@@ -214,7 +217,6 @@ const createSamplePerformances = (userIds: string[]) => [
         }
       ]
     },
-    videos: [],
     engagement: {
       likes: 89,
       views: 230,
@@ -244,7 +246,8 @@ const createSamplePerformances = (userIds: string[]) => [
         }
       ]
     },
-    videos: [],
+    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+    videoThumbnail: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg',
     engagement: {
       likes: 45,
       views: 120,
@@ -274,7 +277,8 @@ const createSamplePerformances = (userIds: string[]) => [
         }
       ]
     },
-    videos: [],
+    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+    videoThumbnail: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg',
     engagement: {
       likes: 62,
       views: 180,
@@ -304,7 +308,8 @@ const createSamplePerformances = (userIds: string[]) => [
         }
       ]
     },
-    videos: [],
+    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+    videoThumbnail: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg',
     engagement: {
       likes: 78,
       views: 156,
@@ -334,7 +339,8 @@ const createSamplePerformances = (userIds: string[]) => [
         }
       ]
     },
-    videos: [],
+    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+    videoThumbnail: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg',
     engagement: {
       likes: 34,
       views: 89,

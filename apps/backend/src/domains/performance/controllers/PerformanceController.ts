@@ -22,6 +22,8 @@ const createPerformanceSchema = z.object({
     })).min(1, 'At least one stop is required').max(5, 'Maximum 5 stops allowed'),
   }),
   scheduledFor: z.string().datetime('Invalid scheduled date format'),
+  videoUrl: z.string().url('Invalid video URL').optional(),
+  videoThumbnail: z.string().url('Invalid video thumbnail URL').optional(),
 });
 
 const nearbyPerformancesSchema = z.object({

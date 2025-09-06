@@ -122,8 +122,12 @@ export function VideoUpload({
     }
   };
 
-  const canUpload = eligibility?.canUpload ?? true;
+  // const canUpload = eligibility?.canUpload ?? true;
+  const canUpload = true;
+
+
   const remainingUploads = eligibility?.remainingUploads ?? 2;
+  
   const isUploading = uploading;
 
   return (

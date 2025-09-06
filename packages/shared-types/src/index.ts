@@ -50,7 +50,8 @@ export interface Performance {
   description?: string;
   genre: string;
   route: PerformanceRoute;
-  videos: PerformanceVideo[];
+  videoUrl?: string; // Video URL from client upload
+  videoThumbnail?: string; // Video thumbnail URL
   engagement: PerformanceEngagement;
   status: 'scheduled' | 'live' | 'completed' | 'cancelled';
   scheduledFor: Date;
@@ -73,12 +74,6 @@ export interface PerformanceStop {
   status: 'scheduled' | 'active' | 'completed' | 'cancelled';
 }
 
-export interface PerformanceVideo {
-  url: string;
-  thumbnail: string;
-  duration: number;
-  uploadedAt: Date;
-}
 
 export interface PerformanceEngagement {
   likes: number;
@@ -219,6 +214,8 @@ export interface CreatePerformanceDto {
     }[];
   };
   scheduledFor: string; // ISO string
+  videoUrl?: string; // Optional video URL from client upload
+  videoThumbnail?: string; // Optional video thumbnail URL
 }
 
 export interface UpdatePerformanceDto extends Partial<CreatePerformanceDto> {

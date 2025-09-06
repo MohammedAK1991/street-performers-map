@@ -73,7 +73,8 @@ export class PerformanceService {
             status: 'scheduled' as const,
           })),
         },
-        videos: [],
+        videoUrl: data.videoUrl,
+        videoThumbnail: data.videoThumbnail,
         engagement: {
           likes: 0,
           views: 0,
@@ -174,6 +175,36 @@ export class PerformanceService {
       return await this.performanceRepository.deleteById(id);
     } catch (error) {
       this.logger.error('Failed to delete performance', { error, performanceId: id, performerId });
+      throw error;
+    }
+  }
+
+  async toggleLikePerformance(performanceId: string, userId: string): Promise<Performance | null> {
+    try {
+      // Check if already liked
+      const existingPerformance = await this.performanceRepository.findById(performanceId);
+      if (!existingPerformance) {
+        throw new ApiError(404, 'Performance not found');
+      }
+
+      const alreadyLiked = existingPerformance.engagement.likedBy.some(
+        (id: any) => id.toString() === userId
+      );
+
+      let updatedPerformance;
+      if (alreadyLiked) {
+        // Unlike the performance
+        updatedPerformance = await this.performanceRepository.unlikePerformance(performanceId, userId);
+        this.logger.info('Performance unliked', { performanceId, userId });
+      } else {
+        // Like the performance
+        updatedPerformance = await this.performanceRepository.likePerformance(performanceId, userId);
+        this.logger.info('Performance liked', { performanceId, userId });
+      }
+
+      return updatedPerformance ? (updatedPerformance.toJSON() as Performance) : null;
+    } catch (error) {
+      this.logger.error('Failed to toggle like performance', { error, performanceId, userId });
       throw error;
     }
   }

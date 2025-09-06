@@ -82,28 +82,13 @@ const performanceSchema = new Schema<PerformanceDocument>(
         },
       },
     },
-    videos: [
-      {
-        url: {
-          type: String,
-          required: true,
-        },
-        thumbnail: {
-          type: String,
-          required: true,
-        },
-        duration: {
-          type: Number,
-          required: true,
-          min: 1,
-          max: 30, // 30 seconds max
-        },
-        uploadedAt: {
-          type: Date,
-          default: Date.now,
-        },
-      },
-    ],
+    // Video URL and thumbnail from client-side uploads
+    videoUrl: {
+      type: String,
+    },
+    videoThumbnail: {
+      type: String,
+    },
     engagement: {
       likes: {
         type: Number,

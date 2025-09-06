@@ -77,37 +77,24 @@ export function CreatePerformance() {
         return;
       }
 
-      const newPerformance = await createPerformanceMutation.mutateAsync(formData);
+      // Add video URL to form data if video was uploaded
+      const performanceData = {
+        ...formData,
+        ...(uploadedVideo && {
+          videoUrl: uploadedVideo.secureUrl,
+          videoThumbnail: uploadedVideo.thumbnailUrl,
+        }),
+      };
+
+      const newPerformance = await createPerformanceMutation.mutateAsync(performanceData);
       
       // Debug: Log the performance and video data
       console.log('🎭 Created performance:', newPerformance);
       console.log('🎥 Uploaded video:', uploadedVideo);
       
-      // If there's an uploaded video, link it to the performance
-      if (uploadedVideo && newPerformance._id) {
-        console.log('🔗 Attempting to link video to performance...');
-        console.log('🎥 Video ID:', uploadedVideo._id);
-        console.log('🎭 Performance ID:', newPerformance._id);
-        
-        try {
-          const linkedVideo = await linkVideoMutation.mutateAsync({
-            videoId: uploadedVideo._id,
-            performanceId: newPerformance._id,
-          });
-          console.log('✅ Video successfully linked to performance:', linkedVideo);
-        } catch (linkError) {
-          console.error('❌ Failed to link video to performance:', linkError);
-          console.error('❌ Link error details:', linkError);
-          // Don't fail the entire process if video linking fails
-        }
-      } else {
-        console.warn('⚠️ Cannot link video:', {
-          hasVideo: !!uploadedVideo,
-          hasPerformanceId: !!newPerformance._id,
-          videoId: uploadedVideo?._id,
-          performanceId: newPerformance._id,
-          uploadedVideo,
-        });
+      // Video URL is now included in the performance data - no separate linking needed!
+      if (uploadedVideo) {
+        console.log('✅ Video URL included in performance:', uploadedVideo.secureUrl);
       }
       
       // Redirect to map to see the created performance
