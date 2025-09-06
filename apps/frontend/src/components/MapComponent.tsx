@@ -179,6 +179,7 @@ export function MapComponent({ userLocation, performances, filters }: MapCompone
         gestureHandling="greedy"
         disableDefaultUI={false}
         className="h-full w-full"
+        mapId="street-performers-map"
       >
         {/* User Location Marker */}
         <AdvancedMarker

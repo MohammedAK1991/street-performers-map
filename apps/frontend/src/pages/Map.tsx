@@ -7,69 +7,6 @@ import { PerformanceList } from '@/components/PerformanceList';
 import { useNearbyPerformances } from '@/hooks/usePerformances';
 import type { PerformanceFilters } from '@spm/shared-types';
 
-// Mock data for development
-const mockPerformances = [
-  {
-    _id: '1',
-    performerId: 'performer1',
-    title: 'Jazz by the Fountain',
-    description: 'Smooth jazz classics and modern interpretations',
-    genre: 'jazz',
-    route: {
-      stops: [{
-        location: {
-          coordinates: [-73.9712, 40.7831] as [number, number], // Central Park
-          address: 'Bethesda Fountain, Central Park, NYC',
-          name: 'Bethesda Fountain'
-        },
-        startTime: new Date('2024-01-15T14:00:00Z'),
-        endTime: new Date('2024-01-15T15:30:00Z'),
-        status: 'active' as const
-      }]
-    },
-    videos: [],
-    engagement: {
-      likes: 127,
-      views: 456,
-      tips: 0,
-      likedBy: []
-    },
-    status: 'live' as const,
-    scheduledFor: new Date('2024-01-15T14:00:00Z'),
-    createdAt: new Date(),
-    expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
-  },
-  {
-    _id: '2',
-    performerId: 'performer2',
-    title: 'Street Guitar Vibes',
-    description: 'Acoustic covers and original songs',
-    genre: 'rock',
-    route: {
-      stops: [{
-        location: {
-          coordinates: [-73.9857, 40.7484] as [number, number], // Times Square
-          address: 'Times Square, NYC',
-          name: 'Red Steps'
-        },
-        startTime: new Date(Date.now() + 15 * 60 * 1000), // 15 minutes from now
-        endTime: new Date(Date.now() + 90 * 60 * 1000), // 1.5 hours from now
-        status: 'scheduled' as const
-      }]
-    },
-    videos: [],
-    engagement: {
-      likes: 89,
-      views: 234,
-      tips: 0,
-      likedBy: []
-    },
-    status: 'scheduled' as const,
-    scheduledFor: new Date(Date.now() + 15 * 60 * 1000),
-    createdAt: new Date(),
-    expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
-  }
-];
 
 export function Map() {
   const { user: clerkUser, isSignedIn } = useUser();
@@ -97,8 +34,8 @@ export function Map() {
     apiFilters
   );
 
-  // Use real data when available, fallback to mock for demo
-  const performances = nearbyPerformances.length > 0 ? nearbyPerformances : mockPerformances;
+  // Use real data from backend
+  const performances = nearbyPerformances;
 
   // Request location permission
   useEffect(() => {
@@ -264,7 +201,7 @@ export function Map() {
         {showList && (
           <div className="absolute top-0 right-0 z-20 w-80 h-full bg-white shadow-lg">
             <PerformanceList 
-              performances={mockPerformances}
+              performances={performances}
               onClose={() => setShowList(false)}
             />
           </div>
@@ -274,7 +211,7 @@ export function Map() {
         <div className="h-full">
           <MapComponent 
             userLocation={userLocation}
-            performances={mockPerformances}
+            performances={performances}
             filters={filters}
           />
         </div>

@@ -139,11 +139,13 @@ export function GooglePlacesAutocomplete({
 
     // Debug: Log the prediction to see its structure
     console.log('Selected prediction:', prediction);
+    console.log('Prediction keys:', Object.keys(prediction));
 
     // Handle current location
     if (prediction.isCurrentLocation || prediction.place_id === 'current_location') {
       const lat = prediction.lat || (prediction.geometry?.location?.lat ? prediction.geometry.location.lat() : 0);
       const lng = prediction.lng || (prediction.geometry?.location?.lng ? prediction.geometry.location.lng() : 0);
+      console.log('Current location coordinates:', { lat, lng });
       onChange({
         name: prediction.name || description,
         address: prediction.address || description,
@@ -156,11 +158,14 @@ export function GooglePlacesAutocomplete({
     if (prediction.placePrediction?.place) {
       const place = prediction.placePrediction.place;
       const location = place.location;
+      console.log('New API place location:', location);
       if (location) {
+        const coords: [number, number] = [location.longitude, location.latitude];
+        console.log('New API coordinates:', coords);
         onChange({
           name: place.displayName?.text || description,
           address: place.formattedAddress || description,
-          coordinates: [location.longitude, location.latitude]
+          coordinates: coords
         });
         return;
       }
@@ -181,6 +186,7 @@ export function GooglePlacesAutocomplete({
     if (prediction.geometry?.location) {
       const lat = prediction.geometry.location.lat();
       const lng = prediction.geometry.location.lng();
+      console.log('Old API coordinates:', { lat, lng });
       onChange({
         name: description,
         address: description,
