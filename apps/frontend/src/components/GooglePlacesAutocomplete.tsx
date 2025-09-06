@@ -24,6 +24,7 @@ export function GooglePlacesAutocomplete({
   const [isLoading, setIsLoading] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [inputValue, setInputValue] = useState(value);
+  const [currentLocation, setCurrentLocation] = useState<any>(null);
   const autocompleteService = useRef<any>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   
@@ -49,6 +50,9 @@ export function GooglePlacesAutocomplete({
         // Initialize services with old API (it still works)
         autocompleteService.current = new google.maps.places.AutocompleteService();
         
+        // Get user's current location
+        getCurrentLocation();
+        
         setIsLoaded(true);
       } catch (error) {
         console.error('Error loading Google Maps API:', error);
@@ -58,6 +62,35 @@ export function GooglePlacesAutocomplete({
 
     initializeGoogleMaps();
   }, []);
+
+  // Get user's current location
+  const getCurrentLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
+          
+          // Use reverse geocoding to get address
+          const geocoder = new google.maps.Geocoder();
+          geocoder.geocode({ location: { lat, lng } }, (results, status) => {
+            if (status === 'OK' && results && results[0]) {
+              setCurrentLocation({
+                description: results[0].formatted_address,
+                place_id: 'current_location',
+                geometry: {
+                  location: { lat: () => lat, lng: () => lng }
+                }
+              });
+            }
+          });
+        },
+        (error) => {
+          console.log('Geolocation error:', error);
+        }
+      );
+    }
+  };
 
   // Sync external value with internal input value
   useEffect(() => {
@@ -104,6 +137,18 @@ export function GooglePlacesAutocomplete({
     setShowSuggestions(false);
     setError(null);
 
+    // Handle current location
+    if (prediction.place_id === 'current_location' && prediction.geometry?.location) {
+      const lat = prediction.geometry.location.lat();
+      const lng = prediction.geometry.location.lng();
+      onChange({
+        name: description,
+        address: description,
+        coordinates: [lng, lat]
+      });
+      return;
+    }
+
     // For new API, we can get coordinates directly from the suggestion
     if (prediction.placePrediction?.place) {
       const place = prediction.placePrediction.place;
@@ -125,6 +170,18 @@ export function GooglePlacesAutocomplete({
         name: prediction.placePrediction.place.displayName?.text || description,
         address: prediction.placePrediction.place.formattedAddress || description,
         coordinates: [location.longitude, location.latitude]
+      });
+      return;
+    }
+
+    // For old API, try to get coordinates from geometry
+    if (prediction.geometry?.location) {
+      const lat = prediction.geometry.location.lat();
+      const lng = prediction.geometry.location.lng();
+      onChange({
+        name: description,
+        address: description,
+        coordinates: [lng, lat]
       });
       return;
     }
@@ -182,7 +239,7 @@ export function GooglePlacesAutocomplete({
           onChange={handleInput}
           onKeyDown={handleKeyDown}
           onBlur={handleBlur}
-          onFocus={() => setShowSuggestions(inputValue.length >= 2)}
+          onFocus={() => setShowSuggestions(true)}
           placeholder={isLoaded ? placeholder : "Loading Google Places..."}
           disabled={!isLoaded}
           className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500 ${className} ${
@@ -197,8 +254,24 @@ export function GooglePlacesAutocomplete({
       </div>
 
       {/* Suggestions dropdown */}
-      {showSuggestions && suggestions.length > 0 && (
+      {showSuggestions && (suggestions.length > 0 || currentLocation) && (
         <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+          {/* Current location first */}
+          {currentLocation && (
+            <button
+              key="current_location"
+              type="button"
+              onClick={() => handleSelect(currentLocation)}
+              className="w-full px-3 py-2 text-left hover:bg-gray-50 focus:bg-gray-50 focus:outline-none border-b border-gray-100"
+            >
+              <div className="text-sm text-gray-900 flex items-center">
+                <span className="mr-2">📍</span>
+                {currentLocation.description}
+              </div>
+            </button>
+          )}
+          
+          {/* Other suggestions */}
           {suggestions.map((prediction, index) => {
             const description = prediction.description || 
                               prediction.text?.text || 
