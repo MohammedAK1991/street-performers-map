@@ -142,6 +142,13 @@ export function MapComponent({ userLocation, performances, filters }: MapCompone
     }
   }, [isSignedIn, likePerformanceMutation]);
 
+  const handleMyLocationClick = () => {
+    setMapCenter({
+      lat: userLocation[1],
+      lng: userLocation[0]
+    });
+  };
+
   const formatTime = (date: Date) => {
     return new Intl.DateTimeFormat('en-US', {
       hour: 'numeric',
@@ -264,6 +271,44 @@ export function MapComponent({ userLocation, performances, filters }: MapCompone
             onClick={() => handleMarkerClick(performance)}
           />
         ))}
+
+        {/* Map Controls */}
+        <div className="absolute top-4 right-4 z-10 flex flex-col space-y-2">
+          {/* Current Location Button */}
+          <button
+            onClick={handleMyLocationClick}
+            className="bg-white hover:bg-gray-50 text-gray-700 p-3 rounded-full shadow-lg border border-gray-200 transition-all duration-200 hover:shadow-xl"
+            title="Go to my location"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Legend */}
+        <div className="absolute bottom-4 left-4 z-10 bg-white rounded-lg shadow-lg border border-gray-200 p-4 max-w-xs">
+          <h4 className="font-semibold text-gray-900 mb-3 text-sm">Performance Status</h4>
+          <div className="space-y-2 text-xs">
+            <div className="flex items-center space-x-2">
+              <div className="w-4 h-4 rounded-full bg-red-500 border-2 border-white shadow-sm"></div>
+              <span className="text-gray-700">Live Now</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <div className="w-4 h-4 rounded-full bg-blue-500 border-2 border-white shadow-sm"></div>
+              <span className="text-gray-700">Scheduled</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <div className="w-4 h-4 rounded-full bg-gray-500 border-2 border-white shadow-sm"></div>
+              <span className="text-gray-700">Completed</span>
+            </div>
+            <div className="flex items-center space-x-2 mt-3">
+              <div className="w-4 h-4 rounded-full bg-green-500 border-2 border-white shadow-sm flex items-center justify-center text-white text-xs">📍</div>
+              <span className="text-gray-700">Your Location</span>
+            </div>
+          </div>
+        </div>
 
         {/* Info Window for Selected Performance */}
         {selectedPerformance && (

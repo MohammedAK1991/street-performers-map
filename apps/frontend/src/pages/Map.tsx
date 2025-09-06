@@ -131,47 +131,68 @@ export function Map() {
   return (
     <div className="h-screen flex flex-col">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200 z-10">
+      <header className="bg-white/95 backdrop-blur-sm shadow-lg border-b border-gray-200 z-20">
         <div className="px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-4">
-              <Link to="/" className="text-xl font-bold text-purple-600">
-                🎵 StreetPerformersMap
+            <div className="flex items-center space-x-6">
+              <Link to="/" className="flex items-center space-x-2 text-xl font-bold text-purple-600 hover:text-purple-700 transition-colors">
+                <span className="text-2xl">🎵</span>
+                <span>StreetPerformersMap</span>
               </Link>
               
               {/* Search Bar */}
               <div className="hidden md:block">
-                <input
-                  type="text"
-                  placeholder="Search performances..."
-                  className="w-64 px-4 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500"
-                />
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Search performances..."
+                    className="w-80 px-4 py-2 pl-10 border border-gray-300 rounded-full focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 shadow-sm"
+                  />
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                  </div>
+                </div>
               </div>
             </div>
             
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-3">
               {/* Filter Toggle */}
               <button
                 onClick={() => setShowFilters(!showFilters)}
-                className="btn-secondary"
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                  showFilters 
+                    ? 'bg-purple-100 text-purple-700 border-2 border-purple-200' 
+                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                }`}
               >
-                🎭 Filters
+                <span className="mr-2">🎭</span>
+                Filters
               </button>
               
               {/* List Toggle */}
               <button
                 onClick={() => setShowList(!showList)}
-                className="btn-secondary"
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                  showList 
+                    ? 'bg-purple-100 text-purple-700 border-2 border-purple-200' 
+                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                }`}
               >
-                📋 List
+                <span className="mr-2">📋</span>
+                List
               </button>
               
               {/* User Menu */}
               {isSignedIn ? (
-                <div className="flex items-center space-x-2">
-                  <span className="text-sm text-gray-600">Welcome, {clerkUser?.fullName || clerkUser?.username}!</span>
-                  <Link to="/create-performance" className="btn-primary">
-                    Create Performance
+                <div className="flex items-center space-x-3">
+                  <span className="text-sm text-gray-600 hidden sm:block">
+                    Welcome, <span className="font-medium">{clerkUser?.fullName || clerkUser?.username}</span>!
+                  </span>
+                  <Link to="/create-performance" className="btn-primary flex items-center space-x-2">
+                    <span>➕</span>
+                    <span className="hidden sm:inline">Create Performance</span>
                   </Link>
                 </div>
               ) : (
@@ -218,36 +239,37 @@ export function Map() {
 
         {/* Quick Stats Bar */}
         <div className="absolute bottom-4 left-4 right-4 z-10">
-          <div className="bg-white rounded-lg shadow-lg p-4 border border-gray-200">
+          <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-xl p-6 border border-gray-200">
             <div className="flex justify-between items-center">
-              <div className="flex space-x-6">
+              <div className="flex space-x-8">
                 <div className="text-center">
-                  <div className="text-lg font-bold text-gray-900">
+                  <div className="text-2xl font-bold text-red-600">
                     {performances.filter(p => p.status === 'live').length}
                   </div>
-                  <div className="text-sm text-gray-600">Live Now</div>
+                  <div className="text-sm text-gray-600 font-medium">Live Now</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-lg font-bold text-gray-900">
+                  <div className="text-2xl font-bold text-blue-600">
                     {performances.filter(p => {
                       const today = new Date();
                       const perfDate = new Date(p.scheduledFor);
                       return perfDate.toDateString() === today.toDateString();
                     }).length}
                   </div>
-                  <div className="text-sm text-gray-600">Today</div>
+                  <div className="text-sm text-gray-600 font-medium">Today</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-lg font-bold text-gray-900">
+                  <div className="text-2xl font-bold text-purple-600">
                     {performances.length}
                   </div>
-                  <div className="text-sm text-gray-600">Nearby</div>
+                  <div className="text-sm text-gray-600 font-medium">Nearby</div>
                 </div>
               </div>
               
               {isSignedIn && (
-                <Link to="/create-performance" className="btn-primary">
-                  ➕ Create Performance
+                <Link to="/create-performance" className="btn-primary flex items-center space-x-2 px-6 py-3 rounded-full font-medium">
+                  <span className="text-lg">➕</span>
+                  <span>Create Performance</span>
                 </Link>
               )}
             </div>
