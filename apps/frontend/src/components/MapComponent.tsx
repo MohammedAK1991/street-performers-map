@@ -224,20 +224,21 @@ export function MapComponent({ userLocation, performances, filters }: MapCompone
   }
 
   return (
-    <APIProvider apiKey={GOOGLE_MAPS_API_KEY}>
-      <Map
-        center={mapCenter}
-        zoom={14}
-        gestureHandling="greedy"
-        disableDefaultUI={false}
-        className="h-full w-full"
-        mapId="street-performers-map"
-        mapTypeControl={true}
-        zoomControl={true}
-        streetViewControl={false}
-        fullscreenControl={true}
-        clickableIcons={false}
-      >
+    <div className="h-full w-full relative">
+      <APIProvider apiKey={GOOGLE_MAPS_API_KEY}>
+        <Map
+          center={mapCenter}
+          zoom={14}
+          gestureHandling="greedy"
+          disableDefaultUI={false}
+          className="h-full w-full"
+          mapId="street-performers-map"
+          mapTypeControl={true}
+          zoomControl={true}
+          streetViewControl={false}
+          fullscreenControl={true}
+          clickableIcons={false}
+        >
         {/* User Location Marker */}
         <AdvancedMarker
           position={{ lat: userLocation[1], lng: userLocation[0] }}
@@ -382,6 +383,7 @@ export function MapComponent({ userLocation, performances, filters }: MapCompone
           </InfoWindow>
         )}
       </Map>
-    </APIProvider>
+      </APIProvider>
+    </div>
   );
 }
