@@ -237,7 +237,7 @@ export function MapComponent({ userLocation, performances, filters }: MapCompone
           zoomControl={true}
           streetViewControl={false}
           fullscreenControl={true}
-          clickableIcons={false}
+          clickableIcons={true}
         >
         {/* User Location Marker */}
         <AdvancedMarker
@@ -289,7 +289,7 @@ export function MapComponent({ userLocation, performances, filters }: MapCompone
         </div>
 
         {/* Legend */}
-        <div className="absolute bottom-4 left-4 z-10 bg-white rounded-lg shadow-lg border border-gray-200 p-4 max-w-xs">
+        {/* <div className="absolute bottom-4 left-4 z-10 bg-white rounded-lg shadow-lg border border-gray-200 p-4 max-w-xs">
           <h4 className="font-semibold text-gray-900 mb-3 text-sm">Performance Status</h4>
           <div className="space-y-2 text-xs">
             <div className="flex items-center space-x-2">
@@ -309,7 +309,7 @@ export function MapComponent({ userLocation, performances, filters }: MapCompone
               <span className="text-gray-700">Your Location</span>
             </div>
           </div>
-        </div>
+        </div> */}
 
         {/* Info Window for Selected Performance */}
         {selectedPerformance && (

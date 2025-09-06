@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import type { Video } from '@spm/shared-types';
+import { useVideoUpload } from '@/hooks/useVideoUpload';
 
 interface VideoUploadProps {
   eligibility?: {
@@ -7,6 +8,7 @@ interface VideoUploadProps {
     remainingUploads: number;
     dailyLimit: number;
   };
+  performanceId?: string;
   onUploadSuccess: (video: Video) => void;
   onUploadError: (error: string) => void;
   className?: string;
@@ -14,74 +16,47 @@ interface VideoUploadProps {
 
 export function VideoUpload({ 
   eligibility, 
+  performanceId,
   onUploadSuccess, 
   onUploadError, 
   className = "" 
 }: VideoUploadProps) {
-  const [isUploading, setIsUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const uploadMutation = useVideoUpload();
 
   const handleFileSelect = async (file: File) => {
     if (!file) return;
 
     // Validate file type
-    const allowedTypes = ['video/mp4', 'video/mov', 'video/avi'];
+    const allowedTypes = ['video/mp4', 'video/quicktime', 'video/x-msvideo', 'video/webm'];
     if (!allowedTypes.includes(file.type)) {
-      onUploadError('Please select a valid video file (MP4, MOV, or AVI)');
+      onUploadError('Please select a valid video file (MP4, MOV, AVI, or WebM)');
       return;
     }
 
-    // Validate file size (100MB max)
-    const maxSize = 100 * 1024 * 1024; // 100MB
+    // Validate file size (30MB max as per backend)
+    const maxSize = 30 * 1024 * 1024; // 30MB
     if (file.size > maxSize) {
-      onUploadError('File size must be less than 100MB');
+      onUploadError('File size must be less than 30MB');
       return;
     }
 
-    // Validate duration (30 seconds max)
-    // Note: In a real app, you'd need to check video duration
-    // For now, we'll just proceed with the upload
-
-    setIsUploading(true);
     onUploadError(''); // Clear any previous errors
 
     try {
-      // Simulate upload process
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      const video = await uploadMutation.mutateAsync({ 
+        file, 
+        performanceId 
+      });
       
-      // Create mock video object
-      const mockVideo: Video = {
-        _id: `video_${Date.now()}`,
-        userId: 'current-user-id', // Would be actual user ID
-        performanceId: undefined, // Would be linked to performance
-        cloudinaryPublicId: `video_${Date.now()}`,
-        cloudinaryUrl: URL.createObjectURL(file), // Temporary URL for preview
-        secureUrl: URL.createObjectURL(file), // Temporary URL for preview
-        thumbnailUrl: '', // Would be generated on server
-        filename: file.name,
-        format: file.type.split('/')[1] || 'mp4',
-        duration: 30, // Would be extracted from video
-        size: file.size,
-        width: 1080,
-        height: 1920,
-        uploadedAt: new Date(),
-        status: 'processing',
-        uploadDate: new Date().toISOString().split('T')[0], // YYYY-MM-DD
-        moderationStatus: 'pending',
-        moderationReason: undefined,
-        views: 0,
-        totalWatchTime: 0,
-        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-
-      onUploadSuccess(mockVideo);
-    } catch (error) {
-      onUploadError('Failed to upload video. Please try again.');
-    } finally {
-      setIsUploading(false);
+      onUploadSuccess(video);
+    } catch (error: any) {
+      console.error('Video upload error:', error);
+      const errorMessage = error?.response?.data?.error?.message || 
+                          error?.message || 
+                          'Failed to upload video. Please try again.';
+      onUploadError(errorMessage);
     }
   };
 
@@ -131,29 +106,29 @@ export function VideoUpload({
       >
         <div className="text-4xl mb-4">🎥</div>
         <h3 className="text-lg font-semibold text-gray-900 mb-2">
-          {isUploading ? 'Uploading Video...' : 'Upload Performance Video'}
+          {uploadMutation.isPending ? 'Uploading Video...' : 'Upload Performance Video'}
         </h3>
         <p className="text-gray-600 mb-4">
           Max 30 seconds, {remainingUploads} uploads remaining today
         </p>
         
-        {isUploading ? (
+        {uploadMutation.isPending ? (
           <div className="flex items-center justify-center space-x-2">
             <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-600"></div>
-            <span className="text-sm text-gray-600">Processing video...</span>
+            <span className="text-sm text-gray-600">Uploading to Cloudinary...</span>
           </div>
         ) : (
           <button
             type="button"
-            disabled={!canUpload}
-            className="btn-primary"
+            disabled={!canUpload || uploadMutation.isPending}
+            className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
           >
             📱 Choose Video File
           </button>
         )}
         
         <p className="text-xs text-gray-500 mt-4">
-          Supported: MP4, MOV, AVI • Max size: 100MB
+          Supported: MP4, MOV, AVI, WebM • Max size: 30MB
         </p>
       </div>
 
@@ -161,10 +136,10 @@ export function VideoUpload({
       <input
         ref={fileInputRef}
         type="file"
-        accept="video/mp4,video/mov,video/avi"
+        accept="video/mp4,video/quicktime,video/x-msvideo,video/webm"
         onChange={handleFileInput}
         className="hidden"
-        disabled={!canUpload}
+        disabled={!canUpload || uploadMutation.isPending}
       />
 
       {/* Guidelines */}
