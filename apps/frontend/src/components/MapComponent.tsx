@@ -27,15 +27,60 @@ function PerformanceMarker({ performance, onClick }: PerformanceMarkerProps) {
     lng: currentStop.location.coordinates[0]
   };
 
+  // Get status-based styling
+  const getStatusColor = () => {
+    switch (performance.status) {
+      case 'live': return '#ef4444'; // red
+      case 'scheduled': return '#3b82f6'; // blue
+      case 'completed': return '#6b7280'; // gray
+      default: return '#8b5cf6'; // purple
+    }
+  };
 
-
+  const getGenreIcon = () => {
+    switch (performance.genre) {
+      case 'jazz': return '🎷';
+      case 'rock': return '🎸';
+      case 'classical': return '🎻';
+      case 'pop': return '🎤';
+      case 'folk': return '🪕';
+      case 'blues': return '🎵';
+      default: return '🎭';
+    }
+  };
 
   return (
     <AdvancedMarker
       position={position}
       onClick={onClick}
       title={`${performance.title} - ${performance.genre}`}
-    />
+    >
+      <div 
+        style={{
+          backgroundColor: getStatusColor(),
+          color: 'white',
+          borderRadius: '50%',
+          width: '40px',
+          height: '40px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: '20px',
+          border: '3px solid white',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+          cursor: 'pointer',
+          transition: 'transform 0.2s ease'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = 'scale(1.1)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'scale(1)';
+        }}
+      >
+        {getGenreIcon()}
+      </div>
+    </AdvancedMarker>
   );
 }
 
@@ -180,12 +225,36 @@ export function MapComponent({ userLocation, performances, filters }: MapCompone
         disableDefaultUI={false}
         className="h-full w-full"
         mapId="street-performers-map"
+        mapTypeControl={true}
+        zoomControl={true}
+        streetViewControl={false}
+        fullscreenControl={true}
+        clickableIcons={false}
       >
         {/* User Location Marker */}
         <AdvancedMarker
           position={{ lat: userLocation[1], lng: userLocation[0] }}
           title="Your Location"
-        />
+        >
+          <div 
+            style={{
+              backgroundColor: '#10b981',
+              color: 'white',
+              borderRadius: '50%',
+              width: '30px',
+              height: '30px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '16px',
+              border: '3px solid white',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+              animation: 'pulse 2s infinite'
+            }}
+          >
+            📍
+          </div>
+        </AdvancedMarker>
 
         {/* Performance Markers */}
         {filteredPerformances.map(performance => (
@@ -205,28 +274,52 @@ export function MapComponent({ userLocation, performances, filters }: MapCompone
             }}
             onCloseClick={() => setSelectedPerformance(null)}
           >
-            <div className="p-4 max-w-sm">
-              <h3 className="font-bold text-gray-900 mb-2">{selectedPerformance.title}</h3>
-              <p className="text-sm text-gray-600 mb-2">{selectedPerformance.description}</p>
+            <div className="p-6 max-w-sm bg-white rounded-lg shadow-lg border border-gray-200">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-bold text-gray-900 text-lg">{selectedPerformance.title}</h3>
+                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                  selectedPerformance.status === 'live' ? 'bg-red-100 text-red-800' :
+                  selectedPerformance.status === 'scheduled' ? 'bg-blue-100 text-blue-800' :
+                  'bg-gray-100 text-gray-800'
+                }`}>
+                  {getStatusText(selectedPerformance)}
+                </span>
+              </div>
               
-              <div className="space-y-1 text-sm">
-                <p><strong>Genre:</strong> {selectedPerformance.genre}</p>
-                <p><strong>Location:</strong> {selectedPerformance.route.stops[0].location.name}</p>
-                <p><strong>Status:</strong> {getStatusText(selectedPerformance)}</p>
-                <p><strong>Likes:</strong> {selectedPerformance.engagement.likes} ❤️</p>
+              <p className="text-sm text-gray-600 mb-4 line-clamp-2">{selectedPerformance.description}</p>
+              
+              <div className="space-y-2 text-sm mb-4">
+                <div className="flex items-center space-x-2">
+                  <span className="text-gray-500">🎵</span>
+                  <span className="capitalize font-medium">{selectedPerformance.genre}</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span className="text-gray-500">📍</span>
+                  <span className="text-gray-700">{selectedPerformance.route.stops[0].location.name}</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span className="text-gray-500">❤️</span>
+                  <span className="text-gray-700">{selectedPerformance.engagement.likes} likes</span>
+                </div>
               </div>
 
-              <div className="mt-4 flex space-x-2">
+              <div className="flex space-x-2">
                 <button 
                   onClick={() => handleLikePerformance(selectedPerformance._id)}
                   disabled={likePerformanceMutation.isPending}
-                  className="text-xs px-3 py-1 transition-colors btn-primary disabled:opacity-50"
+                  className="flex-1 text-sm px-4 py-2 transition-colors btn-primary disabled:opacity-50 flex items-center justify-center space-x-1"
                 >
                   {likePerformanceMutation.isPending ? (
-                    '⏳ Loading...'
+                    <>
+                      <span>⏳</span>
+                      <span>Loading...</span>
+                    </>
                   ) : (
-                    '🤍 Like'
-                  )} ({selectedPerformance.engagement.likes})
+                    <>
+                      <span>❤️</span>
+                      <span>Like ({selectedPerformance.engagement.likes})</span>
+                    </>
+                  )}
                 </button>
                 <button 
                   onClick={() => {
@@ -234,9 +327,10 @@ export function MapComponent({ userLocation, performances, filters }: MapCompone
                     const url = `https://www.google.com/maps/dir/?api=1&destination=${currentStop.location.coordinates[1]},${currentStop.location.coordinates[0]}`;
                     window.open(url, '_blank');
                   }}
-                  className="btn-secondary text-xs px-3 py-1"
+                  className="flex-1 text-sm px-4 py-2 transition-colors btn-secondary flex items-center justify-center space-x-1"
                 >
-                  🧭 Directions
+                  <span>🧭</span>
+                  <span>Directions</span>
                 </button>
               </div>
             </div>

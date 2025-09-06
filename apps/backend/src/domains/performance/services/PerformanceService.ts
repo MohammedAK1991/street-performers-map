@@ -52,9 +52,9 @@ export class PerformanceService {
         return perfDate >= startOfDay && perfDate <= endOfDay;
       });
 
-      if (todayPerformances.length >= 2) {
-        throw new ValidationError('Maximum 2 performances per day allowed');
-      }
+      // if (todayPerformances.length >= 2) {
+      //   throw new ValidationError('Maximum 2 performances per day allowed');
+      // }
 
       // Create performance with auto-expiry (24 hours)
       const scheduledFor = new Date(data.scheduledFor);
