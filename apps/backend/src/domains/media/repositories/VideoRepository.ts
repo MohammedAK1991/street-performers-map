@@ -102,6 +102,14 @@ export class VideoRepository {
   }
 
   /**
+   * Get user's upload count for today
+   */
+  async getUserTodayUploadCount(userId: string): Promise<number> {
+    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    return await this.getDailyUploadCount(userId, today);
+  }
+
+  /**
    * Update video
    */
   async update(videoId: string, data: UpdateVideoData): Promise<VideoDocument | null> {

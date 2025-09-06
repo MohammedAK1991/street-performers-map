@@ -1,6 +1,12 @@
 import { Request, Response, NextFunction } from 'express';
 import { VideoService } from '../services/VideoService';
-import { AuthenticatedRequest } from '../../../shared/middleware/auth.middleware';
+// Define authenticated request interface
+interface AuthenticatedRequest extends Request {
+  user?: {
+    userId: string;
+    role: string;
+  };
+}
 
 export class VideoController {
   private videoService: VideoService;
@@ -14,7 +20,7 @@ export class VideoController {
    */
   uploadVideo = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
-      const userId = req.user!._id.toString();
+      const userId = req.user!.userId;
       const { performanceId } = req.body;
       const file = req.file;
 
@@ -46,7 +52,7 @@ export class VideoController {
    */
   getUserVideos = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
-      const userId = req.user!._id.toString();
+      const userId = req.user!.userId;
       const limit = parseInt(req.query.limit as string) || 20;
 
       const videos = await this.videoService.getUserVideos(userId, limit);
@@ -178,7 +184,7 @@ export class VideoController {
    */
   deleteVideo = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
-      const userId = req.user!._id.toString();
+      const userId = req.user!.userId;
       const { videoId } = req.params;
 
       await this.videoService.deleteVideo(videoId, userId);
@@ -198,7 +204,7 @@ export class VideoController {
    */
   checkUploadEligibility = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
-      const userId = req.user!._id.toString();
+      const userId = req.user!.userId;
 
       const [canUpload, todayCount] = await Promise.all([
         this.videoService.canUserUploadToday(userId),
@@ -225,7 +231,7 @@ export class VideoController {
    */
   getVideoAnalytics = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
-      const userId = req.user!._id.toString();
+      const userId = req.user!.userId;
 
       const analytics = await this.videoService.getUserVideoAnalytics(userId);
 
@@ -244,7 +250,7 @@ export class VideoController {
    */
   getLatestVideo = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
-      const userId = req.user!._id.toString();
+      const userId = req.user!.userId;
 
       const video = await this.videoService.getUserLatestVideo(userId);
 

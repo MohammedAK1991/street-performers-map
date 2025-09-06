@@ -73,12 +73,12 @@ export class VideoService {
       const video = await this.videoRepository.create(videoData);
 
       // Update status to ready (Cloudinary processing is complete)
-      await this.videoRepository.updateStatus(video._id.toString(), 'ready');
+      await this.videoRepository.updateStatus((video._id as any).toString(), 'ready');
 
       // Auto-approve for now (you can implement moderation later)
-      await this.videoRepository.approve(video._id.toString());
+      await this.videoRepository.approve((video._id as any).toString());
 
-      const updatedVideo = await this.videoRepository.findById(video._id.toString());
+      const updatedVideo = await this.videoRepository.findById((video._id as any).toString());
 
       return {
         video: updatedVideo!,
@@ -219,7 +219,7 @@ export class VideoService {
         await cloudinaryService.deleteVideo(video.cloudinaryPublicId);
         
         // Delete from database
-        await this.videoRepository.delete(video._id.toString());
+        await this.videoRepository.delete((video._id as any).toString());
         
         cleanedCount++;
       } catch (error) {

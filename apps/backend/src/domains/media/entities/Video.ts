@@ -1,5 +1,10 @@
 import mongoose, { Schema, Document } from 'mongoose';
-import { BaseEntity } from '../../../shared/entities/BaseEntity';
+// Base entity interface
+interface BaseEntity {
+  _id: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 export interface IVideo extends BaseEntity {
   // Ownership
