@@ -2,9 +2,9 @@ name: CI Pipeline
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main, develop ]
+    branches: [main, develop]
 
 env:
   NODE_VERSION: '20'
@@ -50,7 +50,7 @@ jobs:
       - name: Type check shared types
         run: pnpm --filter @spm/shared-types type-check
 
-  # Backend tests and checks  
+  # Backend tests and checks
   backend:
     name: 'Backend: Test, Lint & Build'
     runs-on: ubuntu-latest
