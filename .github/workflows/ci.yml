@@ -34,7 +34,7 @@ jobs:
         run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
 
       - name: Setup pnpm cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
           key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
@@ -88,7 +88,7 @@ jobs:
         run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
 
       - name: Setup pnpm cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
           key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
@@ -118,13 +118,6 @@ jobs:
       - name: Build backend
         run: pnpm --filter @spm/backend build
 
-      - name: Upload backend build artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: backend-build
-          path: apps/backend/dist/
-          retention-days: 1
-
   # Frontend tests and build
   frontend:
     name: 'Frontend: Test, Lint & Build'
@@ -149,7 +142,7 @@ jobs:
         run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
 
       - name: Setup pnpm cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
           key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
@@ -180,13 +173,6 @@ jobs:
           VITE_WS_URL: wss://api.streetperformersmap.com
           VITE_CLERK_PUBLISHABLE_KEY: pk_test_mock_key
           VITE_STRIPE_PUBLISHABLE_KEY: pk_test_mock_key
-
-      - name: Upload frontend build artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: frontend-build
-          path: apps/frontend/dist/
-          retention-days: 1
 
   # Security and dependency checks
   security:

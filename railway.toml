@@ -1,6 +1,6 @@
 [build]
 builder = "NIXPACKS"
-buildCommand = "pnpm install --frozen-lockfile && pnpm --filter @smp/shared-types build && pnpm --filter @smp/backend build && pnpm --filter @smp/frontend build && cp -r apps/frontend/dist apps/backend/"
+buildCommand = "pnpm install --frozen-lockfile && pnpm --filter @smp/shared-types build && pnpm --filter @smp/backend build && pnpm --filter @smp/frontend build && cp -r apps/frontend/dist apps/backend/dist/"
 watchPatterns = ["apps/backend/**", "apps/frontend/**", "packages/**"]
 
 [deploy]
