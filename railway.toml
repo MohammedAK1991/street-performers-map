@@ -10,6 +10,9 @@ healthcheckTimeout = 300
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 10
 
+[networking]
+expose = true
+
 [env]
 NODE_ENV = "production"
 PORT = { default = "3001" }
