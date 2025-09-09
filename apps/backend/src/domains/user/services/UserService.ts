@@ -1,6 +1,6 @@
-import { UserRepository } from "@/domains/user/repositories/UserRepository";
-import { ApiError } from "@/shared/utils/errors";
-import { logger } from "@/shared/utils/logger";
+import { UserRepository } from "../repositories/UserRepository";
+import { ApiError } from "../../../shared/utils/errors";
+import { logger } from "../../../shared/utils/logger";
 import type {
 	AuthResponse,
 	LoginCredentials,

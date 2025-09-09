@@ -1,6 +1,6 @@
-import { PerformanceService } from "@/domains/performance/services/PerformanceService";
-import { ApiError, ValidationError } from "@/shared/utils/errors";
-import { logger } from "@/shared/utils/logger";
+import { PerformanceService } from "../services/PerformanceService";
+import { ApiError, ValidationError } from "../../../shared/utils/errors";
+import { logger } from "../../../shared/utils/logger";
 import type { CreatePerformanceDto } from "@spm/shared-types";
 import type { NextFunction, Request, Response } from "express";
 import { z } from "zod";

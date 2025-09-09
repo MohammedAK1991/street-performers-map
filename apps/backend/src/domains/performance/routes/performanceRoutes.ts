@@ -1,6 +1,6 @@
-import { PerformanceController } from "@/domains/performance/controllers/PerformanceController";
-import { analyticsController } from "@/domains/performance/controllers/AnalyticsController";
-import { authenticate } from "@/shared/middleware/auth";
+import { PerformanceController } from "../controllers/PerformanceController";
+import { analyticsController } from "../controllers/AnalyticsController";
+import { authenticate } from "../../../shared/middleware/auth";
 import { type IRouter, Router } from "express";
 
 const router: IRouter = Router();

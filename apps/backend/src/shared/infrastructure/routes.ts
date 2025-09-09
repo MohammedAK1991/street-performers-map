@@ -1,9 +1,9 @@
-import { mediaRoutes } from "@/domains/media/routes/mediaRoutes";
-import { paymentRoutes } from "@/domains/payment/routes/paymentRoutes";
-import { performanceRoutes } from "@/domains/performance/routes/performanceRoutes";
-import { userRoutes } from "@/domains/user/routes/userRoutes";
-import { setup404Handler } from "@/shared/middleware";
-import { logger } from "@/shared/utils/logger";
+import { mediaRoutes } from "../../domains/media/routes/mediaRoutes";
+import { paymentRoutes } from "../../domains/payment/routes/paymentRoutes";
+import { performanceRoutes } from "../../domains/performance/routes/performanceRoutes";
+import { userRoutes } from "../../domains/user/routes/userRoutes";
+import { setup404Handler } from "../middleware";
+import { logger } from "../utils/logger";
 import express from "express";
 
 export function setupRoutes(app: express.Application): void {

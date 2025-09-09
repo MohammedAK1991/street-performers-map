@@ -1,5 +1,5 @@
-import { type UserDocument, UserModel } from "@/domains/user/entities/User";
-import { logger } from "@/shared/utils/logger";
+import { type UserDocument, UserModel } from "../entities/User";
+import { logger } from "../../../shared/utils/logger";
 import type { User, UserWithPassword } from "@spm/shared-types";
 
 export class UserRepository {

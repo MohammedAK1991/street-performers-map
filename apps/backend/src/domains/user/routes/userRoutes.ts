@@ -1,5 +1,5 @@
-import { UserController } from "@/domains/user/controllers/UserController";
-import { authenticate, optionalAuth } from "@/shared/middleware/auth";
+import { UserController } from "../controllers/UserController";
+import { authenticate, optionalAuth } from "../../../shared/middleware/auth";
 import { type IRouter, Router } from "express";
 
 const router: IRouter = Router();

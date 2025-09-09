@@ -1,6 +1,6 @@
-import { PerformanceRepository } from "@/domains/performance/repositories/PerformanceRepository";
-import { ApiError, ValidationError } from "@/shared/utils/errors";
-import { logger } from "@/shared/utils/logger";
+import { PerformanceRepository } from "../repositories/PerformanceRepository";
+import { ApiError, ValidationError } from "../../../shared/utils/errors";
+import { logger } from "../../../shared/utils/logger";
 import type {
 	CreatePerformanceDto,
 	Performance,

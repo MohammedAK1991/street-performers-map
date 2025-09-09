@@ -1,6 +1,6 @@
-import { UserService } from "@/domains/user/services/UserService";
-import { AuthenticationError, AuthorizationError } from "@/shared/utils/errors";
-import { logger } from "@/shared/utils/logger";
+import { UserService } from "../../domains/user/services/UserService";
+import { AuthenticationError, AuthorizationError } from "../utils/errors";
+import { logger } from "../utils/logger";
 import type { NextFunction, Request, Response } from "express";
 
 // Extend Express Request type to include user

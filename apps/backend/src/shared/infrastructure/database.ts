@@ -1,4 +1,4 @@
-import { logger } from "@/shared/utils/logger";
+import { logger } from "../utils/logger";
 import mongoose from "mongoose";
 
 export async function connectDatabase(): Promise<void> {

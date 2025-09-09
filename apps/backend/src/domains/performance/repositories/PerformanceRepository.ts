@@ -1,8 +1,8 @@
 import {
 	type PerformanceDocument,
 	PerformanceModel,
-} from "@/domains/performance/entities/Performance";
-import { logger } from "@/shared/utils/logger";
+} from "../entities/Performance";
+import { logger } from "../../../shared/utils/logger";
 import type { Performance } from "@spm/shared-types";
 
 export class PerformanceRepository {

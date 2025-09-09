@@ -1,4 +1,4 @@
-import { logger } from "@/shared/utils/logger";
+import { logger } from "../utils/logger";
 import cors from "cors";
 import express from "express";
 import rateLimit from "express-rate-limit";

@@ -1,11 +1,10 @@
 import "dotenv/config";
-import "module-alias/register.js";
 import { createServer } from "node:http";
-import { connectDatabase } from "@/shared/infrastructure/database";
-import { setupRoutes } from "@/shared/infrastructure/routes";
-import { setupMiddleware } from "@/shared/middleware";
-import { logger } from "@/shared/utils/logger";
-import { setupSwagger } from "@/shared/utils/swagger";
+import { connectDatabase } from "./shared/infrastructure/database";
+import { setupRoutes } from "./shared/infrastructure/routes";
+import { setupMiddleware } from "./shared/middleware";
+import { logger } from "./shared/utils/logger";
+import { setupSwagger } from "./shared/utils/swagger";
 import express from "express";
 import { Server as SocketServer } from "socket.io";
 import path from "path";

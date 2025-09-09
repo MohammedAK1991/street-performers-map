@@ -1,6 +1,6 @@
-import { UserService } from "@/domains/user/services/UserService";
-import { ApiError, ValidationError } from "@/shared/utils/errors";
-import { logger } from "@/shared/utils/logger";
+import { UserService } from "../services/UserService";
+import { ApiError, ValidationError } from "../../../shared/utils/errors";
+import { logger } from "../../../shared/utils/logger";
 import type { LoginCredentials, RegisterData, User } from "@spm/shared-types";
 import type { NextFunction, Request, Response } from "express";
 import { z } from "zod";
