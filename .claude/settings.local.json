@@ -28,7 +28,12 @@
       "Bash(node:*)",
       "Bash(npx tsc:*)",
       "Bash(chmod:*)",
-      "Read(//var/folders/tm/f_5g_tz90x5b44kdndcf44pc0000gn/T/TemporaryItems/NSIRD_screencaptureui_S5ebnz/**)"
+      "Read(//var/folders/tm/f_5g_tz90x5b44kdndcf44pc0000gn/T/TemporaryItems/NSIRD_screencaptureui_S5ebnz/**)",
+      "Read(//var/folders/tm/f_5g_tz90x5b44kdndcf44pc0000gn/T/TemporaryItems/NSIRD_screencaptureui_DiAY3T/**)",
+      "Bash(pnpm install:*)",
+      "Bash(pnpm --filter @spm/shared-types build)",
+      "Bash(pnpm --filter @spm/backend build)",
+      "Bash(pnpm --filter @spm/frontend build)"
     ],
     "deny": [],
     "ask": []

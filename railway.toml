@@ -1,10 +1,10 @@
 [build]
 builder = "NIXPACKS"
-buildCommand = "pnpm install --frozen-lockfile && pnpm --filter @smp/shared-types build && pnpm --filter @smp/backend build && pnpm --filter @smp/frontend build && cp -r apps/frontend/dist apps/backend/dist/"
+buildCommand = "pnpm install --frozen-lockfile && pnpm --filter @spm/shared-types build && pnpm --filter @spm/backend build && pnpm --filter @spm/frontend build && cp -r apps/frontend/dist apps/backend/dist/"
 watchPatterns = ["apps/backend/**", "apps/frontend/**", "packages/**"]
 
 [deploy]
-startCommand = "cd apps/backend && pnpm start"
+startCommand = "cd apps/backend && pnpm --filter @spm/backend start"
 healthcheckPath = "/health"
 healthcheckTimeout = 300
 restartPolicyType = "ON_FAILURE"
