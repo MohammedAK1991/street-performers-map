@@ -128,7 +128,7 @@ class NotificationService {
 		};
 
 		switch (notification.type) {
-			case 'tip':
+			case 'tip': {
 				const tipData = (notification as TipNotification).data;
 				toast.success(
 					`💰 New tip received: €${(tipData.amount / 100).toFixed(2)}${
@@ -137,6 +137,7 @@ class NotificationService {
 					toastOptions
 				);
 				break;
+			}
 
 			case 'like':
 				toast.success(`❤️ ${notification.message}`, toastOptions);
@@ -146,11 +147,12 @@ class NotificationService {
 				toast.success(`👀 ${notification.message}`, toastOptions);
 				break;
 
-			case 'performance':
+			case 'performance': {
 				const perfData = (notification as PerformanceNotification).data;
 				const icon = perfData.status === 'started' ? '🎬' : perfData.status === 'ended' ? '🎭' : '⚠️';
 				toast(`${icon} ${notification.message}`, toastOptions);
 				break;
+			}
 
 			case 'system':
 				toast(notification.message, {
