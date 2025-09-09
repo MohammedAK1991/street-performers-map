@@ -268,7 +268,7 @@ export function SimpleMap() {
 							<button
 								type="button"
 								key={performance._id}
-								className="w-full bg-white rounded-lg shadow border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow cursor-pointer text-left"
+								className="w-full   bg-white rounded-lg shadow border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow cursor-pointer text-left"
 								onClick={() => handlePerformanceClick(performance)}
 								aria-label={`View details for ${performance.title}`}
 							>
