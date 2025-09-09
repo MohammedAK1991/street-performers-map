@@ -1,6 +1,6 @@
 import { PerformanceRepository } from "../repositories/PerformanceRepository";
-import { ApiError, ValidationError } from "../../../shared/utils/errors";
-import { logger } from "../../../shared/utils/logger";
+import { ApiError, ValidationError } from "../../../shared/utils/errors.js";
+import { logger } from "../../../shared/utils/logger.js";
 import type {
 	CreatePerformanceDto,
 	Performance,
