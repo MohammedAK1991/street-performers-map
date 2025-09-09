@@ -18,6 +18,10 @@ describe('PaymentService', () => {
 		mockStripeService.createTipPaymentIntent = vi.fn();
 		mockStripeService.confirmPayment = vi.fn();
 		mockStripeService.getPaymentIntent = vi.fn();
+		mockStripeService.getPaymentMethodTypes = vi.fn().mockImplementation((country: string) => {
+			if (country?.toLowerCase() === 'netherlands') return ['card', 'ideal'];
+			return ['card'];
+		});
 		mockTransaction.find = vi.fn();
 		mockTransaction.findOne = vi.fn();
 		mockTransaction.aggregate = vi.fn();
@@ -82,7 +86,7 @@ describe('PaymentService', () => {
 				tipperId: 'tipper_123',
 				isAnonymous: false,
 				publicMessage: 'Great performance!',
-				paymentMethodTypes: ['card']
+				paymentMethodTypes: ['card', 'ideal']
 			});
 		});
 
@@ -130,6 +134,7 @@ describe('PaymentService', () => {
 				performerId: 'performer_123',
 				tipperId: undefined,
 				isAnonymous: true,
+				publicMessage: undefined,
 				paymentMethodTypes: ['card']
 			});
 
@@ -140,14 +145,18 @@ describe('PaymentService', () => {
 				toUserId: 'performer_123',
 				performanceId: 'perf_123',
 				stripePaymentIntentId: 'pi_test_123',
+				stripeClientSecret: 'pi_test_123_secret',
 				paymentMethod: 'card',
+				status: 'pending',
 				isAnonymous: true,
 				publicMessage: undefined,
 				processingFee: 39,
 				netAmount: 261,
 				location: {
 					coordinates: [4.9041, 52.3676]
-				}
+				},
+				retryCount: 0,
+				payoutStatus: 'pending'
 			});
 		});
 

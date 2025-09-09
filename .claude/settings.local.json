@@ -47,7 +47,8 @@
       "Bash(pnpm test:*)",
       "Bash(railway logs:*)",
       "Bash(railway up:*)",
-      "Bash(railway service:*)"
+      "Bash(railway service:*)",
+      "Bash(gtimeout:*)"
     ],
     "deny": [],
     "ask": []
