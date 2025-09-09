@@ -40,17 +40,6 @@ async function startServer() {
 		// Setup routes
 		setupRoutes(app);
 
-		// Setup 404 handler for API routes only
-		app.use("/api/*", (req, res) => {
-			res.status(404).json({
-				success: false,
-				error: {
-					message: "API route not found",
-					path: req.originalUrl,
-				},
-			});
-		});
-
 		// Health check endpoint
 		app.get("/health", (req, res) => {
 			res.json({
@@ -65,6 +54,9 @@ async function startServer() {
 		if (process.env.NODE_ENV === "production") {
 			const frontendPath = path.join(__dirname, "../dist");
 			
+			// Debug: Log frontend path
+			logger.info("Frontend serving path", { frontendPath });
+			
 			// Serve static files
 			app.use(express.static(frontendPath));
 			
@@ -75,9 +67,23 @@ async function startServer() {
 					res.status(404).json({ error: "API endpoint not found" });
 					return;
 				}
-				res.sendFile(path.join(frontendPath, "index.html"));
+				
+				const indexPath = path.join(frontendPath, "index.html");
+				logger.info("Serving React app", { path: req.path, indexPath });
+				res.sendFile(indexPath);
 			});
 		}
+
+		// Setup 404 handler for API routes only (after frontend serving)
+		app.use("/api/*", (req, res) => {
+			res.status(404).json({
+				success: false,
+				error: {
+					message: "API route not found",
+					path: req.originalUrl,
+				},
+			});
+		});
 
 		// WebSocket connection handling
 		io.on("connection", (socket) => {
