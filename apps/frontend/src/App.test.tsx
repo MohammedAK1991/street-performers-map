@@ -1,12 +1,18 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import '@testing-library/jest-dom';
 import { App } from './App';
 
 // Mock Clerk components
 vi.mock('@clerk/clerk-react', () => ({
 	SignedIn: ({ children }: { children: React.ReactNode }) => <div data-testid="signed-in">{children}</div>,
-	useClerkSync: () => null,
+	useUser: () => ({
+		user: null,
+		isLoaded: true,
+		isSignedIn: false,
+	}),
+	useClerk: () => ({
+		signOut: vi.fn(),
+	}),
 }));
 
 // Mock React Router
@@ -36,9 +42,25 @@ vi.mock('./components/onboarding/OnboardingWizard', () => ({
 	OnboardingWizard: () => <div data-testid="onboarding-wizard">Onboarding Wizard</div>,
 }));
 
+// Mock other components
+vi.mock('./components/ErrorBoundary', () => ({
+	ErrorBoundary: ({ children }: { children: React.ReactNode }) => <div data-testid="error-boundary">{children}</div>,
+}));
+
+vi.mock('./hooks/useClerkSync', () => ({
+	useClerkSync: vi.fn(),
+}));
+
+// Mock react-hot-toast
+vi.mock('react-hot-toast', () => ({
+	Toaster: () => <div data-testid="toaster">Toaster</div>,
+}));
+
 describe('App', () => {
 	it('should render without crashing', () => {
 		render(<App />);
-		expect(screen.getByTestId('signed-in')).toBeInTheDocument();
+		expect(screen.getByTestId('error-boundary')).toBeInTheDocument();
+		expect(screen.getByTestId('routes')).toBeInTheDocument();
+		expect(screen.getByTestId('toaster')).toBeInTheDocument();
 	});
 });

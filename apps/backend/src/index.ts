@@ -1,5 +1,5 @@
 import "dotenv/config";
-import "module-alias/register";
+import "module-alias/register.js";
 import { createServer } from "node:http";
 import { connectDatabase } from "@/shared/infrastructure/database";
 import { setupRoutes } from "@/shared/infrastructure/routes";
