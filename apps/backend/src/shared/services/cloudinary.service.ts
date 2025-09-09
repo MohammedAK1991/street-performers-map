@@ -78,9 +78,9 @@ export class CloudinaryService {
 
 		if (!isConfigured) {
 			// Return mock result for development
-			console.warn(
-				"⚠️  Cloudinary not configured. Returning mock video upload result for development.",
-			);
+			// console.warn(
+			// 	"⚠️  Cloudinary not configured. Returning mock video upload result for development.",
+			// );
 			return Promise.resolve({
 				public_id: `mock_video_${Date.now()}`,
 				url: "https://via.placeholder.com/400x300/purple/white?text=Mock+Video",
@@ -126,7 +126,7 @@ export class CloudinaryService {
 			cloudinary.uploader
 				.upload_stream(uploadOptions, (error, result) => {
 					if (error) {
-						console.error("Cloudinary upload error:", error);
+						// console.error("Cloudinary upload error:", error);
 						reject(new Error(`Video upload failed: ${error.message}`));
 					} else if (result) {
 						resolve(result as VideoUploadResult);
@@ -144,14 +144,14 @@ export class CloudinaryService {
 	async deleteVideo(publicId: string): Promise<void> {
 		// Skip deletion for mock videos
 		if (publicId.startsWith("mock_video_")) {
-			console.log("Skipping deletion of mock video:", publicId);
+			// console.log("Skipping deletion of mock video:", publicId);
 			return;
 		}
 
 		try {
 			await cloudinary.uploader.destroy(publicId, { resource_type: "video" });
 		} catch (error) {
-			console.error("Error deleting video from Cloudinary:", error);
+			// console.error("Error deleting video from Cloudinary:", error);
 			throw new Error("Failed to delete video");
 		}
 	}

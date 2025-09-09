@@ -373,33 +373,33 @@ const createSamplePerformances = (userIds: string[]) => [
 
 async function seedDatabase() {
 	try {
-		console.log("🌱 Starting database seeding...");
+		// console.log("🌱 Starting database seeding...");
 
 		// Connect to database
 		await connectDatabase();
-		console.log("✅ Connected to database");
+		// console.log("✅ Connected to database");
 
 		// Clear existing data
-		console.log("🧹 Clearing existing data...");
+// 		console.log("🧹 Clearing existing data...");
 		await UserModel.deleteMany({});
 		await PerformanceModel.deleteMany({});
-		console.log("✅ Existing data cleared");
+// 		console.log("✅ Existing data cleared");
 
 		// Create users
-		console.log("👥 Creating sample users...");
+// 		console.log("👥 Creating sample users...");
 		const createdUsers = await UserModel.insertMany(sampleUsers);
 		const userIds = createdUsers.map((user) => user._id.toString());
-		console.log(`✅ Created ${createdUsers.length} users`);
+// 		console.log(`✅ Created ${createdUsers.length} users`);
 
 		// Create performances
-		console.log("🎭 Creating sample performances...");
+// 		console.log("🎭 Creating sample performances...");
 		const performanceData = createSamplePerformances(userIds);
 		const createdPerformances =
 			await PerformanceModel.insertMany(performanceData);
-		console.log(`✅ Created ${createdPerformances.length} performances`);
+// 		console.log(`✅ Created ${createdPerformances.length} performances`);
 
 		// Update some performances with likes from the audience user
-		console.log("❤️ Adding sample likes...");
+// 		console.log("❤️ Adding sample likes...");
 		const audienceUserId = userIds[4]; // John Music Lover
 
 		// Add likes to some performances
@@ -419,30 +419,30 @@ async function seedDatabase() {
 			},
 		);
 
-		console.log("✅ Added sample likes");
+// 		console.log("✅ Added sample likes");
 
-		console.log("🎉 Database seeding completed successfully!");
-		console.log(`
-    📊 Seeded Data Summary:
-    - Users: ${createdUsers.length} (${createdUsers.filter((u) => u.role === "performer").length} performers, ${createdUsers.filter((u) => u.role === "audience").length} audience)
-    - Performances: ${createdPerformances.length}
-    - Genres: jazz, rock, folk, classical
-    - Locations: Retiro Park, Puerta del Sol, Plaza Mayor, El Capricho Park, Plaza de Oriente, Plaza de Cibeles
-    
-    🧪 Test Accounts:
-    - mike.jazz@example.com / password123 (Performer)
-    - sarah.folk@example.com / password123 (Performer)  
-    - brooklyn.rocker@example.com / password123 (Performer)
-    - classical.carlos@example.com / password123 (Performer)
-    - john.audience@example.com / password123 (Audience)
-    `);
+// 		console.log("🎉 Database seeding completed successfully!");
+		// console.log(`
+		// 📊 Seeded Data Summary:
+		// - Users: ${createdUsers.length} (${createdUsers.filter((u) => u.role === "performer").length} performers, ${createdUsers.filter((u) => u.role === "audience").length} audience)
+		// - Performances: ${createdPerformances.length}
+		// - Genres: jazz, rock, folk, classical
+		// - Locations: Retiro Park, Puerta del Sol, Plaza Mayor, El Capricho Park, Plaza de Oriente, Plaza de Cibeles
+		// 
+		// 🧪 Test Accounts:
+		// - mike.jazz@example.com / password123 (Performer)
+		// - sarah.folk@example.com / password123 (Performer)  
+		// - brooklyn.rocker@example.com / password123 (Performer)
+		// - classical.carlos@example.com / password123 (Performer)
+		// - john.audience@example.com / password123 (Audience)
+		// `);
 	} catch (error) {
-		console.error("❌ Error seeding database:", error);
+// 		console.error("❌ Error seeding database:", error);
 		process.exit(1);
 	} finally {
 		// Close connection
 		await mongoose.connection.close();
-		console.log("✅ Database connection closed");
+// 		console.log("✅ Database connection closed");
 		process.exit(0);
 	}
 }

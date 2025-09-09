@@ -99,7 +99,7 @@ export class VideoService {
 					"Video uploaded successfully! It will be available for 24 hours.",
 			};
 		} catch (error) {
-			console.error("Video upload error:", error);
+			// console.error("Video upload error:", error);
 
 			if (error instanceof Error) {
 				throw new Error(`Video upload failed: ${error.message}`);
@@ -168,7 +168,7 @@ export class VideoService {
 			// Delete from database
 			await this.videoRepository.delete(videoId);
 		} catch (error) {
-			console.error("Error deleting video:", error);
+			// console.error("Error deleting video:", error);
 			throw new Error("Failed to delete video");
 		}
 	}
@@ -231,7 +231,7 @@ export class VideoService {
 		try {
 			return await this.videoRepository.update(videoId, { performanceId });
 		} catch (error) {
-			console.error("Error linking video to performance:", error);
+			// console.error("Error linking video to performance:", error);
 			throw new Error("Failed to link video to performance");
 		}
 	}
@@ -306,7 +306,7 @@ export class VideoService {
 
 				cleanedCount++;
 			} catch (error) {
-				console.error(`Failed to cleanup video ${video._id}:`, error);
+				// console.error(`Failed to cleanup video ${video._id}:`, error);
 			}
 		}
 
