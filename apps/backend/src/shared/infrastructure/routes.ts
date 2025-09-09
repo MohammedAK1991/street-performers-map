@@ -33,8 +33,5 @@ export function setupRoutes(app: express.Application): void {
 	// Mount API router
 	app.use(`/api/${apiVersion}`, apiRouter);
 
-	// 404 handler
-	setup404Handler(app);
-
 	logger.info("✅ Routes setup complete");
 }

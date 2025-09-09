@@ -40,6 +40,17 @@ async function startServer() {
 		// Setup routes
 		setupRoutes(app);
 
+		// Setup 404 handler for API routes only
+		app.use("/api/*", (req, res) => {
+			res.status(404).json({
+				success: false,
+				error: {
+					message: "API route not found",
+					path: req.originalUrl,
+				},
+			});
+		});
+
 		// Health check endpoint
 		app.get("/health", (req, res) => {
 			res.json({
