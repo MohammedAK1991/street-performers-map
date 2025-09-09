@@ -33,7 +33,21 @@
       "Bash(pnpm install:*)",
       "Bash(pnpm --filter @spm/shared-types build)",
       "Bash(pnpm --filter @spm/backend build)",
-      "Bash(pnpm --filter @spm/frontend build)"
+      "Bash(pnpm --filter @spm/frontend build)",
+      "Bash(npm install:*)",
+      "Bash(railway login:*)",
+      "Bash(NODE_ENV=production MONGODB_URI=\"mongodb+srv://mohammedak1991:Manunited_123@streetperfromersmap.phcfnyd.mongodb.net/streetperformersmap\" timeout 10s node dist/index.js)",
+      "Bash(git add:*)",
+      "Bash(git reset:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(timeout:*)",
+      "Bash(NODE_ENV=production gtimeout 5s node dist/index.js)",
+      "Bash(railway status:*)",
+      "Bash(pnpm test:*)",
+      "Bash(railway logs:*)",
+      "Bash(railway up:*)",
+      "Bash(railway service:*)"
     ],
     "deny": [],
     "ask": []
