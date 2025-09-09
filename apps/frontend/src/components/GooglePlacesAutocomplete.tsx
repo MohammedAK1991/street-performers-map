@@ -1,339 +1,363 @@
-import { useState, useEffect, useRef } from 'react';
-import { Loader } from '@googlemaps/js-api-loader';
+import { Loader } from "@googlemaps/js-api-loader";
+import { useEffect, useRef, useState } from "react";
 
 interface GooglePlacesAutocompleteProps {
-  value: string;
-  onChange: (place: {
-    name: string;
-    address: string;
-    coordinates: [number, number];
-  }) => void;
-  placeholder?: string;
-  className?: string;
+	value?: string;
+	onChange?: (place: {
+		name: string;
+		address: string;
+		coordinates: [number, number];
+	}) => void;
+	onPlaceSelect?: (place: any) => void;
+	placeholder?: string;
+	className?: string;
 }
 
 export function GooglePlacesAutocomplete({
-  value,
-  onChange,
-  placeholder = "Search for a location...",
-  className = ""
+	value,
+	onChange,
+	onPlaceSelect,
+	placeholder = "Search for a location...",
+	className = "",
 }: GooglePlacesAutocompleteProps) {
-  const [error, setError] = useState<string | null>(null);
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [suggestions, setSuggestions] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [inputValue, setInputValue] = useState(value);
-  const [currentLocation, setCurrentLocation] = useState<any>(null);
-  const autocompleteService = useRef<any>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
-  
-  // Initialize Google Maps API
-  useEffect(() => {
-    const initializeGoogleMaps = async () => {
-      const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || 'AIzaSyCkm_qSNWEQ0o95mRsqjM8ClF288s6s6qY'
-      
-      if (!apiKey || apiKey === 'your_google_maps_api_key_here') {
-        setError('Google Maps API key is required. Please add VITE_GOOGLE_MAPS_API_KEY to your .env file.');
-        return;
-      }
+	const [error, setError] = useState<string | null>(null);
+	const [isLoaded, setIsLoaded] = useState(false);
+	const [suggestions, setSuggestions] = useState<any[]>([]);
+	const [isLoading, setIsLoading] = useState(false);
+	const [showSuggestions, setShowSuggestions] = useState(false);
+	const [inputValue, setInputValue] = useState(value);
+	const [currentLocation, setCurrentLocation] = useState<any>(null);
+	const autocompleteService = useRef<any>(null);
+	const inputRef = useRef<HTMLInputElement>(null);
 
-      try {
-        const loader = new Loader({
-          apiKey: apiKey,
-          version: 'weekly',
-          libraries: ['places']
-        });
-        
-        await loader.load();
-        
-        // Initialize services with old API (it still works)
-        autocompleteService.current = new google.maps.places.AutocompleteService();
-        
-        // Get user's current location
-        getCurrentLocation();
-        
-        setIsLoaded(true);
-      } catch (error) {
-        console.error('Error loading Google Maps API:', error);
-        setError('Failed to load Google Maps API. Please check your API key.');
-      }
-    };
+	// Initialize Google Maps API
+	useEffect(() => {
+		const initializeGoogleMaps = async () => {
+			const apiKey =
+				import.meta.env.VITE_GOOGLE_MAPS_API_KEY ||
+				"AIzaSyCkm_qSNWEQ0o95mRsqjM8ClF288s6s6qY";
 
-    initializeGoogleMaps();
-  }, []);
+			if (!apiKey || apiKey === "your_google_maps_api_key_here") {
+				setError(
+					"Google Maps API key is required. Please add VITE_GOOGLE_MAPS_API_KEY to your .env file.",
+				);
+				return;
+			}
 
-  // Get user's current location
-  const getCurrentLocation = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const lat = position.coords.latitude;
-          const lng = position.coords.longitude;
-          
-          // Use reverse geocoding to get address
-          const geocoder = new google.maps.Geocoder();
-          geocoder.geocode({ location: { lat, lng } }, (results, status) => {
-            if (status === 'OK' && results && results[0]) {
-              setCurrentLocation({
-                description: results[0].formatted_address,
-                place_id: 'current_location',
-                geometry: {
-                  location: { lat: () => lat, lng: () => lng }
-                }
-              });
-            }
-          });
-        },
-        (error) => {
-          console.log('Geolocation error:', error);
-        }
-      );
-    }
-  };
+			try {
+				const loader = new Loader({
+					apiKey: apiKey,
+					version: "weekly",
+					libraries: ["places"],
+				});
 
-  // Sync external value with internal input value
-  useEffect(() => {
-    setInputValue(value);
-  }, [value]);
+				await loader.load();
 
-  const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const inputValue = e.target.value;
-    setInputValue(inputValue);
-    setError(null);
+				// Initialize services with old API (it still works)
+				autocompleteService.current =
+					new google.maps.places.AutocompleteService();
 
-    if (!isLoaded || !autocompleteService.current) return;
+				// Get user's current location
+				getCurrentLocation();
 
-    if (inputValue.length < 2) {
-      setSuggestions([]);
-      setShowSuggestions(false);
-      return;
-    }
+				setIsLoaded(true);
+			} catch (error) {
+				console.error("Error loading Google Maps API:", error);
+				setError("Failed to load Google Maps API. Please check your API key.");
+			}
+		};
 
-    setIsLoading(true);
-    setShowSuggestions(true);
+		initializeGoogleMaps();
+	}, []);
 
-    // Use the old API but without country restriction
-    autocompleteService.current.getPlacePredictions(
-      {
-        input: inputValue,
-        types: ['establishment', 'geocode']
-        // Removed componentRestrictions to allow global results
-      },
-      (predictions: any, status: any) => {
-        setIsLoading(false);
-        if (status === google.maps.places.PlacesServiceStatus.OK && predictions) {
-          setSuggestions(predictions);
-        } else {
-          setSuggestions([]);
-        }
-      }
-    );
-  };
+	// Get user's current location
+	const getCurrentLocation = () => {
+		if (navigator.geolocation) {
+			navigator.geolocation.getCurrentPosition(
+				(position) => {
+					const lat = position.coords.latitude;
+					const lng = position.coords.longitude;
 
-  const handleSelect = (prediction: any) => {
-    const description = prediction.description || prediction.text?.text || prediction.displayName?.text;
-    setInputValue(description);
-    setShowSuggestions(false);
-    setError(null);
+					// Use reverse geocoding to get address
+					const geocoder = new google.maps.Geocoder();
+					geocoder.geocode({ location: { lat, lng } }, (results, status) => {
+						if (status === "OK" && results && results[0]) {
+							setCurrentLocation({
+								description: results[0].formatted_address,
+								place_id: "current_location",
+								geometry: {
+									location: { lat: () => lat, lng: () => lng },
+								},
+							});
+						}
+					});
+				},
+				() => {},
+			);
+		}
+	};
 
-    // Debug: Log the prediction to see its structure
-    console.log('Selected prediction:', prediction);
-    console.log('Prediction keys:', Object.keys(prediction));
+	// Sync external value with internal input value
+	useEffect(() => {
+		setInputValue(value);
+	}, [value]);
 
-    // Handle current location
-    if (prediction.isCurrentLocation || prediction.place_id === 'current_location') {
-      const lat = prediction.lat || (prediction.geometry?.location?.lat ? prediction.geometry.location.lat() : 0);
-      const lng = prediction.lng || (prediction.geometry?.location?.lng ? prediction.geometry.location.lng() : 0);
-      console.log('Current location coordinates:', { lat, lng });
-      onChange({
-        name: prediction.name || description,
-        address: prediction.address || description,
-        coordinates: [lng, lat]
-      });
-      return;
-    }
+	const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const inputValue = e.target.value;
+		setInputValue(inputValue);
+		setError(null);
 
-    // For new API, we can get coordinates directly from the suggestion
-    if (prediction.placePrediction?.place) {
-      const place = prediction.placePrediction.place;
-      const location = place.location;
-      console.log('New API place location:', location);
-      if (location) {
-        const coords: [number, number] = [location.longitude, location.latitude];
-        console.log('New API coordinates:', coords);
-        onChange({
-          name: place.displayName?.text || description,
-          address: place.formattedAddress || description,
-          coordinates: coords
-        });
-        return;
-      }
-    }
+		if (!isLoaded || !autocompleteService.current) return;
 
-    // Fallback: try to get coordinates from the suggestion itself
-    if (prediction.placePrediction?.place?.location) {
-      const location = prediction.placePrediction.place.location;
-      onChange({
-        name: prediction.placePrediction.place.displayName?.text || description,
-        address: prediction.placePrediction.place.formattedAddress || description,
-        coordinates: [location.longitude, location.latitude]
-      });
-      return;
-    }
+		if (inputValue.length < 2) {
+			setSuggestions([]);
+			setShowSuggestions(false);
+			return;
+		}
 
-    // For old API, try to get coordinates from geometry
-    if (prediction.geometry?.location) {
-      const lat = prediction.geometry.location.lat();
-      const lng = prediction.geometry.location.lng();
-      console.log('Old API coordinates:', { lat, lng });
-      onChange({
-        name: description,
-        address: description,
-        coordinates: [lng, lat]
-      });
-      return;
-    }
+		setIsLoading(true);
+		setShowSuggestions(true);
 
-    // If no coordinates available, try geocoding
-    if (window.google?.maps?.Geocoder) {
-      const geocoder = new window.google.maps.Geocoder();
-      geocoder.geocode({ address: description }, (results, status) => {
-        if (status === 'OK' && results && results[0]) {
-          const location = results[0].geometry.location;
-          const lat = location.lat();
-          const lng = location.lng();
-          onChange({
-            name: description,
-            address: description,
-            coordinates: [lng, lat]
-          });
-        } else {
-          console.warn('Geocoding failed:', status);
-          // Fallback to default coordinates
-          onChange({
-            name: description,
-            address: description,
-            coordinates: [0, 0]
-          });
-        }
-      });
-    } else {
-      // If no coordinates available, use default
-      onChange({
-        name: description,
-        address: description,
-        coordinates: [0, 0]
-      });
-    }
-  };
+		// Use the old API but without country restriction
+		autocompleteService.current.getPlacePredictions(
+			{
+				input: inputValue,
+				types: ["establishment", "geocode"],
+				// Removed componentRestrictions to allow global results
+			},
+			(predictions: any, status: any) => {
+				setIsLoading(false);
+				if (
+					status === google.maps.places.PlacesServiceStatus.OK &&
+					predictions
+				) {
+					setSuggestions(predictions);
+				} else {
+					setSuggestions([]);
+				}
+			},
+		);
+	};
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && suggestions.length > 0) {
-      e.preventDefault();
-      handleSelect(suggestions[0]);
-    }
-  };
+	const handleSelect = (prediction: any) => {
+		const description =
+			prediction.description ||
+			prediction.text?.text ||
+			prediction.displayName?.text;
+		setInputValue(description);
+		setShowSuggestions(false);
+		setError(null);
 
-  const handleBlur = () => {
-    // Delay hiding suggestions to allow clicking on them
-    setTimeout(() => setShowSuggestions(false), 200);
-  };
+		// Debug: Log the prediction to see its structure
 
-  // Show fallback UI when API key is missing
-  if (error && error.includes('API key is required')) {
-    return (
-      <div className="relative">
-        <input
-          ref={inputRef}
-          type="text"
-          value={inputValue}
-          onChange={(e) => onChange({
-            name: e.target.value,
-            address: e.target.value,
-            coordinates: [0, 0] // Default coordinates
-          })}
-          placeholder="Enter location manually (Google Places API key required)"
-          className={`w-full px-3 py-2 bg-card border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:ring-primary focus:border-primary ${className}`}
-        />
-        <div className="mt-1 text-xs text-muted-foreground">
-          Google Places API key required for autocomplete. Enter location manually.
-        </div>
-      </div>
-    );
-  }
+		// Handle current location
+		if (
+			prediction.isCurrentLocation ||
+			prediction.place_id === "current_location"
+		) {
+			const lat =
+				prediction.lat ||
+				(prediction.geometry?.location?.lat
+					? prediction.geometry.location.lat()
+					: 0);
+			const lng =
+				prediction.lng ||
+				(prediction.geometry?.location?.lng
+					? prediction.geometry.location.lng()
+					: 0);
+			onChange?.({
+				name: prediction.name || description,
+				address: prediction.address || description,
+				coordinates: [lng, lat],
+			});
+			onPlaceSelect?.(prediction);
+			return;
+		}
 
-  return (
-    <div className="relative">
-      <div className="relative">
-        <input
-          ref={inputRef}
-          type="text"
-          value={inputValue}
-          onChange={handleInput}
-          onKeyDown={handleKeyDown}
-          onBlur={handleBlur}
-          onFocus={() => setShowSuggestions(true)}
-          placeholder={isLoaded ? placeholder : "Loading Google Places..."}
-          disabled={!isLoaded}
-          className={`w-full px-3 py-2 bg-card border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:ring-primary focus:border-primary ${className} ${
-            !isLoaded ? 'bg-muted' : ''
-          } ${error ? 'border-destructive focus:border-destructive focus:ring-destructive' : ''}`}
-        />
-        {isLoading && (
-          <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
-          </div>
-        )}
-      </div>
+		// For new API, we can get coordinates directly from the suggestion
+		if (prediction.placePrediction?.place) {
+			const place = prediction.placePrediction.place;
+			const location = place.location;
+			if (location) {
+				const coords: [number, number] = [
+					location.longitude,
+					location.latitude,
+				];
+				onChange?.({
+					name: place.displayName?.text || description,
+					address: place.formattedAddress || description,
+					coordinates: coords,
+				});
+				return;
+			}
+		}
 
-      {/* Suggestions dropdown */}
-      {showSuggestions && (suggestions.length > 0 || currentLocation) && (
-        <div className="absolute z-50 w-full mt-1 bg-card border border-border rounded-lg shadow-lg max-h-60 overflow-y-auto">
-          {/* Current location first */}
-          {currentLocation && (
-            <button
-              key="current_location"
-              type="button"
-              onClick={() => handleSelect(currentLocation)}
-              className="w-full px-3 py-2 text-left hover:bg-muted focus:bg-muted focus:outline-none border-b border-border"
-            >
-              <div className="text-sm text-foreground flex items-center">
-                <span className="mr-2">📍</span>
-                {currentLocation.description}
-              </div>
-            </button>
-          )}
-          
-          {/* Other suggestions */}
-          {suggestions.map((prediction, index) => {
-            const description = prediction.description || 
-                              prediction.text?.text || 
-                              prediction.displayName?.text ||
-                              prediction.placePrediction?.place?.displayName?.text ||
-                              prediction.placePrediction?.place?.formattedAddress;
-            const key = prediction.place_id || prediction.placePrediction?.place?.id || index;
-            
-            return (
-              <button
-                key={key}
-                type="button"
-                onClick={() => handleSelect(prediction)}
-                className="w-full px-3 py-2 text-left hover:bg-muted focus:bg-muted focus:outline-none border-b border-border last:border-b-0"
-              >
-                <div className="text-sm text-foreground">{description}</div>
-              </button>
-            );
-          })}
-        </div>
-      )}
+		// Fallback: try to get coordinates from the suggestion itself
+		if (prediction.placePrediction?.place?.location) {
+			const location = prediction.placePrediction.place.location;
+			onChange?.({
+				name: prediction.placePrediction.place.displayName?.text || description,
+				address:
+					prediction.placePrediction.place.formattedAddress || description,
+				coordinates: [location.longitude, location.latitude],
+			});
+			return;
+		}
 
-      {/* Error message */}
-      {error && (
-        <div className="mt-1 text-sm text-destructive">
-          {error}
-        </div>
-      )}
-    </div>
-  );
+		// For old API, try to get coordinates from geometry
+		if (prediction.geometry?.location) {
+			const lat = prediction.geometry.location.lat();
+			const lng = prediction.geometry.location.lng();
+			onChange?.({
+				name: description,
+				address: description,
+				coordinates: [lng, lat],
+			});
+			return;
+		}
+
+		// If no coordinates available, try geocoding
+		if (window.google?.maps?.Geocoder) {
+			const geocoder = new window.google.maps.Geocoder();
+			geocoder.geocode({ address: description }, (results, status) => {
+				if (status === "OK" && results && results[0]) {
+					const location = results[0].geometry.location;
+					const lat = location.lat();
+					const lng = location.lng();
+					onChange?.({
+						name: description,
+						address: description,
+						coordinates: [lng, lat],
+					});
+				} else {
+					console.warn("Geocoding failed:", status);
+					// Fallback to default coordinates
+					onChange?.({
+						name: description,
+						address: description,
+						coordinates: [0, 0],
+					});
+				}
+			});
+		} else {
+			// If no coordinates available, use default
+			onChange?.({
+				name: description,
+				address: description,
+				coordinates: [0, 0],
+			});
+		}
+	};
+
+	const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+		if (e.key === "Enter" && suggestions.length > 0) {
+			e.preventDefault();
+			handleSelect(suggestions[0]);
+		}
+	};
+
+	const handleBlur = () => {
+		// Delay hiding suggestions to allow clicking on them
+		setTimeout(() => setShowSuggestions(false), 200);
+	};
+
+	// Show fallback UI when API key is missing
+	if (error?.includes("API key is required")) {
+		return (
+			<div className="relative">
+				<input
+					ref={inputRef}
+					type="text"
+					value={inputValue}
+					onChange={(e) =>
+						onChange?.({
+							name: e.target.value,
+							address: e.target.value,
+							coordinates: [0, 0], // Default coordinates
+						})
+					}
+					placeholder="Enter location manually (Google Places API key required)"
+					className={`w-full px-3 py-2 bg-card border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:ring-primary focus:border-primary ${className}`}
+				/>
+				<div className="mt-1 text-xs text-muted-foreground">
+					Google Places API key required for autocomplete. Enter location
+					manually.
+				</div>
+			</div>
+		);
+	}
+
+	return (
+		<div className="relative">
+			<div className="relative">
+				<input
+					ref={inputRef}
+					type="text"
+					value={inputValue}
+					onChange={handleInput}
+					onKeyDown={handleKeyDown}
+					onBlur={handleBlur}
+					onFocus={() => setShowSuggestions(true)}
+					placeholder={isLoaded ? placeholder : "Loading Google Places..."}
+					disabled={!isLoaded}
+					className={`w-full px-3 py-2 bg-card border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:ring-primary focus:border-primary ${className} ${
+						!isLoaded ? "bg-muted" : ""
+					} ${error ? "border-destructive focus:border-destructive focus:ring-destructive" : ""}`}
+				/>
+				{isLoading && (
+					<div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+						<div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary" />
+					</div>
+				)}
+			</div>
+
+			{/* Suggestions dropdown */}
+			{showSuggestions && (suggestions.length > 0 || currentLocation) && (
+				<div className="absolute z-50 w-full mt-1 bg-card border border-border rounded-lg shadow-lg max-h-60 overflow-y-auto">
+					{/* Current location first */}
+					{currentLocation && (
+						<button
+							key="current_location"
+							type="button"
+							onClick={() => handleSelect(currentLocation)}
+							className="w-full px-3 py-2 text-left hover:bg-muted focus:bg-muted focus:outline-none border-b border-border"
+						>
+							<div className="text-sm text-foreground flex items-center">
+								<span className="mr-2">📍</span>
+								{currentLocation.description}
+							</div>
+						</button>
+					)}
+
+					{/* Other suggestions */}
+					{suggestions.map((prediction, index) => {
+						const description =
+							prediction.description ||
+							prediction.text?.text ||
+							prediction.displayName?.text ||
+							prediction.placePrediction?.place?.displayName?.text ||
+							prediction.placePrediction?.place?.formattedAddress;
+						const key =
+							prediction.place_id ||
+							prediction.placePrediction?.place?.id ||
+							index;
+
+						return (
+							<button
+								key={key}
+								type="button"
+								onClick={() => handleSelect(prediction)}
+								className="w-full px-3 py-2 text-left hover:bg-muted focus:bg-muted focus:outline-none border-b border-border last:border-b-0"
+							>
+								<div className="text-sm text-foreground">{description}</div>
+							</button>
+						);
+					})}
+				</div>
+			)}
+
+			{/* Error message */}
+			{error && <div className="mt-1 text-sm text-destructive">{error}</div>}
+		</div>
+	);
 }

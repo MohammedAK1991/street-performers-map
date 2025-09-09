@@ -1,52 +1,55 @@
-import mongoose from 'mongoose';
-import { logger } from '@/shared/utils/logger';
+import { logger } from "@/shared/utils/logger";
+import mongoose from "mongoose";
 
 export async function connectDatabase(): Promise<void> {
-  try {
-    const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/street-performers-map';
-    
-    logger.info('Connecting to MongoDB...', { uri: mongoUri.replace(/\/\/.*@/, '//***@') });
+	try {
+		const mongoUri =
+			process.env.MONGODB_URI ||
+			"mongodb://localhost:27017/street-performers-map";
 
-    await mongoose.connect(mongoUri, {
-      // Connection options
-      maxPoolSize: 10,
-      serverSelectionTimeoutMS: 3000, // Shorter timeout for development
-      socketTimeoutMS: 45000,
-    });
+		logger.info("Connecting to MongoDB...", {
+			uri: mongoUri.replace(/\/\/.*@/, "//***@"),
+		});
 
-    logger.info('✅ MongoDB connected successfully');
+		await mongoose.connect(mongoUri, {
+			// Connection options
+			maxPoolSize: 10,
+			serverSelectionTimeoutMS: 3000, // Shorter timeout for development
+			socketTimeoutMS: 45000,
+		});
 
-    // Handle connection events
-    mongoose.connection.on('error', (err) => {
-      logger.error('MongoDB connection error', err);
-    });
+		logger.info("✅ MongoDB connected successfully");
 
-    mongoose.connection.on('disconnected', () => {
-      logger.warn('MongoDB disconnected');
-    });
+		// Handle connection events
+		mongoose.connection.on("error", (err) => {
+			logger.error("MongoDB connection error", err);
+		});
 
-    mongoose.connection.on('reconnected', () => {
-      logger.info('MongoDB reconnected');
-    });
+		mongoose.connection.on("disconnected", () => {
+			logger.warn("MongoDB disconnected");
+		});
 
-    // Graceful shutdown
-    process.on('SIGINT', async () => {
-      await mongoose.connection.close();
-      logger.info('MongoDB connection closed through app termination');
-    });
+		mongoose.connection.on("reconnected", () => {
+			logger.info("MongoDB reconnected");
+		});
 
-  } catch (error) {
-    logger.error('Failed to connect to MongoDB', error);
-    throw error;
-  }
+		// Graceful shutdown
+		process.on("SIGINT", async () => {
+			await mongoose.connection.close();
+			logger.info("MongoDB connection closed through app termination");
+		});
+	} catch (error) {
+		logger.error("Failed to connect to MongoDB", error);
+		throw error;
+	}
 }
 
 export async function disconnectDatabase(): Promise<void> {
-  try {
-    await mongoose.connection.close();
-    logger.info('MongoDB connection closed');
-  } catch (error) {
-    logger.error('Error closing MongoDB connection', error);
-    throw error;
-  }
+	try {
+		await mongoose.connection.close();
+		logger.info("MongoDB connection closed");
+	} catch (error) {
+		logger.error("Error closing MongoDB connection", error);
+		throw error;
+	}
 }

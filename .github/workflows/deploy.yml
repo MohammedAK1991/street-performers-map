@@ -1,0 +1,292 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [ main ]
+    tags: [ 'v*' ]
+
+env:
+  NODE_VERSION: '20'
+  PNPM_VERSION: '8'
+
+jobs:
+  # Build and deploy backend
+  deploy-backend:
+    name: 'Deploy Backend to Production'
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+    environment: production
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build shared types
+        run: pnpm --filter @spm/shared-types build
+
+      - name: Build backend
+        run: pnpm --filter @spm/backend build
+
+      - name: Create deployment package
+        run: |
+          mkdir -p deployment
+          cp -r apps/backend/dist deployment/
+          cp -r apps/backend/node_modules deployment/ || true
+          cp apps/backend/package.json deployment/
+          cp packages/shared-types/dist deployment/shared-types || true
+
+      # Deploy to your preferred platform
+      # Example: Deploy to DigitalOcean App Platform
+      - name: Deploy to DigitalOcean
+        if: false # Enable this when ready
+        uses: digitalocean/app_action@v1.1.5
+        with:
+          app_name: streetperformersmap-api
+          token: ${{ secrets.DO_API_TOKEN }}
+
+      # Example: Deploy to Railway
+      - name: Deploy to Railway  
+        if: false # Enable this when ready
+        uses: railway/railway@v1
+        with:
+          command: up
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+
+      # Example: Deploy to Heroku
+      - name: Deploy to Heroku
+        if: false # Enable this when ready
+        uses: akhileshns/heroku-deploy@v3.12.12
+        with:
+          heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
+          heroku_app_name: streetperformersmap-api
+          heroku_email: ${{ secrets.HEROKU_EMAIL }}
+          usedocker: false
+          appdir: apps/backend
+
+      # Example: Deploy with Docker to any container platform
+      - name: Set up Docker Buildx
+        if: false # Enable this when ready
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to DockerHub
+        if: false # Enable this when ready
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+      - name: Build and push Docker image
+        if: false # Enable this when ready
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: apps/backend/Dockerfile
+          push: true
+          tags: |
+            ${{ secrets.DOCKER_HUB_USERNAME }}/streetperformersmap-api:latest
+            ${{ secrets.DOCKER_HUB_USERNAME }}/streetperformersmap-api:${{ github.sha }}
+
+  # Build and deploy frontend
+  deploy-frontend:
+    name: 'Deploy Frontend to Production'
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+    environment: production
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build shared types
+        run: pnpm --filter @spm/shared-types build
+
+      - name: Build frontend
+        run: pnpm --filter @spm/frontend build
+        env:
+          VITE_API_URL: ${{ secrets.VITE_API_URL }}
+          VITE_WS_URL: ${{ secrets.VITE_WS_URL }}
+          VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
+          VITE_STRIPE_PUBLISHABLE_KEY: ${{ secrets.VITE_STRIPE_PUBLISHABLE_KEY }}
+          VITE_GOOGLE_MAPS_API_KEY: ${{ secrets.VITE_GOOGLE_MAPS_API_KEY }}
+
+      # Deploy to Netlify
+      - name: Deploy to Netlify
+        uses: nwtgck/actions-netlify@v2.1.0
+        with:
+          publish-dir: apps/frontend/dist
+          production-branch: main
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          deploy-message: |
+            Deploy from GitHub Actions
+            Commit: ${{ github.sha }}
+            Branch: ${{ github.ref_name }}
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+
+      # Alternative: Deploy to Vercel
+      - name: Deploy to Vercel
+        if: false # Enable this instead of Netlify if preferred
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prod'
+          working-directory: apps/frontend
+
+      # Alternative: Deploy to AWS S3 + CloudFront
+      - name: Deploy to AWS S3
+        if: false # Enable this for AWS deployment
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: us-east-1
+        run: |
+          aws s3 sync apps/frontend/dist/ s3://${{ secrets.AWS_S3_BUCKET }} --delete
+          aws cloudfront create-invalidation --distribution-id ${{ secrets.AWS_CLOUDFRONT_ID }} --paths "/*"
+
+  # Database migrations (if needed)
+  migrate-database:
+    name: 'Run Database Migrations'
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    needs: [deploy-backend]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run database migrations
+        run: |
+          # Add your migration commands here
+          echo "Running database migrations..."
+          # pnpm --filter @spm/backend migrate
+        env:
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          NODE_ENV: production
+
+  # Smoke tests after deployment
+  smoke-tests:
+    name: 'Production Smoke Tests'
+    runs-on: ubuntu-latest
+    needs: [deploy-backend, deploy-frontend]
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Test API health
+        run: |
+          echo "Testing API health..."
+          response=$(curl -s -o /dev/null -w "%{http_code}" ${{ secrets.PRODUCTION_API_URL }}/health)
+          if [ $response != "200" ]; then
+            echo "❌ API health check failed with status $response"
+            exit 1
+          fi
+          echo "✅ API health check passed"
+
+      - name: Test frontend availability
+        run: |
+          echo "Testing frontend availability..."
+          response=$(curl -s -o /dev/null -w "%{http_code}" ${{ secrets.PRODUCTION_FRONTEND_URL }})
+          if [ $response != "200" ]; then
+            echo "❌ Frontend availability check failed with status $response"
+            exit 1
+          fi
+          echo "✅ Frontend availability check passed"
+
+      - name: Test critical API endpoints
+        run: |
+          echo "Testing critical API endpoints..."
+          
+          # Test performances endpoint
+          response=$(curl -s -o /dev/null -w "%{http_code}" "${{ secrets.PRODUCTION_API_URL }}/performances/nearby?lat=40.7128&lng=-74.0060")
+          if [ $response != "200" ]; then
+            echo "❌ Performances endpoint failed with status $response"
+            exit 1
+          fi
+          
+          # Test payment config endpoint
+          response=$(curl -s -o /dev/null -w "%{http_code}" "${{ secrets.PRODUCTION_API_URL }}/payments/config")
+          if [ $response != "200" ]; then
+            echo "❌ Payment config endpoint failed with status $response"
+            exit 1
+          fi
+          
+          echo "✅ Critical API endpoints check passed"
+
+  # Notify deployment status
+  notify-deployment:
+    name: 'Notify Deployment Status'
+    runs-on: ubuntu-latest
+    if: always()
+    needs: [deploy-backend, deploy-frontend, smoke-tests]
+    
+    steps:
+      - name: Notify success
+        if: ${{ needs.deploy-backend.result == 'success' && needs.deploy-frontend.result == 'success' && needs.smoke-tests.result == 'success' }}
+        run: |
+          echo "🚀 Deployment successful!"
+          echo "Frontend: ${{ secrets.PRODUCTION_FRONTEND_URL }}"
+          echo "API: ${{ secrets.PRODUCTION_API_URL }}"
+          echo "Docs: ${{ secrets.PRODUCTION_API_URL }}/docs"
+
+      - name: Notify failure
+        if: ${{ needs.deploy-backend.result == 'failure' || needs.deploy-frontend.result == 'failure' || needs.smoke-tests.result == 'failure' }}
+        run: |
+          echo "❌ Deployment failed!"
+          exit 1
+
+      # Optional: Send notification to Slack/Discord
+      - name: Send Slack notification
+        if: false # Enable if you have Slack integration
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          text: |
+            Deployment ${{ job.status }}!
+            Environment: Production
+            Commit: ${{ github.sha }}
+            Author: ${{ github.actor }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

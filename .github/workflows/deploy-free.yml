@@ -1,0 +1,99 @@
+name: Free Tier Deployment
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  # First run all tests
+  test:
+    uses: ./.github/workflows/ci.yml
+
+  # Deploy frontend to Netlify (Free)
+  deploy-frontend:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+          
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build shared types
+        run: pnpm --filter @spm/shared-types build
+
+      - name: Build frontend
+        run: pnpm --filter @spm/frontend build
+        env:
+          VITE_API_URL: ${{ secrets.PRODUCTION_API_URL }}
+          VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
+          VITE_STRIPE_PUBLISHABLE_KEY: ${{ secrets.VITE_STRIPE_PUBLISHABLE_KEY }}
+          VITE_GOOGLE_MAPS_API_KEY: ${{ secrets.VITE_GOOGLE_MAPS_API_KEY }}
+
+      - name: Deploy to Netlify
+        uses: nwtgck/actions-netlify@v3.0
+        with:
+          publish-dir: './apps/frontend/dist'
+          production-branch: main
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          deploy-message: "Deploy from GitHub Actions"
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+
+  # Deploy backend to Railway (Free credits)
+  deploy-backend:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+          
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build shared types
+        run: pnpm --filter @spm/shared-types build
+
+      - name: Build backend
+        run: pnpm --filter @spm/backend build
+
+      - name: Deploy to Railway
+        uses: railwayapp/cli@v0
+        with:
+          command: up --service backend
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+
+  # Update environment after deployment
+  post-deploy:
+    needs: [deploy-frontend, deploy-backend]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify deployment success
+        run: |
+          echo "🚀 Deployment completed!"
+          echo "Frontend: https://your-app.netlify.app"
+          echo "Backend: https://your-app.railway.app"

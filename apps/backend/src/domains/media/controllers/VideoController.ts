@@ -1,417 +1,507 @@
-import { Request, Response, NextFunction } from 'express';
-import { VideoService } from '../services/VideoService';
+import type { NextFunction, Request, Response } from "express";
+import { VideoService } from "../services/VideoService";
 // Define authenticated request interface
 interface AuthenticatedRequest extends Request {
-  user?: {
-    userId: string;
-    role: string;
-  };
+	user?: {
+		userId: string;
+		role: string;
+	};
 }
 
 export class VideoController {
-  private videoService: VideoService;
+	private videoService: VideoService;
 
-  constructor() {
-    this.videoService = new VideoService();
-  }
+	constructor() {
+		this.videoService = new VideoService();
+	}
 
-  /**
-   * Upload a video
-   */
-  uploadVideo = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-    try {
-      const userId = req.user!.userId;
-      const { performanceId } = req.body;
-      const file = req.file;
+	private validateUserId(userId: string | undefined, res: Response): boolean {
+		if (!userId) {
+			res.status(401).json({
+				success: false,
+				error: { message: "Authentication required" },
+			});
+			return false;
+		}
+		return true;
+	}
 
-      if (!file) {
-        return res.status(400).json({
-          success: false,
-          error: { message: 'No video file provided' },
-        });
-      }
+	/**
+	 * Upload a video
+	 */
+	uploadVideo = async (
+		req: AuthenticatedRequest,
+		res: Response,
+		next: NextFunction,
+	) => {
+		try {
+			const userId = req.user?.userId;
+			const { performanceId } = req.body;
+			const file = req.file;
 
-      const result = await this.videoService.uploadVideo({
-        userId,
-        performanceId,
-        file,
-      });
+			if (!userId) {
+				return res.status(401).json({
+					success: false,
+					error: { message: "Authentication required" },
+				});
+			}
 
-      res.status(201).json({
-        success: true,
-        data: result,
-        meta: { timestamp: new Date().toISOString() },
-      });
-    } catch (error) {
-      next(error);
-    }
-  };
+			if (!file) {
+				return res.status(400).json({
+					success: false,
+					error: { message: "No video file provided" },
+				});
+			}
 
-  /**
-   * Get user's videos
-   */
-  getUserVideos = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-    try {
-      const userId = req.user!.userId;
-      const limit = parseInt(req.query.limit as string) || 20;
+			const result = await this.videoService.uploadVideo({
+				userId,
+				performanceId,
+				file,
+			});
 
-      const videos = await this.videoService.getUserVideos(userId, limit);
+			res.status(201).json({
+				success: true,
+				data: result,
+				meta: { timestamp: new Date().toISOString() },
+			});
+		} catch (error) {
+			next(error);
+		}
+	};
 
-      res.status(200).json({
-        success: true,
-        data: videos,
-        meta: { 
-          count: videos.length,
-          limit,
-          timestamp: new Date().toISOString() 
-        },
-      });
-    } catch (error) {
-      next(error);
-    }
-  };
+	/**
+	 * Get user's videos
+	 */
+	getUserVideos = async (
+		req: AuthenticatedRequest,
+		res: Response,
+		next: NextFunction,
+	) => {
+		try {
+			const userId = req.user?.userId;
+			const limit = Number.parseInt(req.query.limit as string) || 20;
 
-  /**
-   * Get videos for a specific performance
-   */
-  getPerformanceVideos = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const { performanceId } = req.params;
+			if (!userId) {
+				return res.status(401).json({
+					success: false,
+					error: { message: "Authentication required" },
+				});
+			}
 
-      const videos = await this.videoService.getPerformanceVideos(performanceId);
+			const videos = await this.videoService.getUserVideos(userId, limit);
 
-      res.status(200).json({
-        success: true,
-        data: videos,
-        meta: { 
-          count: videos.length,
-          timestamp: new Date().toISOString() 
-        },
-      });
-    } catch (error) {
-      next(error);
-    }
-  };
+			res.status(200).json({
+				success: true,
+				data: videos,
+				meta: {
+					count: videos.length,
+					limit,
+					timestamp: new Date().toISOString(),
+				},
+			});
+		} catch (error) {
+			next(error);
+		}
+	};
 
-  /**
-   * Get a specific video
-   */
-  getVideo = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const { videoId } = req.params;
+	/**
+	 * Get videos for a specific performance
+	 */
+	getPerformanceVideos = async (
+		req: Request,
+		res: Response,
+		next: NextFunction,
+	) => {
+		try {
+			const { performanceId } = req.params;
 
-      const video = await this.videoService.getVideo(videoId);
+			const videos =
+				await this.videoService.getPerformanceVideos(performanceId);
 
-      if (!video) {
-        return res.status(404).json({
-          success: false,
-          error: { message: 'Video not found' },
-        });
-      }
+			res.status(200).json({
+				success: true,
+				data: videos,
+				meta: {
+					count: videos.length,
+					timestamp: new Date().toISOString(),
+				},
+			});
+		} catch (error) {
+			next(error);
+		}
+	};
 
-      res.status(200).json({
-        success: true,
-        data: video,
-        meta: { timestamp: new Date().toISOString() },
-      });
-    } catch (error) {
-      next(error);
-    }
-  };
+	/**
+	 * Get a specific video
+	 */
+	getVideo = async (req: Request, res: Response, next: NextFunction) => {
+		try {
+			const { videoId } = req.params;
 
-  /**
-   * Record a video view
-   */
-  recordView = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const { videoId } = req.params;
+			const video = await this.videoService.getVideo(videoId);
 
-      const video = await this.videoService.recordView(videoId);
+			if (!video) {
+				return res.status(404).json({
+					success: false,
+					error: { message: "Video not found" },
+				});
+			}
 
-      if (!video) {
-        return res.status(404).json({
-          success: false,
-          error: { message: 'Video not found' },
-        });
-      }
+			res.status(200).json({
+				success: true,
+				data: video,
+				meta: { timestamp: new Date().toISOString() },
+			});
+		} catch (error) {
+			next(error);
+		}
+	};
 
-      res.status(200).json({
-        success: true,
-        data: { views: video.views },
-        meta: { timestamp: new Date().toISOString() },
-      });
-    } catch (error) {
-      next(error);
-    }
-  };
+	/**
+	 * Record a video view
+	 */
+	recordView = async (req: Request, res: Response, next: NextFunction) => {
+		try {
+			const { videoId } = req.params;
 
-  /**
-   * Record watch time
-   */
-  recordWatchTime = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const { videoId } = req.params;
-      const { seconds } = req.body;
+			const video = await this.videoService.recordView(videoId);
 
-      if (!seconds || seconds < 0) {
-        return res.status(400).json({
-          success: false,
-          error: { message: 'Valid seconds value is required' },
-        });
-      }
+			if (!video) {
+				return res.status(404).json({
+					success: false,
+					error: { message: "Video not found" },
+				});
+			}
 
-      const video = await this.videoService.recordWatchTime(videoId, seconds);
+			res.status(200).json({
+				success: true,
+				data: { views: video.views },
+				meta: { timestamp: new Date().toISOString() },
+			});
+		} catch (error) {
+			next(error);
+		}
+	};
 
-      if (!video) {
-        return res.status(404).json({
-          success: false,
-          error: { message: 'Video not found' },
-        });
-      }
+	/**
+	 * Record watch time
+	 */
+	recordWatchTime = async (req: Request, res: Response, next: NextFunction) => {
+		try {
+			const { videoId } = req.params;
+			const { seconds } = req.body;
 
-      res.status(200).json({
-        success: true,
-        data: { totalWatchTime: video.totalWatchTime },
-        meta: { timestamp: new Date().toISOString() },
-      });
-    } catch (error) {
-      next(error);
-    }
-  };
+			if (!seconds || seconds < 0) {
+				return res.status(400).json({
+					success: false,
+					error: { message: "Valid seconds value is required" },
+				});
+			}
 
-  /**
-   * Delete user's video
-   */
-  deleteVideo = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-    try {
-      const userId = req.user!.userId;
-      const { videoId } = req.params;
+			const video = await this.videoService.recordWatchTime(videoId, seconds);
 
-      await this.videoService.deleteVideo(videoId, userId);
+			if (!video) {
+				return res.status(404).json({
+					success: false,
+					error: { message: "Video not found" },
+				});
+			}
 
-      res.status(200).json({
-        success: true,
-        data: { message: 'Video deleted successfully' },
-        meta: { timestamp: new Date().toISOString() },
-      });
-    } catch (error) {
-      next(error);
-    }
-  };
+			res.status(200).json({
+				success: true,
+				data: { totalWatchTime: video.totalWatchTime },
+				meta: { timestamp: new Date().toISOString() },
+			});
+		} catch (error) {
+			next(error);
+		}
+	};
 
-  /**
-   * Save client-uploaded video to database
-   */
-  saveClientUpload = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-    try {
-      const userId = req.user!.userId;
-      const videoData = req.body;
+	/**
+	 * Delete user's video
+	 */
+	deleteVideo = async (
+		req: AuthenticatedRequest,
+		res: Response,
+		next: NextFunction,
+	) => {
+		try {
+			const userId = req.user?.userId;
+			const { videoId } = req.params;
 
-      // Validate required fields
-      if (!videoData.cloudinaryPublicId || !videoData.filename) {
-        return res.status(400).json({
-          success: false,
-          error: { message: 'Missing required video data' },
-        });
-      }
+			if (!userId) {
+				return res.status(401).json({
+					success: false,
+					error: { message: "Authentication required" },
+				});
+			}
 
-      const video = await this.videoService.saveClientUpload({
-        ...videoData,
-        userId,
-      });
+			await this.videoService.deleteVideo(videoId, userId);
 
-      res.status(201).json({
-        success: true,
-        data: video,
-        meta: { timestamp: new Date().toISOString() },
-      });
-    } catch (error) {
-      next(error);
-    }
-  };
+			res.status(200).json({
+				success: true,
+				data: { message: "Video deleted successfully" },
+				meta: { timestamp: new Date().toISOString() },
+			});
+		} catch (error) {
+			next(error);
+		}
+	};
 
-  /**
-   * Link video to performance
-   */
-  linkVideoToPerformance = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-    try {
-      const userId = req.user!.userId;
-      const { videoId } = req.params;
-      const { performanceId } = req.body;
+	/**
+	 * Save client-uploaded video to database
+	 */
+	saveClientUpload = async (
+		req: AuthenticatedRequest,
+		res: Response,
+		next: NextFunction,
+	) => {
+		try {
+			const userId = req.user?.userId;
+			const videoData = req.body;
 
-      if (!performanceId) {
-        return res.status(400).json({
-          success: false,
-          error: { message: 'Performance ID is required' },
-        });
-      }
+			if (!this.validateUserId(userId, res)) return;
 
-      const video = await this.videoService.linkVideoToPerformance(videoId, performanceId, userId);
+			// Validate required fields
+			if (!videoData.cloudinaryPublicId || !videoData.filename) {
+				return res.status(400).json({
+					success: false,
+					error: { message: "Missing required video data" },
+				});
+			}
 
-      if (!video) {
-        return res.status(404).json({
-          success: false,
-          error: { message: 'Video not found or you do not have permission to modify it' },
-        });
-      }
+			const video = await this.videoService.saveClientUpload({
+				...videoData,
+				userId,
+			});
 
-      res.status(200).json({
-        success: true,
-        data: video,
-        meta: { timestamp: new Date().toISOString() },
-      });
-    } catch (error) {
-      next(error);
-    }
-  };
+			res.status(201).json({
+				success: true,
+				data: video,
+				meta: { timestamp: new Date().toISOString() },
+			});
+		} catch (error) {
+			next(error);
+		}
+	};
 
-  /**
-   * Check upload eligibility
-   */
-  checkUploadEligibility = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-    try {
-      const userId = req.user!.userId;
+	/**
+	 * Link video to performance
+	 */
+	linkVideoToPerformance = async (
+		req: AuthenticatedRequest,
+		res: Response,
+		next: NextFunction,
+	) => {
+		try {
+			const userId = req.user?.userId;
+			const { videoId } = req.params;
+			const { performanceId } = req.body;
 
-      const [canUpload, todayCount] = await Promise.all([
-        this.videoService.canUserUploadToday(userId),
-        this.videoService.getUserTodayUploadCount(userId),
-      ]);
+			if (!this.validateUserId(userId, res)) return;
 
-      res.status(200).json({
-        success: true,
-        data: {
-          canUpload,
-          todayCount,
-          dailyLimit: 5,
-          remainingUploads: Math.max(0, 5 - todayCount),
-        },
-        meta: { timestamp: new Date().toISOString() },
-      });
-    } catch (error) {
-      next(error);
-    }
-  };
+			if (!performanceId) {
+				return res.status(400).json({
+					success: false,
+					error: { message: "Performance ID is required" },
+				});
+			}
 
-  /**
-   * Get user's video analytics
-   */
-  getVideoAnalytics = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-    try {
-      const userId = req.user!.userId;
+			const video = await this.videoService.linkVideoToPerformance(
+				videoId,
+				performanceId,
+				userId!,
+			);
 
-      const analytics = await this.videoService.getUserVideoAnalytics(userId);
+			if (!video) {
+				return res.status(404).json({
+					success: false,
+					error: {
+						message:
+							"Video not found or you do not have permission to modify it",
+					},
+				});
+			}
 
-      res.status(200).json({
-        success: true,
-        data: analytics,
-        meta: { timestamp: new Date().toISOString() },
-      });
-    } catch (error) {
-      next(error);
-    }
-  };
+			res.status(200).json({
+				success: true,
+				data: video,
+				meta: { timestamp: new Date().toISOString() },
+			});
+		} catch (error) {
+			next(error);
+		}
+	};
 
-  /**
-   * Get user's latest video
-   */
-  getLatestVideo = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-    try {
-      const userId = req.user!.userId;
+	/**
+	 * Check upload eligibility
+	 */
+	checkUploadEligibility = async (
+		req: AuthenticatedRequest,
+		res: Response,
+		next: NextFunction,
+	) => {
+		try {
+			const userId = req.user?.userId;
 
-      const video = await this.videoService.getUserLatestVideo(userId);
+			if (!this.validateUserId(userId, res)) return;
 
-      res.status(200).json({
-        success: true,
-        data: video,
-        meta: { timestamp: new Date().toISOString() },
-      });
-    } catch (error) {
-      next(error);
-    }
-  };
+			const [canUpload, todayCount] = await Promise.all([
+				this.videoService.canUserUploadToday(userId!),
+				this.videoService.getUserTodayUploadCount(userId!),
+			]);
 
-  // Admin/Moderation endpoints (would need admin middleware)
-  
-  /**
-   * Get videos for moderation
-   */
-  getVideosForModeration = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const limit = parseInt(req.query.limit as string) || 50;
+			res.status(200).json({
+				success: true,
+				data: {
+					canUpload,
+					todayCount,
+					dailyLimit: 5,
+					remainingUploads: Math.max(0, 5 - todayCount),
+				},
+				meta: { timestamp: new Date().toISOString() },
+			});
+		} catch (error) {
+			next(error);
+		}
+	};
 
-      const videos = await this.videoService.getVideosForModeration(limit);
+	/**
+	 * Get user's video analytics
+	 */
+	getVideoAnalytics = async (
+		req: AuthenticatedRequest,
+		res: Response,
+		next: NextFunction,
+	) => {
+		try {
+			const userId = req.user?.userId;
 
-      res.status(200).json({
-        success: true,
-        data: videos,
-        meta: { 
-          count: videos.length,
-          limit,
-          timestamp: new Date().toISOString() 
-        },
-      });
-    } catch (error) {
-      next(error);
-    }
-  };
+			if (!this.validateUserId(userId, res)) return;
 
-  /**
-   * Approve video
-   */
-  approveVideo = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const { videoId } = req.params;
+			const analytics = await this.videoService.getUserVideoAnalytics(userId!);
 
-      const video = await this.videoService.approveVideo(videoId);
+			res.status(200).json({
+				success: true,
+				data: analytics,
+				meta: { timestamp: new Date().toISOString() },
+			});
+		} catch (error) {
+			next(error);
+		}
+	};
 
-      if (!video) {
-        return res.status(404).json({
-          success: false,
-          error: { message: 'Video not found' },
-        });
-      }
+	/**
+	 * Get user's latest video
+	 */
+	getLatestVideo = async (
+		req: AuthenticatedRequest,
+		res: Response,
+		next: NextFunction,
+	) => {
+		try {
+			const userId = req.user?.userId;
 
-      res.status(200).json({
-        success: true,
-        data: video,
-        meta: { timestamp: new Date().toISOString() },
-      });
-    } catch (error) {
-      next(error);
-    }
-  };
+			if (!this.validateUserId(userId, res)) return;
 
-  /**
-   * Reject video
-   */
-  rejectVideo = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const { videoId } = req.params;
-      const { reason } = req.body;
+			const video = await this.videoService.getUserLatestVideo(userId!);
 
-      if (!reason) {
-        return res.status(400).json({
-          success: false,
-          error: { message: 'Rejection reason is required' },
-        });
-      }
+			res.status(200).json({
+				success: true,
+				data: video,
+				meta: { timestamp: new Date().toISOString() },
+			});
+		} catch (error) {
+			next(error);
+		}
+	};
 
-      const video = await this.videoService.rejectVideo(videoId, reason);
+	// Admin/Moderation endpoints (would need admin middleware)
 
-      if (!video) {
-        return res.status(404).json({
-          success: false,
-          error: { message: 'Video not found' },
-        });
-      }
+	/**
+	 * Get videos for moderation
+	 */
+	getVideosForModeration = async (
+		req: Request,
+		res: Response,
+		next: NextFunction,
+	) => {
+		try {
+			const limit = Number.parseInt(req.query.limit as string) || 50;
 
-      res.status(200).json({
-        success: true,
-        data: video,
-        meta: { timestamp: new Date().toISOString() },
-      });
-    } catch (error) {
-      next(error);
-    }
-  };
+			const videos = await this.videoService.getVideosForModeration(limit);
+
+			res.status(200).json({
+				success: true,
+				data: videos,
+				meta: {
+					count: videos.length,
+					limit,
+					timestamp: new Date().toISOString(),
+				},
+			});
+		} catch (error) {
+			next(error);
+		}
+	};
+
+	/**
+	 * Approve video
+	 */
+	approveVideo = async (req: Request, res: Response, next: NextFunction) => {
+		try {
+			const { videoId } = req.params;
+
+			const video = await this.videoService.approveVideo(videoId);
+
+			if (!video) {
+				return res.status(404).json({
+					success: false,
+					error: { message: "Video not found" },
+				});
+			}
+
+			res.status(200).json({
+				success: true,
+				data: video,
+				meta: { timestamp: new Date().toISOString() },
+			});
+		} catch (error) {
+			next(error);
+		}
+	};
+
+	/**
+	 * Reject video
+	 */
+	rejectVideo = async (req: Request, res: Response, next: NextFunction) => {
+		try {
+			const { videoId } = req.params;
+			const { reason } = req.body;
+
+			if (!reason) {
+				return res.status(400).json({
+					success: false,
+					error: { message: "Rejection reason is required" },
+				});
+			}
+
+			const video = await this.videoService.rejectVideo(videoId, reason);
+
+			if (!video) {
+				return res.status(404).json({
+					success: false,
+					error: { message: "Video not found" },
+				});
+			}
+
+			res.status(200).json({
+				success: true,
+				data: video,
+				meta: { timestamp: new Date().toISOString() },
+			});
+		} catch (error) {
+			next(error);
+		}
+	};
 }

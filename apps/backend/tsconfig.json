@@ -1,18 +1,18 @@
 {
-  "extends": "../../tsconfig.json",
-  "compilerOptions": {
-    "outDir": "./dist",
-    "rootDir": "./src",
-    "noEmit": false,
-    "composite": true,
-    "baseUrl": "./src",
-    "paths": {
-      "@/*": ["*"],
-      "@/domains/*": ["domains/*"],
-      "@/shared/*": ["shared/*"],
-      "@spm/shared-types": ["../../packages/shared-types/src"]
-    }
-  },
-  "include": ["src/**/*"],
-  "exclude": ["dist", "node_modules", "**/*.test.ts"]
+	"extends": "../../tsconfig.json",
+	"compilerOptions": {
+		"outDir": "./dist",
+		"rootDir": "./src",
+		"noEmit": false,
+		"composite": true,
+		"baseUrl": "./src",
+		"paths": {
+			"@/*": ["*"],
+			"@/domains/*": ["domains/*"],
+			"@/shared/*": ["shared/*"],
+			"@spm/shared-types": ["../../packages/shared-types/src"]
+		}
+	},
+	"include": ["src/**/*"],
+	"exclude": ["dist", "node_modules", "**/*.test.ts"]
 }

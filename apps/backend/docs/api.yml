@@ -1,0 +1,853 @@
+openapi: 3.0.3
+info:
+  title: StreetPerformersMap API
+  description: |
+    Real-time platform connecting street musicians with audiences through an interactive map experience.
+    
+    ## Authentication
+    This API uses JWT tokens for authentication. Include the token in the Authorization header:
+    ```
+    Authorization: Bearer <your-jwt-token>
+    ```
+    
+    ## Rate Limiting
+    - Public endpoints: 100 requests per minute
+    - Authenticated endpoints: 500 requests per minute
+    - Payment endpoints: 50 requests per minute
+    
+    ## WebSocket Events
+    Real-time events are available via WebSocket at `/ws`:
+    - Performance updates (start, end, location changes)
+    - New tips and likes
+    - Live viewer counts
+    
+  version: 1.0.0
+  contact:
+    name: StreetPerformersMap Support
+    email: support@streetperformersmap.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:3001/api/v1
+    description: Development server
+  - url: https://api.streetperformersmap.com/v1
+    description: Production server
+
+paths:
+  # Health Check
+  /health:
+    get:
+      summary: Health check endpoint
+      description: Returns the health status of the API
+      tags:
+        - System
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  timestamp:
+                    type: string
+                    format: date-time
+                  environment:
+                    type: string
+                    example: development
+                  version:
+                    type: string
+                    example: 1.0.0
+
+  # Performance Endpoints
+  /performances:
+    get:
+      summary: Get nearby performances
+      description: Retrieve performances near a specific location
+      tags:
+        - Performances
+      parameters:
+        - name: lat
+          in: query
+          required: true
+          schema:
+            type: number
+          description: Latitude
+        - name: lng
+          in: query
+          required: true
+          schema:
+            type: number
+          description: Longitude
+        - name: radius
+          in: query
+          required: false
+          schema:
+            type: number
+            default: 10
+          description: Search radius in kilometers
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [live, scheduled, completed]
+          description: Filter by performance status
+      responses:
+        '200':
+          description: List of nearby performances
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Performance'
+    
+    post:
+      summary: Create a new performance
+      description: Create a new street performance
+      tags:
+        - Performances
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePerformanceRequest'
+      responses:
+        '201':
+          description: Performance created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/Performance'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /performances/{id}:
+    get:
+      summary: Get performance by ID
+      description: Retrieve a specific performance by its ID
+      tags:
+        - Performances
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Performance ID
+      responses:
+        '200':
+          description: Performance details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/Performance'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    
+    put:
+      summary: Update performance
+      description: Update an existing performance (performer only)
+      tags:
+        - Performances
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePerformanceRequest'
+      responses:
+        '200':
+          description: Performance updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/Performance'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /performances/{id}/like:
+    post:
+      summary: Toggle like on performance
+      description: Like or unlike a performance
+      tags:
+        - Performances
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Like toggled successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      liked:
+                        type: boolean
+                      totalLikes:
+                        type: number
+
+  # Analytics Endpoints
+  /performances/analytics:
+    get:
+      summary: Get performer analytics
+      description: Get comprehensive analytics for the authenticated performer
+      tags:
+        - Analytics
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: period
+          in: query
+          schema:
+            type: string
+            enum: [7d, 30d, 90d, 1y]
+            default: 30d
+          description: Analytics time period
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date
+          description: Custom start date (YYYY-MM-DD)
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date
+          description: Custom end date (YYYY-MM-DD)
+      responses:
+        '200':
+          description: Performer analytics data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/PerformanceAnalytics'
+
+  # Payment Endpoints
+  /payments/tip:
+    post:
+      summary: Create a tip payment
+      description: Create a payment intent for tipping a performer
+      tags:
+        - Payments
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTipRequest'
+      responses:
+        '201':
+          description: Tip payment created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/TipPaymentResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /payments/earnings:
+    get:
+      summary: Get performer earnings
+      description: Get earnings summary and transaction history for the authenticated performer
+      tags:
+        - Payments
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date
+          description: Start date for earnings period
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date
+          description: End date for earnings period
+      responses:
+        '200':
+          description: Earnings data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      earnings:
+                        $ref: '#/components/schemas/EarningsSummary'
+                      transactions:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Transaction'
+
+  /payments/connect/account:
+    post:
+      summary: Create Stripe Connect account
+      description: Create a Stripe Connect Express account for receiving payouts
+      tags:
+        - Payments
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - country
+              properties:
+                email:
+                  type: string
+                  format: email
+                country:
+                  type: string
+                  minLength: 2
+                  maxLength: 2
+                  example: "US"
+                businessType:
+                  type: string
+                  enum: [individual, company]
+                  default: individual
+      responses:
+        '200':
+          description: Connect account created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/StripeConnectAccount'
+
+    get:
+      summary: Get Stripe Connect account
+      description: Get the authenticated user's Stripe Connect account details
+      tags:
+        - Payments
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Connect account details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/StripeConnectAccount'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Performance:
+      type: object
+      required:
+        - _id
+        - title
+        - performerId
+        - genre
+        - status
+        - scheduledFor
+        - route
+        - engagement
+        - createdAt
+        - updatedAt
+      properties:
+        _id:
+          type: string
+          example: "64abc123def456789"
+        title:
+          type: string
+          example: "Jazz at Central Park"
+        description:
+          type: string
+          example: "Smooth jazz performance in the heart of Manhattan"
+        performerId:
+          type: string
+          example: "performer_123"
+        genre:
+          type: string
+          enum: [jazz, rock, folk, classical, electronic, hip-hop, country, blues, reggae, other]
+          example: "jazz"
+        status:
+          type: string
+          enum: [scheduled, live, completed, cancelled]
+          example: "live"
+        scheduledFor:
+          type: string
+          format: date-time
+        endTime:
+          type: string
+          format: date-time
+        route:
+          type: object
+          properties:
+            stops:
+              type: array
+              items:
+                type: object
+                properties:
+                  location:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                      coordinates:
+                        type: array
+                        items:
+                          type: number
+                        minItems: 2
+                        maxItems: 2
+                  startTime:
+                    type: string
+                    format: date-time
+                  endTime:
+                    type: string
+                    format: date-time
+                  status:
+                    type: string
+                    enum: [pending, active, completed]
+        engagement:
+          type: object
+          properties:
+            views:
+              type: number
+            likes:
+              type: number
+            tips:
+              type: number
+            likedBy:
+              type: array
+              items:
+                type: string
+        videoUrl:
+          type: string
+          format: uri
+        videoThumbnail:
+          type: string
+          format: uri
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    CreatePerformanceRequest:
+      type: object
+      required:
+        - title
+        - genre
+        - scheduledFor
+        - route
+      properties:
+        title:
+          type: string
+          minLength: 3
+          maxLength: 100
+        description:
+          type: string
+          maxLength: 500
+        genre:
+          type: string
+          enum: [jazz, rock, folk, classical, electronic, hip-hop, country, blues, reggae, other]
+        scheduledFor:
+          type: string
+          format: date-time
+        route:
+          type: object
+          required:
+            - stops
+          properties:
+            stops:
+              type: array
+              minItems: 1
+              items:
+                type: object
+                required:
+                  - location
+                  - startTime
+                properties:
+                  location:
+                    type: object
+                    required:
+                      - name
+                      - coordinates
+                    properties:
+                      name:
+                        type: string
+                      coordinates:
+                        type: array
+                        items:
+                          type: number
+                        minItems: 2
+                        maxItems: 2
+                  startTime:
+                    type: string
+                    format: date-time
+                  endTime:
+                    type: string
+                    format: date-time
+
+    UpdatePerformanceRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 3
+          maxLength: 100
+        description:
+          type: string
+          maxLength: 500
+        scheduledFor:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: [scheduled, live, completed, cancelled]
+
+    CreateTipRequest:
+      type: object
+      required:
+        - amount
+        - performanceId
+        - performerId
+      properties:
+        amount:
+          type: number
+          minimum: 0.5
+          maximum: 100
+          example: 5.0
+          description: Tip amount in EUR
+        performanceId:
+          type: string
+          example: "64abc123def456789"
+        performerId:
+          type: string
+          example: "performer_123"
+        isAnonymous:
+          type: boolean
+          default: false
+        publicMessage:
+          type: string
+          maxLength: 200
+          example: "Great performance! 🎵"
+
+    TipPaymentResult:
+      type: object
+      properties:
+        transactionId:
+          type: string
+        paymentIntentId:
+          type: string
+        clientSecret:
+          type: string
+        amount:
+          type: number
+          description: Amount in cents
+        processingFee:
+          type: number
+          description: Processing fee in cents
+        netAmount:
+          type: number
+          description: Net amount after fees in cents
+
+    Transaction:
+      type: object
+      properties:
+        _id:
+          type: string
+        amount:
+          type: number
+          description: Amount in cents
+        currency:
+          type: string
+          example: "EUR"
+        fromUserId:
+          type: string
+        toUserId:
+          type: string
+        performanceId:
+          type: string
+        status:
+          type: string
+          enum: [pending, processing, completed, failed, refunded]
+        isAnonymous:
+          type: boolean
+        publicMessage:
+          type: string
+        processingFee:
+          type: number
+        netAmount:
+          type: number
+        createdAt:
+          type: string
+          format: date-time
+
+    EarningsSummary:
+      type: object
+      properties:
+        totalAmount:
+          type: number
+          description: Total tips received in cents
+        totalNet:
+          type: number
+          description: Net earnings after fees in cents
+        totalFees:
+          type: number
+          description: Total processing fees in cents
+        transactionCount:
+          type: number
+          description: Number of tip transactions
+        averageAmount:
+          type: number
+          description: Average tip amount in cents
+
+    PerformanceAnalytics:
+      type: object
+      properties:
+        overview:
+          type: object
+          properties:
+            totalPerformances:
+              type: number
+            totalViews:
+              type: number
+            totalLikes:
+              type: number
+            totalTips:
+              type: number
+            totalEarnings:
+              type: number
+            averageRating:
+              type: number
+        performanceBreakdown:
+          type: object
+          properties:
+            live:
+              type: number
+            scheduled:
+              type: number
+            completed:
+              type: number
+            cancelled:
+              type: number
+        topPerformances:
+          type: array
+          items:
+            type: object
+            properties:
+              _id:
+                type: string
+              title:
+                type: string
+              views:
+                type: number
+              likes:
+                type: number
+              tips:
+                type: number
+              earnings:
+                type: number
+              date:
+                type: string
+                format: date-time
+        revenueOverTime:
+          type: array
+          items:
+            type: object
+            properties:
+              date:
+                type: string
+                format: date
+              earnings:
+                type: number
+              tips:
+                type: number
+
+    StripeConnectAccount:
+      type: object
+      properties:
+        accountId:
+          type: string
+          example: "acct_1234567890"
+        loginUrl:
+          type: string
+          format: uri
+          example: "https://connect.stripe.com/express/oauth/authorize?..."
+        detailsSubmitted:
+          type: boolean
+        chargesEnabled:
+          type: boolean
+        payoutsEnabled:
+          type: boolean
+
+    Error:
+      type: object
+      required:
+        - success
+        - error
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: object
+          required:
+            - message
+          properties:
+            message:
+              type: string
+              example: "Resource not found"
+            code:
+              type: string
+              example: "NOT_FOUND"
+            details:
+              type: object
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            success: false
+            error:
+              message: "Invalid request parameters"
+              code: "BAD_REQUEST"
+
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            success: false
+            error:
+              message: "Authentication required"
+              code: "UNAUTHORIZED"
+
+    Forbidden:
+      description: Access forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            success: false
+            error:
+              message: "Access denied"
+              code: "FORBIDDEN"
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            success: false
+            error:
+              message: "Resource not found"
+              code: "NOT_FOUND"
+
+tags:
+  - name: System
+    description: System health and status endpoints
+  - name: Performances
+    description: Street performance management
+  - name: Analytics
+    description: Performance analytics and insights
+  - name: Payments
+    description: Tips, earnings, and payment processing

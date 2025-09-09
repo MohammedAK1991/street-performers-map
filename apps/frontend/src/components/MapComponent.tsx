@@ -1,442 +1,237 @@
-import { useState, useCallback } from 'react';
-import { APIProvider, Map, AdvancedMarker } from '@vis.gl/react-google-maps';
-import type { Performance } from '@spm/shared-types';
+import type { Performance } from "@spm/shared-types";
+import {
+	APIProvider,
+	AdvancedMarker,
+	Map,
+	useMap,
+} from "@vis.gl/react-google-maps";
+import { useCallback, useRef, useEffect } from "react";
 
 interface MapComponentProps {
-  userLocation: [number, number];
-  performances: Performance[];
-  filters: {
-    genre: string;
-    timeRange: string;
-    distance: number;
-    popularity: string;
-  };
-  onPerformanceClick: (performance: Performance) => void;
-}
-
-interface PerformanceMarkerProps {
-  performance: Performance;
-  onClick: () => void;
-}
-
-function PerformanceMarker({ performance, onClick }: PerformanceMarkerProps) {
-  const currentStop = performance.route.stops.find(stop => stop.status === 'active') || performance.route.stops[0];
-  const position = {
-    lat: currentStop.location.coordinates[1],
-    lng: currentStop.location.coordinates[0]
-  };
-
-  // Get status-based styling
-  const getStatusColor = () => {
-    switch (performance.status) {
-      case 'live': return '#ef4444'; // red
-      case 'scheduled': return '#3b82f6'; // blue
-      case 'completed': return '#6b7280'; // gray
-      default: return '#8b5cf6'; // purple
-    }
-  };
-
-  const getGenreIcon = () => {
-    switch (performance.genre) {
-      case 'jazz': return '🎷';
-      case 'rock': return '🎸';
-      case 'classical': return '🎻';
-      case 'pop': return '🎤';
-      case 'folk': return '🪕';
-      case 'blues': return '🎵';
-      default: return '🎭';
-    }
-  };
-
-  return (
-    <AdvancedMarker
-      position={position}
-      onClick={onClick}
-      title={`${performance.title} - ${performance.genre}`}
-    >
-      <div style={{ position: 'relative' }}>
-        <div 
-          style={{
-            backgroundColor: getStatusColor(),
-            color: 'white',
-            borderRadius: '50%',
-            width: '40px',
-            height: '40px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '20px',
-            border: '3px solid white',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-            cursor: 'pointer',
-            transition: 'transform 0.2s ease'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'scale(1.1)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'scale(1)';
-          }}
-        >
-          {getGenreIcon()}
-        </div>
-        
-        {/* Video indicator */}
-        {performance.videoUrl && (
-          <div 
-            style={{
-              position: 'absolute',
-              top: '-2px',
-              right: '-2px',
-              backgroundColor: '#ef4444',
-              color: 'white',
-              borderRadius: '50%',
-              width: '16px',
-              height: '16px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '10px',
-              border: '1px solid white',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.3)'
-            }}
-            title="Has video"
-          >
-            📹
-          </div>
-        )}
-      </div>
-    </AdvancedMarker>
-  );
+	userLocation: [number, number];
+	performances: Performance[];
+	filters: {
+		genre: string;
+		timeRange: string;
+		distance: number;
+		popularity: string;
+	};
+	onPerformanceClick: (performance: Performance) => void;
+	onMapRef?: (
+		mapRef: any,
+		panToPerformance: (performance: Performance) => void,
+	) => void;
 }
 
 interface PerformanceStopMarkerProps {
-  performance: Performance;
-  stop: any;
-  stopIndex: number;
-  totalStops: number;
-  onClick: () => void;
+	performance: Performance;
+	stop: any;
+	stopIndex: number;
+	totalStops: number;
+	onClick: () => void;
 }
 
-function PerformanceStopMarker({ performance, stop, stopIndex, totalStops, onClick }: PerformanceStopMarkerProps) {
-  const position = {
-    lat: stop.location.coordinates[1],
-    lng: stop.location.coordinates[0]
-  };
+function PerformanceStopMarker({
+	performance,
+	stop,
+	stopIndex: _stopIndex,
+	totalStops: _totalStops,
+	onClick,
+}: PerformanceStopMarkerProps) {
+	const position = {
+		lat: stop.location.coordinates[1],
+		lng: stop.location.coordinates[0],
+	};
 
-  const getStopColor = () => {
-    if (stop.status === 'active') return '#ef4444'; // red for active
-    if (stop.status === 'completed') return '#6b7280'; // gray for completed
-    return '#3b82f6'; // blue for upcoming
-  };
+	const getStopColor = () => {
+		if (stop.status === "active") return "#ef4444"; // red
+		if (stop.status === "completed") return "#6b7280"; // gray
+		return "#3b82f6"; // blue for scheduled
+	};
 
-  const getGenreIcon = () => {
-    switch (performance.genre) {
-      case 'jazz': return '🎷';
-      case 'rock': return '🎸';
-      case 'classical': return '🎻';
-      case 'pop': return '🎤';
-      case 'folk': return '🪕';
-      case 'blues': return '🎵';
-      default: return '🎭';
-    }
-  };
+	const getGenreIcon = () => {
+		switch (performance.genre) {
+			case "jazz":
+				return "🎷";
+			case "rock":
+				return "🎸";
+			case "folk":
+				return "🪕";
+			case "pop":
+				return "🎤";
+			case "classical":
+				return "🎻";
+			case "blues":
+				return "🎵";
+			case "country":
+				return "🤠";
+			case "electronic":
+				return "🎧";
+			case "hip-hop":
+				return "🎤";
+			case "reggae":
+				return "🌴";
+			default:
+				return "🎵";
+		}
+	};
 
-  return (
-    <AdvancedMarker
-      position={position}
-      onClick={onClick}
-      title={`${performance.title} - Stop ${stopIndex + 1}/${totalStops}`}
-    >
-      <div style={{ position: 'relative' }}>
-        <div 
-          style={{
-            backgroundColor: getStopColor(),
-            color: 'white',
-            borderRadius: '50%',
-            width: '36px',
-            height: '36px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '16px',
-            border: '2px solid white',
-            boxShadow: '0 2px 6px rgba(0,0,0,0.3)',
-            cursor: 'pointer',
-            transition: 'transform 0.2s ease'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'scale(1.1)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'scale(1)';
-          }}
-        >
-          {getGenreIcon()}
-        </div>
-        
-        {/* Stop number indicator */}
-        <div 
-          style={{
-            position: 'absolute',
-            bottom: '-8px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            backgroundColor: '#1f2937',
-            color: 'white',
-            borderRadius: '10px',
-            padding: '2px 6px',
-            fontSize: '10px',
-            fontWeight: 'bold',
-            border: '1px solid white',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.3)'
-          }}
-        >
-          {stopIndex + 1}
-        </div>
-      </div>
-    </AdvancedMarker>
-  );
+	return (
+		<AdvancedMarker position={position} onClick={onClick}>
+			<div
+				className="bg-white rounded-full p-1 shadow-lg border-2 cursor-pointer hover:scale-110 transition-transform"
+				style={{ borderColor: getStopColor() }}
+			>
+				<div className="text-lg">{getGenreIcon()}</div>
+			</div>
+		</AdvancedMarker>
+	);
 }
 
-interface PerformanceRouteLineProps {
-  performance: Performance;
+// PerformanceRouteLine component removed - not used
+
+// Inner component that has access to the map instance
+function MapController({
+	onMapRef,
+	panToPerformance,
+}: {
+	onMapRef?: (
+		mapRef: any,
+		panToPerformance: (performance: Performance) => void,
+	) => void;
+	panToPerformance: (performance: Performance) => void;
+}) {
+	const map = useMap();
+
+	useEffect(() => {
+		if (map && onMapRef) {
+			onMapRef(map, panToPerformance);
+		}
+	}, [map, onMapRef, panToPerformance]);
+
+	return null;
 }
 
-function PerformanceRouteLine({ performance }: PerformanceRouteLineProps) {
-  // For now, we'll skip the route lines since Polyline is not available
-  // This can be implemented later with a different approach
-  return null;
-}
+export function MapComponent({
+	userLocation,
+	performances,
+	filters,
+	onPerformanceClick,
+	onMapRef,
+}: MapComponentProps) {
+	const mapRef = useRef<any>(null);
 
-// Helper function for status text
-function getStatusText(performance: Performance) {
-  if (performance.status === 'live') {
-    return 'Live now!';
-  }
-  if (performance.status === 'scheduled' && performance.route.stops.length > 0) {
-    const nextStop = performance.route.stops.find(stop => stop.status !== 'completed');
-    if (nextStop && nextStop.scheduledTime) {
-      return `Starts at ${new Intl.DateTimeFormat('en-US', {
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true
-      }).format(new Date(nextStop.scheduledTime))}`;
-    }
-  }
-  return performance.status;
-}
+	const panToPerformance = useCallback((performance: Performance) => {
+		const currentStop =
+			performance.route.stops.find((stop) => stop.status === "active") ||
+			performance.route.stops[0];
 
-export function MapComponent({ userLocation, performances, filters, onPerformanceClick }: MapComponentProps) {
-  console.log('performances', performances);
-  const [mapCenter, setMapCenter] = useState({
-    lat: userLocation[1],
-    lng: userLocation[0]
-  });
+		const newCenter = {
+			lat: currentStop.location.coordinates[1],
+			lng: currentStop.location.coordinates[0],
+		};
 
-  // Filter performances based on current filters
-  const filteredPerformances = performances.filter(performance => {
-    // Genre filter
-    if (filters.genre !== 'all' && performance.genre !== filters.genre) {
-      return false;
-    }
-    
-    // Time filter
-    if (filters.timeRange === 'now' && performance.status !== 'live') {
-      return false;
-    }
-    
-    // Distance filter (simple calculation for demo)
-    const performanceLocation = performance.route.stops[0].location.coordinates;
-    const distance = Math.sqrt(
-      Math.pow(performanceLocation[0] - userLocation[0], 2) + 
-      Math.pow(performanceLocation[1] - userLocation[1], 2)
-    ) * 111; // Rough km conversion
-    
-    if (distance > filters.distance) {
-      return false;
-    }
-    
-    return true;
-  });
+		// Use the map instance for smooth animation
+		if (mapRef.current) {
+			// Pan to the location with smooth animation
+			mapRef.current.panTo(newCenter);
 
-  const handleMarkerClick = useCallback((performance: Performance) => {
-    onPerformanceClick(performance);
-    const currentStop = performance.route.stops.find(stop => stop.status === 'active') || performance.route.stops[0];
-    setMapCenter({
-      lat: currentStop.location.coordinates[1],
-      lng: currentStop.location.coordinates[0]
-    });
-  }, [onPerformanceClick]);
+			// Set zoom with slower animation
+			setTimeout(() => {
+				if (mapRef.current) {
+					mapRef.current.setZoom(16);
+				}
+			}, 500); // Slower zoom animation
+		}
+	}, []);
 
+	// Update the map ref when it's available
+	const handleMapRef = useCallback(
+		(map: any, panFn: (performance: Performance) => void) => {
+			mapRef.current = map;
+			if (onMapRef) {
+				onMapRef(map, panFn);
+			}
+		},
+		[onMapRef],
+	);
 
-  const handleMyLocationClick = () => {
-    setMapCenter({
-      lat: userLocation[1],
-      lng: userLocation[0]
-    });
-  };
+	const handleMarkerClick = useCallback(
+		(performance: Performance) => {
+			panToPerformance(performance);
+			onPerformanceClick(performance);
+		},
+		[onPerformanceClick, panToPerformance],
+	);
 
-  const formatTime = (date: Date) => {
-    return new Intl.DateTimeFormat('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true
-    }).format(date);
-  };
+	// Filter performances based on current filters
+	const filteredPerformances = performances.filter((performance) => {
+		if (filters.genre !== "all" && performance.genre !== filters.genre) {
+			return false;
+		}
 
+		// Add more filtering logic here as needed
+		return true;
+	});
 
-  // Get Google Maps API key from environment variables
-  const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+	const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
-  if (!GOOGLE_MAPS_API_KEY || GOOGLE_MAPS_API_KEY === 'your_google_maps_api_key_here') {
-    return (
-      <div className="h-full bg-gray-100 flex items-center justify-center">
-        <div className="text-center p-8 bg-white rounded-lg shadow-lg max-w-md">
-          <div className="text-4xl mb-4">🗺️</div>
-          <h3 className="text-xl font-bold text-gray-900 mb-4">Google Maps Integration</h3>
-          <p className="text-gray-600 mb-4">
-            To see the interactive map, you need to add a Google Maps API key.
-          </p>
-          <div className="bg-gray-50 p-4 rounded-lg text-left">
-            <p className="text-sm text-gray-700 mb-2">Add to your .env file:</p>
-            <code className="text-xs bg-gray-200 p-2 rounded block">
-              VITE_GOOGLE_MAPS_API_KEY=your_api_key_here
-            </code>
-          </div>
-          <p className="text-xs text-gray-500 mt-4">
-            Get your free API key at: console.cloud.google.com
-          </p>
-          
-          {/* Mock Performance List */}
-          <div className="mt-6 space-y-2">
-            <h4 className="font-semibold text-gray-900">Nearby Performances:</h4>
-            {filteredPerformances.map(performance => (
-              <div key={performance._id} className="p-3 bg-gray-50 rounded-lg text-left">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h5 className="font-medium text-gray-900">{performance.title}</h5>
-                    <p className="text-sm text-gray-600">{performance.route.stops[0].location.name}</p>
-                    <p className="text-sm text-gray-500">{getStatusText(performance)}</p>
-                  </div>
-                  <div className="text-right">
-                    <span className={`status-${performance.status === 'live' ? 'live' : performance.status === 'scheduled' ? 'scheduled' : 'soon'}`}>
-                      {performance.status === 'live' ? 'LIVE' : 'SOON'}
-                    </span>
-                    <p className="text-sm text-gray-600 mt-1">{performance.engagement.likes} ❤️</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
+	if (!apiKey) {
+		console.error("Google Maps API key is missing!");
+		return (
+			<div className="w-full h-full flex items-center justify-center bg-gray-100">
+				<div className="text-center">
+					<div className="text-4xl mb-4">🗺️</div>
+					<p className="text-gray-600">Google Maps API key is missing</p>
+				</div>
+			</div>
+		);
+	}
 
-  return (
-    <div style={{ width: '100%', height: '100%', position: 'relative' }}>
-      <APIProvider apiKey={GOOGLE_MAPS_API_KEY}>
-        <Map
-          defaultCenter={mapCenter}
-          defaultZoom={14}
-          gestureHandling="greedy"
-          disableDefaultUI={false}
-          mapId="street-performers-map"
-          zoomControl={true}
-          mapTypeControl={false}
-          streetViewControl={false}
-          fullscreenControl={true}
-          clickableIcons={true}
-          style={{ width: '100%', height: '100%' }}
-        >
-        {/* User Location Marker */}
-        <AdvancedMarker
-          position={{ lat: userLocation[1], lng: userLocation[0] }}
-          title="Your Location"
-        >
-          <div 
-            style={{
-              backgroundColor: '#10b981',
-              color: 'white',
-              borderRadius: '50%',
-              width: '30px',
-              height: '30px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '16px',
-              border: '3px solid white',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-              animation: 'pulse 2s infinite'
-            }}
-          >
-            📍
-          </div>
-        </AdvancedMarker>
+	return (
+		<div style={{ width: "100%", height: "100%", position: "relative" }}>
+			<APIProvider apiKey={apiKey}>
+				<Map
+					defaultCenter={{ lat: userLocation[1], lng: userLocation[0] }}
+					defaultZoom={14}
+					gestureHandling="greedy"
+					disableDefaultUI={false}
+					mapId="street-performers-map"
+					zoomControl={true}
+					mapTypeControl={false}
+					streetViewControl={false}
+					fullscreenControl={true}
+					clickableIcons={true}
+					style={{ width: "100%", height: "100%" }}
+				>
+					<MapController
+						onMapRef={handleMapRef}
+						panToPerformance={panToPerformance}
+					/>
+					{/* User location marker */}
+					<AdvancedMarker
+						position={{ lat: userLocation[1], lng: userLocation[0] }}
+					>
+						<div className="bg-blue-600 rounded-full p-1 shadow-lg border-2 border-white">
+							<div className="text-white text-lg">📍</div>
+						</div>
+					</AdvancedMarker>
 
-        {/* Performance Route Markers */}
-        {filteredPerformances.map(performance => 
-          performance.route.stops.map((stop, index) => (
-            <PerformanceStopMarker
-              key={`${performance._id}-stop-${index}`}
-              performance={performance}
-              stop={stop}
-              stopIndex={index}
-              totalStops={performance.route.stops.length}
-              onClick={() => handleMarkerClick(performance)}
-            />
-          ))
-        )}
-
-        {/* Route Lines */}
-        {filteredPerformances.map(performance => (
-          <PerformanceRouteLine
-            key={`${performance._id}-route`}
-            performance={performance}
-          />
-        ))}
-
-        {/* Map Controls */}
-        <div className="absolute top-4 right-4 z-10 flex flex-col space-y-2">
-          {/* Current Location Button */}
-          <button
-            onClick={handleMyLocationClick}
-            className="bg-white hover:bg-gray-50 text-gray-700 p-3 rounded-full shadow-lg border border-gray-200 transition-all duration-200 hover:shadow-xl"
-            title="Go to my location"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-          </button>
-        </div>
-
-        {/* Legend */}
-        {/* <div className="absolute bottom-4 left-4 z-10 bg-white rounded-lg shadow-lg border border-gray-200 p-4 max-w-xs">
-          <h4 className="font-semibold text-gray-900 mb-3 text-sm">Performance Status</h4>
-          <div className="space-y-2 text-xs">
-            <div className="flex items-center space-x-2">
-              <div className="w-4 h-4 rounded-full bg-red-500 border-2 border-white shadow-sm"></div>
-              <span className="text-gray-700">Live Now</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-4 h-4 rounded-full bg-blue-500 border-2 border-white shadow-sm"></div>
-              <span className="text-gray-700">Scheduled</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-4 h-4 rounded-full bg-gray-500 border-2 border-white shadow-sm"></div>
-              <span className="text-gray-700">Completed</span>
-            </div>
-            <div className="flex items-center space-x-2 mt-3">
-              <div className="w-4 h-4 rounded-full bg-green-500 border-2 border-white shadow-sm flex items-center justify-center text-white text-xs">📍</div>
-              <span className="text-gray-700">Your Location</span>
-            </div>
-          </div>
-        </div> */}
-
-      </Map>
-      </APIProvider>
-    </div>
-  );
+					{/* Performance markers */}
+					{filteredPerformances.map((performance) =>
+						performance.route.stops.map((stop, stopIndex) => (
+							<PerformanceStopMarker
+								key={`${performance._id}-${stopIndex}`}
+								performance={performance}
+								stop={stop}
+								stopIndex={stopIndex}
+								totalStops={performance.route.stops.length}
+								onClick={() => handleMarkerClick(performance)}
+							/>
+						)),
+					)}
+				</Map>
+			</APIProvider>
+		</div>
+	);
 }
