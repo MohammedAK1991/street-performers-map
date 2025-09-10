@@ -1,6 +1,7 @@
 import { GooglePlacesAutocomplete } from "@/components/GooglePlacesAutocomplete";
 import { VideoUpload } from "@/components/VideoUpload";
 import { useCreatePerformance } from "@/hooks/usePerformances";
+import { useToast } from "@/hooks/useToast";
 import {
 	useRefreshVideoData,
 	useUploadEligibility,
@@ -30,6 +31,7 @@ export function CreatePerformance() {
 	const createPerformanceMutation = useCreatePerformance();
 	const { data: uploadEligibility } = useUploadEligibility();
 	const { refreshMyVideos } = useRefreshVideoData();
+	const { showError, showSuccess } = useToast();
 	// linkVideoMutation removed - not used
 
 	const [step, setStep] = useState(1);
@@ -144,7 +146,24 @@ export function CreatePerformance() {
 			);
 
 			if (hasEmptyTimes) {
-				setError("Please fill in all start and end times for your route stops");
+				const errorMsg = "Please fill in all start and end times for your route stops";
+				setError(errorMsg);
+				showError(errorMsg);
+				return;
+			}
+
+			// Validate start time is before end time
+			const hasInvalidTimes = formData.route.stops.some((stop, index) => {
+				if (!stop.startTime || !stop.endTime) return false;
+				const startTime = new Date(stop.startTime);
+				const endTime = new Date(stop.endTime);
+				return startTime >= endTime;
+			});
+
+			if (hasInvalidTimes) {
+				const errorMsg = "Start time must be before end time for all stops";
+				setError(errorMsg);
+				showError(errorMsg);
 				return;
 			}
 
@@ -160,12 +179,14 @@ export function CreatePerformance() {
 			// newPerformance variable removed - not used
 			await createPerformanceMutation.mutateAsync(performanceData);
 
+			showSuccess("Performance created successfully! 🎭");
 			// Redirect to map to see the created performance
 			navigate("/map");
 		} catch (error) {
 			const errorMessage =
 				error instanceof Error ? error.message : "Failed to create performance";
 			setError(errorMessage);
+			showError(errorMessage);
 		}
 	};
 

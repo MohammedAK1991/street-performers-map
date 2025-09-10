@@ -44,14 +44,29 @@ export function GooglePlacesAutocomplete({
 				return;
 			}
 
+			// Check if Google Maps is already loaded
+			if (window.google?.maps?.places) {
+				autocompleteService.current = new google.maps.places.AutocompleteService();
+				getCurrentLocation();
+				setIsLoaded(true);
+				return;
+			}
+
 			try {
 				const loader = new Loader({
 					apiKey: apiKey,
 					version: "weekly",
 					libraries: ["places"],
+					retries: 3, // Retry failed requests
+					timeout: 10000, // 10 second timeout
 				});
 
 				await loader.load();
+
+				// Double-check that the API is actually loaded
+				if (!window.google?.maps?.places) {
+					throw new Error("Google Maps Places API not available after loading");
+				}
 
 				// Initialize services with old API (it still works)
 				autocompleteService.current =
@@ -61,9 +76,17 @@ export function GooglePlacesAutocomplete({
 				getCurrentLocation();
 
 				setIsLoaded(true);
+				setError(null); // Clear any previous errors
 			} catch (error) {
 				console.error("Error loading Google Maps API:", error);
 				setError("Failed to load Google Maps API. Please check your API key.");
+				
+				// Retry after a delay
+				setTimeout(() => {
+					if (!isLoaded) {
+						initializeGoogleMaps();
+					}
+				}, 2000);
 			}
 		};
 

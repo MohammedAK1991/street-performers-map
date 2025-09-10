@@ -213,26 +213,28 @@ export function Map() {
 		<div className="h-screen flex flex-col overflow-hidden bg-background">
 			{/* Header */}
 			<header className="bg-background/95 backdrop-blur-sm shadow-lg border-b border-border z-20">
-				<div className="px-4 sm:px-6 lg:px-8">
-					<div className="flex justify-between items-center h-16">
-						<div className="flex items-center space-x-6">
+				<div className="px-3 sm:px-4 lg:px-8">
+					<div className="flex justify-between items-center h-14 sm:h-16">
+						{/* Logo and Search */}
+						<div className="flex items-center space-x-2 sm:space-x-6 flex-1 min-w-0">
 							<Link
 								to="/"
-								className="flex items-center space-x-2 text-xl font-bold text-foreground hover:text-primary transition-colors"
+								className="flex items-center space-x-1 sm:space-x-2 text-lg sm:text-xl font-bold text-foreground hover:text-primary transition-colors flex-shrink-0"
 							>
-								<div className="w-8 h-8 rounded-full street-gradient flex items-center justify-center">
-									<MapPin className="w-5 h-5 text-white" />
+								<div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full street-gradient flex items-center justify-center">
+									<MapPin className="w-3 h-3 sm:w-5 sm:h-5 text-white" />
 								</div>
-								<span>StreetPerformersMap</span>
+								<span className="hidden xs:inline sm:inline">StreetPerformersMap</span>
+								<span className="xs:hidden sm:hidden">SPM</span>
 							</Link>
 
-							{/* Search Bar */}
-							<div className="hidden md:block">
+							{/* Search Bar - Hidden on mobile, shown on tablet+ */}
+							<div className="hidden md:block flex-1 max-w-md">
 								<div className="relative">
 									<input
 										type="text"
 										placeholder="Search performances..."
-										className="w-80 px-4 py-2 pl-10 bg-card border border-border rounded-full text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 shadow-sm"
+										className="w-full px-4 py-2 pl-10 bg-card border border-border rounded-full text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 shadow-sm"
 									/>
 									<div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
 										<Search className="h-4 w-4 text-muted-foreground" />
@@ -241,39 +243,40 @@ export function Map() {
 							</div>
 						</div>
 
-						<div className="flex items-center space-x-3">
+						{/* Action Buttons */}
+						<div className="flex items-center space-x-1 sm:space-x-3 flex-shrink-0">
 							{/* Filter Toggle */}
 							<button
 								type="button"
 								onClick={() => setShowFilters(!showFilters)}
-								className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 flex items-center gap-2 ${
+								className={`px-2 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-medium transition-all duration-200 flex items-center gap-1 sm:gap-2 ${
 									showFilters
 										? "bg-primary text-primary-foreground"
 										: "bg-card text-foreground border border-border hover:bg-muted"
 								}`}
 							>
-								<Filter className="w-4 h-4" />
-								Filters
+								<Filter className="w-3 h-3 sm:w-4 sm:h-4" />
+								<span className="hidden sm:inline">Filters</span>
 							</button>
 
 							{/* List Toggle */}
 							<button
 								type="button"
 								onClick={() => setShowList(!showList)}
-								className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 flex items-center gap-2 ${
+								className={`px-2 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-medium transition-all duration-200 flex items-center gap-1 sm:gap-2 ${
 									showList
 										? "bg-primary text-primary-foreground"
 										: "bg-card text-foreground border border-border hover:bg-muted"
 								}`}
 							>
-								<List className="w-4 h-4" />
-								List
+								<List className="w-3 h-3 sm:w-4 sm:h-4" />
+								<span className="hidden sm:inline">List</span>
 							</button>
 
 							{/* User Menu */}
 							{isSignedIn ? (
-								<div className="flex items-center space-x-3">
-									<span className="text-sm text-muted-foreground hidden sm:block">
+								<div className="flex items-center space-x-1 sm:space-x-3">
+									<span className="text-xs sm:text-sm text-muted-foreground hidden lg:block">
 										Welcome,{" "}
 										<span className="font-medium text-foreground">
 											{clerkUser?.fullName || clerkUser?.username}
@@ -282,25 +285,28 @@ export function Map() {
 									</span>
 									<Link
 										to="/profile"
-										className="bg-card hover:bg-muted text-foreground border border-border px-4 py-2 rounded-lg font-medium transition-colors"
+										className="bg-card hover:bg-muted text-foreground border border-border px-2 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors"
 									>
-										Profile
+										<span className="hidden sm:inline">Profile</span>
+										<span className="sm:hidden">👤</span>
 									</Link>
 									<Link
 										to="/create-performance"
-										className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2"
+										className="bg-primary hover:bg-primary/90 text-primary-foreground px-2 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors flex items-center gap-1 sm:gap-2"
 									>
-										<Plus className="w-4 h-4" />
+										<Plus className="w-3 h-3 sm:w-4 sm:h-4" />
 										<span className="hidden sm:inline">Create Performance</span>
+										<span className="sm:hidden">+</span>
 									</Link>
 								</div>
 							) : (
-								<div className="flex space-x-2">
+								<div className="flex space-x-1 sm:space-x-2">
 									<Link
 										to="/"
-										className="bg-card hover:bg-muted text-foreground border border-border px-4 py-2 rounded-lg font-medium transition-colors"
+										className="bg-card hover:bg-muted text-foreground border border-border px-2 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors"
 									>
-										Go to Home
+										<span className="hidden sm:inline">Go to Home</span>
+										<span className="sm:hidden">Home</span>
 									</Link>
 								</div>
 							)}
@@ -328,7 +334,7 @@ export function Map() {
 
 					{/* Filter Panel (when showFilters is true) */}
 					{showFilters && (
-						<div className="absolute top-4 left-4 z-10 bg-card border border-border rounded-lg shadow-lg p-4 w-80">
+						<div className="absolute top-2 left-2 right-2 sm:top-4 sm:left-4 sm:right-auto sm:w-80 z-10 bg-card border border-border rounded-lg shadow-lg p-3 sm:p-4">
 							{performancesLoading ? (
 								<FilterSkeleton />
 							) : (
@@ -343,53 +349,53 @@ export function Map() {
 
 					{/* Performances Panel (when showList is true) */}
 					{showList && (
-						<div className="absolute top-4 right-4 z-10 bg-card border border-border rounded-lg shadow-lg p-4 w-80">
+						<div className="absolute top-2 left-2 right-2 sm:top-4 sm:left-auto sm:right-4 sm:w-80 z-10 bg-card border border-border rounded-lg shadow-lg p-3 sm:p-4">
 							<div className="flex items-center justify-between mb-3">
-								<h3 className="text-lg font-semibold text-foreground">
+								<h3 className="text-base sm:text-lg font-semibold text-foreground">
 									Performances
 								</h3>
 								<button
 									type="button"
 									onClick={() => setShowList(false)}
-									className="text-muted-foreground hover:text-foreground"
+									className="text-muted-foreground hover:text-foreground p-1"
 								>
 									✕
 								</button>
 							</div>
 
 							{performancesLoading ? (
-								<div className="space-y-3 max-h-64 overflow-y-auto">
+								<div className="space-y-3 max-h-48 sm:max-h-64 overflow-y-auto">
 									{Array.from({ length: 3 }).map((_, index) => (
 										<PerformanceSkeleton key={index} />
 									))}
 								</div>
 							) : performances.length === 0 ? (
-								<div className="text-center py-8">
-									<div className="text-4xl mb-3">🎭</div>
-									<p className="text-muted-foreground text-sm">
+								<div className="text-center py-6 sm:py-8">
+									<div className="text-3xl sm:text-4xl mb-3">🎭</div>
+									<p className="text-muted-foreground text-xs sm:text-sm">
 										No performances found. Try adjusting your filters or check
 										back later!
 									</p>
 								</div>
 							) : (
-								<div className="space-y-3 max-h-64 overflow-y-auto">
+								<div className="space-y-2 sm:space-y-3 max-h-48 sm:max-h-64 overflow-y-auto">
 									{performances.slice(0, 5).map((performance, index) => (
 										<div
 											key={performance._id || index}
-											className="p-3 bg-muted/50 rounded-lg cursor-pointer hover:bg-muted transition-colors"
+											className="p-2 sm:p-3 bg-muted/50 rounded-lg cursor-pointer hover:bg-muted transition-colors"
 											onClick={() => handlePerformanceClick(performance)}
 										>
 											<div className="flex items-start justify-between">
-												<div className="flex-1">
-													<h4 className="font-medium text-foreground text-sm">
+												<div className="flex-1 min-w-0">
+													<h4 className="font-medium text-foreground text-xs sm:text-sm truncate">
 														{performance.title}
 													</h4>
 													<p className="text-xs text-muted-foreground mt-1">
 														{performance.genre}
 													</p>
-													<div className="flex items-center gap-2 mt-2">
+													<div className="flex items-center gap-1 sm:gap-2 mt-2">
 														<span
-															className={`text-xs px-2 py-1 rounded-full ${
+															className={`text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full ${
 																performance.status === "live"
 																	? "bg-red-500/20 text-red-400"
 																	: "bg-blue-500/20 text-blue-400"
