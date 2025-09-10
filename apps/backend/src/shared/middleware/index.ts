@@ -27,6 +27,7 @@ export function setupMiddleware(app: express.Application): void {
 						"'unsafe-inline'",
 					],
 					imgSrc: ["'self'", "data:", "https:", "blob:"],
+					mediaSrc: ["'self'", "https://res.cloudinary.com", "https://*.cloudinary.com"],
 					connectSrc: [
 						"'self'",
 						"ws:",
