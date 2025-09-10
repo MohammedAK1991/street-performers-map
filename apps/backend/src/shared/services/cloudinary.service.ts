@@ -76,11 +76,18 @@ export class CloudinaryService {
 			api_key !== "your-cloudinary-api-key" &&
 			api_secret !== "your-cloudinary-api-secret";
 
+		console.log("Cloudinary config check:", {
+			hasCloudName: !!cloud_name,
+			hasApiKey: !!api_key,
+			hasApiSecret: !!api_secret,
+			cloudName: cloud_name,
+			isConfigured
+		});
+
 		if (!isConfigured) {
-			// Return mock result for development
-			// console.warn(
-			// 	"⚠️  Cloudinary not configured. Returning mock video upload result for development.",
-			// );
+			console.warn(
+				"⚠️  Cloudinary not configured. Returning mock video upload result for development.",
+			);
 			return Promise.resolve({
 				public_id: `mock_video_${Date.now()}`,
 				url: "https://via.placeholder.com/400x300/purple/white?text=Mock+Video",
