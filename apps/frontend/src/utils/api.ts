@@ -3,7 +3,7 @@ import axios, { type AxiosInstance, type AxiosError } from "axios";
 
 // Create axios instance
 export const api: AxiosInstance = axios.create({
-	baseURL: "/api/v1", // Vite will proxy this to http://localhost:3001/api/v1
+	baseURL: import.meta.env.VITE_API_URL || "/api/v1", // Use environment variable or fallback to relative path
 	timeout: 10000,
 	headers: {
 		"Content-Type": "application/json",
