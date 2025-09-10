@@ -33,6 +33,8 @@ export function setupMiddleware(app: express.Application): void {
 						"wss:",
 						"https://maps.googleapis.com",
 						"https://*.googleapis.com",
+						"https://maps.google.com",
+						"https://*.google.com",
 						"https://api.stripe.com",
 						"https://*.stripe.com",
 						"https://*.clerk.accounts.dev",
