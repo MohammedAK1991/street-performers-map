@@ -29,9 +29,7 @@ export function useNotifications() {
 			notificationService.connect(user.id);
 			
 			// Start simulating notifications in development
-			if (import.meta.env.DEV) {
-				notificationService.simulateNotifications();
-			}
+	
 		}
 
 		return () => {
