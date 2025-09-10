@@ -55,7 +55,15 @@
       "Bash(NODE_ENV=production timeout 5s node dist/index.js)",
       "Read(//var/folders/tm/f_5g_tz90x5b44kdndcf44pc0000gn/T/TemporaryItems/NSIRD_screencaptureui_Bs325s/**)",
       "Read(//var/folders/tm/f_5g_tz90x5b44kdndcf44pc0000gn/T/TemporaryItems/NSIRD_screencaptureui_jAjjdP/**)",
-      "Read(//var/folders/tm/f_5g_tz90x5b44kdndcf44pc0000gn/T/TemporaryItems/NSIRD_screencaptureui_pDAcWJ/**)"
+      "Read(//var/folders/tm/f_5g_tz90x5b44kdndcf44pc0000gn/T/TemporaryItems/NSIRD_screencaptureui_pDAcWJ/**)",
+      "Read(//var/folders/tm/f_5g_tz90x5b44kdndcf44pc0000gn/T/TemporaryItems/NSIRD_screencaptureui_XTcmxz/**)",
+      "Bash(railway variables:*)",
+      "Read(//var/folders/tm/f_5g_tz90x5b44kdndcf44pc0000gn/T/TemporaryItems/NSIRD_screencaptureui_gVJl5n/**)",
+      "Read(//var/folders/tm/f_5g_tz90x5b44kdndcf44pc0000gn/T/TemporaryItems/NSIRD_screencaptureui_DvT1xb/**)",
+      "Read(//var/folders/tm/f_5g_tz90x5b44kdndcf44pc0000gn/T/TemporaryItems/NSIRD_screencaptureui_KgvCWB/**)",
+      "Read(//var/folders/tm/f_5g_tz90x5b44kdndcf44pc0000gn/T/TemporaryItems/NSIRD_screencaptureui_n89UpL/**)",
+      "Read(//var/folders/tm/f_5g_tz90x5b44kdndcf44pc0000gn/T/TemporaryItems/NSIRD_screencaptureui_wqcMJB/**)",
+      "Read(//var/folders/tm/f_5g_tz90x5b44kdndcf44pc0000gn/T/TemporaryItems/NSIRD_screencaptureui_BpVGCa/**)"
     ],
     "deny": [],
     "ask": []
