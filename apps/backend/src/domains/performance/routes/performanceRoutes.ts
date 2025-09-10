@@ -8,7 +8,9 @@ const performanceController = new PerformanceController();
 
 // Public routes
 router.get("/nearby", performanceController.getNearbyPerformances);
-router.get("/:id", performanceController.getPerformance);
+
+// Analytics routes (performer-only) - MUST come before /:id routes
+router.get("/analytics", authenticate, analyticsController.getPerformerAnalytics);
 
 // Protected routes (authenticated users)
 router.post(
@@ -34,8 +36,8 @@ router.delete("/:id", authenticate, performanceController.deletePerformance);
 router.post("/:id/start", authenticate, performanceController.startPerformance);
 router.post("/:id/end", authenticate, performanceController.endPerformance);
 
-// Analytics routes (performer-only)
-router.get("/analytics", authenticate, analyticsController.getPerformerAnalytics);
+// Specific performance routes - MUST come after /analytics
+router.get("/:id", performanceController.getPerformance);
 router.get("/:id/analytics", authenticate, analyticsController.getPerformanceAnalytics);
 router.get("/:id/metrics/live", authenticate, analyticsController.getLiveMetrics);
 

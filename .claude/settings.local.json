@@ -48,7 +48,14 @@
       "Bash(railway logs:*)",
       "Bash(railway up:*)",
       "Bash(railway service:*)",
-      "Bash(gtimeout:*)"
+      "Bash(gtimeout:*)",
+      "Read(//var/folders/tm/f_5g_tz90x5b44kdndcf44pc0000gn/T/TemporaryItems/NSIRD_screencaptureui_AH3ONH/**)",
+      "Read(//var/folders/tm/f_5g_tz90x5b44kdndcf44pc0000gn/T/TemporaryItems/NSIRD_screencaptureui_DZmAVf/**)",
+      "Bash(xargs kill:*)",
+      "Bash(NODE_ENV=production timeout 5s node dist/index.js)",
+      "Read(//var/folders/tm/f_5g_tz90x5b44kdndcf44pc0000gn/T/TemporaryItems/NSIRD_screencaptureui_Bs325s/**)",
+      "Read(//var/folders/tm/f_5g_tz90x5b44kdndcf44pc0000gn/T/TemporaryItems/NSIRD_screencaptureui_jAjjdP/**)",
+      "Read(//var/folders/tm/f_5g_tz90x5b44kdndcf44pc0000gn/T/TemporaryItems/NSIRD_screencaptureui_pDAcWJ/**)"
     ],
     "deny": [],
     "ask": []

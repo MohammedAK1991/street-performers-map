@@ -2,7 +2,7 @@ import type { Request, Response } from "express";
 import { ApiError } from "../../../shared/utils/errors";
 import { logger } from "../../../shared/utils/logger";
 import { Transaction } from "../../payment/entities/Transaction";
-// Note: Import Performance model as needed - the model may not be fully implemented yet
+import { PerformanceModel } from "../entities/Performance";
 
 export interface AnalyticsDateRange {
 	startDate?: Date;
@@ -55,7 +55,7 @@ export class AnalyticsController {
 	 * Get comprehensive analytics for a performer
 	 * GET /api/performances/analytics
 	 */
-	async getPerformerAnalytics(req: Request, res: Response): Promise<void> {
+	getPerformerAnalytics = async (req: Request, res: Response): Promise<void> => {
 		try {
 			const userId = req.user?.userId;
 			const { startDate, endDate, period = '30d' } = req.query;
@@ -92,13 +92,13 @@ export class AnalyticsController {
 				});
 			}
 		}
-	}
+	};
 
 	/**
 	 * Get analytics for a specific performance
 	 * GET /api/performances/:id/analytics
 	 */
-	async getPerformanceAnalytics(req: Request, res: Response): Promise<void> {
+	getPerformanceAnalytics = async (req: Request, res: Response): Promise<void> => {
 		try {
 			const { id } = req.params;
 			const userId = req.user?.userId;
@@ -107,15 +107,14 @@ export class AnalyticsController {
 				throw new ApiError(401, "Authentication required");
 			}
 
-			// TODO: Import and use the actual Performance model
-		const performance = null; // await Performance.findById(id);
+			const performance = await PerformanceModel.findById(id);
 			
 			if (!performance) {
 				throw new ApiError(404, "Performance not found");
 			}
 
 			// Check if user owns this performance  
-			if (performance && (performance as any).performerId !== userId) {
+			if (performance && performance.performerId !== userId) {
 				throw new ApiError(403, "Access denied");
 			}
 
@@ -144,13 +143,13 @@ export class AnalyticsController {
 				});
 			}
 		}
-	}
+	};
 
 	/**
 	 * Get real-time performance metrics
 	 * GET /api/performances/:id/metrics/live
 	 */
-	async getLiveMetrics(req: Request, res: Response): Promise<void> {
+	getLiveMetrics = async (req: Request, res: Response): Promise<void> => {
 		try {
 			const { id } = req.params;
 			const userId = req.user?.userId;
@@ -159,14 +158,13 @@ export class AnalyticsController {
 				throw new ApiError(401, "Authentication required");
 			}
 
-			// TODO: Import and use the actual Performance model
-		const performance = null; // await Performance.findById(id);
+			const performance = await PerformanceModel.findById(id);
 			
 			if (!performance) {
 				throw new ApiError(404, "Performance not found");
 			}
 
-			if (performance && (performance as any).performerId !== userId) {
+			if (performance && performance.performerId !== userId) {
 				throw new ApiError(403, "Access denied");
 			}
 
@@ -204,7 +202,7 @@ export class AnalyticsController {
 				},
 			});
 		}
-	}
+	};
 
 	private async buildPerformerAnalytics(performerId: string, dateRange: AnalyticsDateRange): Promise<PerformanceAnalytics> {
 		// Build date filter
@@ -215,8 +213,8 @@ export class AnalyticsController {
 			if (dateRange.endDate) dateFilter.createdAt.$lte = dateRange.endDate;
 		}
 
-		// TODO: Get all performances for the performer using actual Performance model
-		const performances: any[] = []; // await Performance.find(dateFilter).sort({ createdAt: -1 });
+		// Get all performances for the performer
+		const performances = await PerformanceModel.find(dateFilter).sort({ createdAt: -1 });
 
 		// Get all transactions for the performer
 		const transactions = await Transaction.find({
@@ -306,8 +304,7 @@ export class AnalyticsController {
 	}
 
 	private async buildSinglePerformanceAnalytics(performanceId: string) {
-		// TODO: Import and use the actual Performance model
-		const performance: any = null; // await Performance.findById(performanceId);
+		const performance = await PerformanceModel.findById(performanceId);
 		const transactions = await Transaction.find({
 			performanceId,
 			status: 'completed'

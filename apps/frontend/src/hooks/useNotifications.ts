@@ -27,9 +27,7 @@ export function useNotifications() {
 		// Connect to WebSocket if user is authenticated
 		if (user?.id) {
 			notificationService.connect(user.id);
-			
-			// Start simulating notifications in development
-	
+				
 		}
 
 		return () => {
