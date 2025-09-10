@@ -52,7 +52,7 @@ async function startServer() {
 
 		// Serve frontend in production
 		if (process.env.NODE_ENV === "production") {
-			const frontendPath = path.join(__dirname, "../dist");
+			const frontendPath = __dirname;
 			
 			// Debug: Log frontend path
 			logger.info("Frontend serving path", { frontendPath });
