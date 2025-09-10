@@ -117,11 +117,24 @@ export const PerformanceModal: React.FC<PerformanceModalProps> = ({
 									controls
 									autoPlay
 									muted
+									playsInline
 									poster={performance.videoThumbnail}
 									className="w-full h-full object-cover"
 									style={{ height: "250px" }}
+									onError={(e) => {
+										console.error("Video error:", e);
+										console.error("Video URL:", performance.videoUrl);
+									}}
+									onLoadStart={() => {
+										console.log("Video loading started:", performance.videoUrl);
+									}}
+									onCanPlay={() => {
+										console.log("Video can play:", performance.videoUrl);
+									}}
 								>
 									<source src={performance.videoUrl} type="video/mp4" />
+									<source src={performance.videoUrl} type="video/webm" />
+									<source src={performance.videoUrl} type="video/ogg" />
 									Your browser does not support the video tag.
 								</video>
 							</div>

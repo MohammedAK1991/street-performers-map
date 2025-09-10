@@ -418,7 +418,7 @@ export function CreatePerformance() {
 											const datetime = `${date}T${e.target.value}:00.000Z`;
 											updateStop(index, "startTime", datetime);
 										}}
-										className="w-full px-3 py-2 bg-card border border-border rounded-lg text-foreground focus:ring-primary focus:border-primary"
+										className="w-full px-3 py-2 bg-card border border-border rounded-lg text-foreground focus:ring-primary focus:border-primary [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:opacity-100"
 									/>
 								</div>
 
@@ -434,7 +434,7 @@ export function CreatePerformance() {
 											const datetime = `${date}T${e.target.value}:00.000Z`;
 											updateStop(index, "endTime", datetime);
 										}}
-										className="w-full px-3 py-2 bg-card border border-border rounded-lg text-foreground focus:ring-primary focus:border-primary"
+										className="w-full px-3 py-2 bg-card border border-border rounded-lg text-foreground focus:ring-primary focus:border-primary [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:opacity-100"
 									/>
 								</div>
 							</div>
