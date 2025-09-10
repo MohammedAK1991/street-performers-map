@@ -58,7 +58,6 @@ export function GooglePlacesAutocomplete({
 					version: "weekly",
 					libraries: ["places"],
 					retries: 3, // Retry failed requests
-					timeout: 10000, // 10 second timeout
 				});
 
 				await loader.load();

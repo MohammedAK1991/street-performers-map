@@ -153,7 +153,7 @@ export function CreatePerformance() {
 			}
 
 			// Validate start time is before end time
-			const hasInvalidTimes = formData.route.stops.some((stop, index) => {
+			const hasInvalidTimes = formData.route.stops.some((stop) => {
 				if (!stop.startTime || !stop.endTime) return false;
 				const startTime = new Date(stop.startTime);
 				const endTime = new Date(stop.endTime);
