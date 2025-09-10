@@ -378,7 +378,7 @@ export function CreatePerformance() {
 									Search Location
 								</label>
 								<GooglePlacesAutocomplete
-									value={`${stop.location.name || ""} ${stop.location.address || ""}`.trim()}
+									value={stop.location.address || stop.location.name || ""}
 									onChange={(place) => {
 										updateStop(index, "location", {
 											name: place.name,
