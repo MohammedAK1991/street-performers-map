@@ -216,20 +216,19 @@ export function Map() {
 				<div className="px-3 sm:px-4 lg:px-8">
 					<div className="flex justify-between items-center h-14 sm:h-16">
 						{/* Logo and Search */}
-						<div className="flex items-center space-x-2 sm:space-x-6 flex-1 min-w-0">
+						<div className="flex items-center space-x-2 sm:space-x-4 flex-1 min-w-0">
 							<Link
 								to="/"
 								className="flex items-center space-x-1 sm:space-x-2 text-lg sm:text-xl font-bold text-foreground hover:text-primary transition-colors flex-shrink-0"
 							>
-								<div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full street-gradient flex items-center justify-center">
-									<MapPin className="w-3 h-3 sm:w-5 sm:h-5 text-white" />
-								</div>
+								{/* Musical Note Logo - same as landing page */}
+								<span className="text-xl sm:text-2xl md:text-3xl">🎵</span>
 								<span className="hidden xs:inline sm:inline">StreetPerformersMap</span>
 								<span className="xs:hidden sm:hidden">SPM</span>
 							</Link>
 
 							{/* Search Bar - Hidden on mobile, shown on tablet+ */}
-							<div className="hidden md:block flex-1 max-w-md">
+							<div className="hidden md:block flex-1 max-w-md ml-4">
 								<div className="relative">
 									<input
 										type="text"
@@ -244,12 +243,24 @@ export function Map() {
 						</div>
 
 						{/* Action Buttons */}
-						<div className="flex items-center space-x-1 sm:space-x-3 flex-shrink-0">
+						<div className="flex items-center space-x-1 sm:space-x-2 flex-shrink-0">
+							{/* Mobile Search Button - Only visible on mobile */}
+							<button
+								type="button"
+								className="md:hidden px-2 py-2 rounded-full text-xs font-medium transition-all duration-200 flex items-center gap-1 bg-card text-foreground border border-border hover:bg-muted"
+								onClick={() => {
+									// You could add a mobile search modal here
+									console.log("Mobile search clicked");
+								}}
+							>
+								<Search className="w-3 h-3" />
+							</button>
+
 							{/* Filter Toggle */}
 							<button
 								type="button"
 								onClick={() => setShowFilters(!showFilters)}
-								className={`px-2 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-medium transition-all duration-200 flex items-center gap-1 sm:gap-2 ${
+								className={`px-2 sm:px-3 py-2 rounded-full text-xs sm:text-sm font-medium transition-all duration-200 flex items-center gap-1 sm:gap-2 ${
 									showFilters
 										? "bg-primary text-primary-foreground"
 										: "bg-card text-foreground border border-border hover:bg-muted"
@@ -263,7 +274,7 @@ export function Map() {
 							<button
 								type="button"
 								onClick={() => setShowList(!showList)}
-								className={`px-2 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-medium transition-all duration-200 flex items-center gap-1 sm:gap-2 ${
+								className={`px-2 sm:px-3 py-2 rounded-full text-xs sm:text-sm font-medium transition-all duration-200 flex items-center gap-1 sm:gap-2 ${
 									showList
 										? "bg-primary text-primary-foreground"
 										: "bg-card text-foreground border border-border hover:bg-muted"
@@ -275,38 +286,45 @@ export function Map() {
 
 							{/* User Menu */}
 							{isSignedIn ? (
-								<div className="flex items-center space-x-1 sm:space-x-3">
-									<span className="text-xs sm:text-sm text-muted-foreground hidden lg:block">
+								<div className="flex items-center space-x-1 sm:space-x-2">
+									{/* Welcome message - hidden on very small screens */}
+									<span className="text-xs sm:text-sm text-muted-foreground hidden md:block">
 										Welcome,{" "}
 										<span className="font-medium text-foreground">
 											{clerkUser?.fullName || clerkUser?.username}
 										</span>
 										!
 									</span>
+									
+									{/* Profile button - icon only on mobile */}
 									<Link
 										to="/profile"
-										className="bg-card hover:bg-muted text-foreground border border-border px-2 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors"
+										className="bg-card hover:bg-muted text-foreground border border-border px-2 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors flex items-center justify-center"
+										title="Profile"
 									>
 										<span className="hidden sm:inline">Profile</span>
-										<span className="sm:hidden">👤</span>
+										<span className="sm:hidden text-base">👤</span>
 									</Link>
+									
+									{/* Create Performance button */}
 									<Link
 										to="/create-performance"
-										className="bg-primary hover:bg-primary/90 text-primary-foreground px-2 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors flex items-center gap-1 sm:gap-2"
+										className="bg-primary hover:bg-primary/90 text-primary-foreground px-2 sm:px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors flex items-center gap-1 sm:gap-2"
+										title="Create Performance"
 									>
 										<Plus className="w-3 h-3 sm:w-4 sm:h-4" />
-										<span className="hidden sm:inline">Create Performance</span>
-										<span className="sm:hidden">+</span>
+										<span className="hidden sm:inline">Create</span>
+										<span className="sm:hidden text-base">+</span>
 									</Link>
 								</div>
 							) : (
 								<div className="flex space-x-1 sm:space-x-2">
 									<Link
 										to="/"
-										className="bg-card hover:bg-muted text-foreground border border-border px-2 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors"
+										className="bg-card hover:bg-muted text-foreground border border-border px-2 sm:px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors"
 									>
 										<span className="hidden sm:inline">Go to Home</span>
-										<span className="sm:hidden">Home</span>
+										<span className="sm:hidden">🏠</span>
 									</Link>
 								</div>
 							)}
