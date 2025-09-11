@@ -329,10 +329,25 @@ export class PaymentController {
 			}
 
 			// Find user by email instead of using JWT token
-			const user = await UserModel.findOne({ email: email.toLowerCase() });
+			const normalizedEmail = email.toLowerCase().trim();
+			logger.info(`🔍 Looking for user with email: "${normalizedEmail}"`);
+			
+			const user = await UserModel.findOne({ email: normalizedEmail });
 			if (!user) {
+				// Let's also try to find any user with similar email for debugging
+				const similarUsers = await UserModel.find({ 
+					email: { $regex: email.split('@')[0], $options: 'i' } 
+				}).select('email').limit(5);
+				
+				logger.error(`❌ User not found with email: "${normalizedEmail}"`, {
+					searchedEmail: normalizedEmail,
+					similarEmails: similarUsers.map(u => u.email)
+				});
+				
 				throw new ApiError(404, `User not found with email: ${email}`);
 			}
+			
+			logger.info(`✅ Found user: ${user._id} with email: ${user.email}`);
 
 			if (user.stripe?.connectAccountId) {
 				throw new ApiError(400, "User already has a Connect account");
