@@ -6,6 +6,7 @@ import {
 	paymentService,
 } from "../services/PaymentService";
 import { stripeService } from "../services/StripeService";
+import { UserModel } from "../../user/entities/User";
 
 export class PaymentController {
 	/**
@@ -322,24 +323,41 @@ export class PaymentController {
 	async createConnectAccount(req: Request, res: Response): Promise<void> {
 		try {
 			const { email, country, businessType } = req.body;
-			const userId = req.user?.userId;
-
-			if (!userId) {
-				throw new ApiError(401, "Authentication required");
-			}
 
 			if (!email || !country) {
 				throw new ApiError(400, "Email and country are required");
 			}
 
+			// Find user by email instead of using JWT token
+			const user = await UserModel.findOne({ email: email.toLowerCase() });
+			if (!user) {
+				throw new ApiError(404, `User not found with email: ${email}`);
+			}
+
+			if (user.stripe?.connectAccountId) {
+				throw new ApiError(400, "User already has a Connect account");
+			}
+
 			const connectAccount = await stripeService.createConnectAccount({
-				performerId: userId,
+				performerId: user._id.toString(),
 				email,
 				country,
 				businessType: businessType || 'individual'
 			});
 
-			// TODO: Save Connect account ID to user profile in database
+			// Save Connect account ID to user profile in database
+			await UserModel.findByIdAndUpdate(user._id, {
+				$set: {
+					'stripe.connectAccountId': connectAccount.accountId,
+					'stripe.accountStatus': 'pending',
+					'stripe.detailsSubmitted': connectAccount.detailsSubmitted,
+					'stripe.chargesEnabled': connectAccount.chargesEnabled,
+					'stripe.payoutsEnabled': connectAccount.payoutsEnabled,
+					'stripe.onboardingUrl': connectAccount.loginUrl,
+				}
+			});
+
+			logger.info(`✅ Saved Stripe Connect account ${connectAccount.accountId} for user ${user._id} (${email})`);
 
 			res.json({
 				success: true,
@@ -378,14 +396,31 @@ export class PaymentController {
 				throw new ApiError(401, "Authentication required");
 			}
 
-			// TODO: Get Connect account ID from user profile in database
-			const mockAccountId = `acct_mock_${userId}`;
-			
-			const connectAccount = await stripeService.getConnectAccount(mockAccountId);
+			// Get Connect account ID from user profile in database
+			const user = await UserModel.findById(userId);
+			if (!user) {
+				throw new ApiError(404, "User not found");
+			}
+
+			if (!user.stripe?.connectAccountId) {
+				throw new ApiError(404, "No Connect account found. Please complete onboarding first.");
+			}
+
+			const connectAccount = await stripeService.getConnectAccount(user.stripe.connectAccountId);
 
 			if (!connectAccount) {
-				throw new ApiError(404, "Connect account not found");
+				throw new ApiError(404, "Connect account not found in Stripe");
 			}
+
+			// Update local database with latest info from Stripe
+			await UserModel.findByIdAndUpdate(userId, {
+				$set: {
+					'stripe.accountStatus': connectAccount.chargesEnabled ? 'active' : 'pending',
+					'stripe.detailsSubmitted': connectAccount.detailsSubmitted,
+					'stripe.chargesEnabled': connectAccount.chargesEnabled,
+					'stripe.payoutsEnabled': connectAccount.payoutsEnabled,
+				}
+			});
 
 			res.json({
 				success: true,
@@ -425,10 +460,17 @@ export class PaymentController {
 				throw new ApiError(401, "Authentication required");
 			}
 
-			// TODO: Get Connect account ID from user profile in database
-			const mockAccountId = `acct_mock_${userId}`;
+			// Get Connect account ID from user profile in database
+			const user = await UserModel.findById(userId);
+			if (!user) {
+				throw new ApiError(404, "User not found");
+			}
 
-			const accountLink = await stripeService.createAccountLink(mockAccountId, type);
+			if (!user.stripe?.connectAccountId) {
+				throw new ApiError(404, "No Connect account found. Please complete onboarding first.");
+			}
+
+			const accountLink = await stripeService.createAccountLink(user.stripe.connectAccountId, type);
 
 			res.json({
 				success: true,
