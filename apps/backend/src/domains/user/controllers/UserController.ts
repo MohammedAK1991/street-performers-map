@@ -1,74 +1,96 @@
-import { UserService } from "../services/UserService";
-import { ApiError, ValidationError } from "../../../shared/utils/errors.js";
-import { logger } from "../../../shared/utils/logger.js";
-import type { LoginCredentials, RegisterData, User } from "@spm/shared-types";
-import type { NextFunction, Request, Response } from "express";
+import type { Request, Response, NextFunction } from "express";
 import { z } from "zod";
+import { UserService } from "../services/UserService";
+import { ApiError, ValidationError } from "../../../shared/utils/errors";
 
 // Validation schemas
 const registerSchema = z.object({
-	email: z.string().email("Invalid email format"),
+	email: z.string().email("Invalid email address"),
+	username: z.string().min(3, "Username must be at least 3 characters"),
 	password: z.string().min(6, "Password must be at least 6 characters"),
-	username: z
-		.string()
-		.min(3, "Username must be at least 3 characters")
-		.max(30, "Username must be at most 30 characters")
-		.regex(
-			/^[a-zA-Z0-9_]+$/,
-			"Username can only contain letters, numbers, and underscores",
-		),
+	displayName: z.string().min(1, "Display name is required"),
 	role: z.enum(["performer", "audience"], {
-		required_error: "Role is required",
+		errorMap: () => ({ message: "Role must be either 'performer' or 'audience'" }),
 	}),
-	displayName: z
-		.string()
-		.min(1, "Display name is required")
-		.max(100, "Display name too long"),
+	profile: z.object({
+		displayName: z.string().min(1, "Display name is required"),
+		bio: z.string().optional(),
+		avatar: z.string().url().optional(),
+		genres: z.array(z.string()).optional(),
+		socialLinks: z.object({
+			instagram: z.string().optional(),
+			spotify: z.string().optional(),
+			youtube: z.string().optional(),
+		}).optional(),
+	}).optional(),
+	location: z.object({
+		city: z.string().min(1, "City is required"),
+		country: z.string().min(1, "Country is required"),
+		coordinates: z.tuple([z.number(), z.number()]),
+	}),
 });
 
 const loginSchema = z.object({
-	email: z.string().email("Invalid email format"),
+	email: z.string().email("Invalid email address"),
 	password: z.string().min(1, "Password is required"),
 });
 
-const updateProfileSchema = z
-	.object({
-		profile: z
-			.object({
-				displayName: z.string().min(1).max(100).optional(),
-				bio: z.string().max(500).optional(),
-				avatar: z.string().url().optional(),
-				genres: z.array(z.string()).optional(),
-				socialLinks: z
-					.object({
-						instagram: z.string().url().optional(),
-						spotify: z.string().url().optional(),
-						youtube: z.string().url().optional(),
-					})
-					.optional(),
-			})
-			.optional(),
-		preferences: z
-			.object({
-				notifications: z.boolean().optional(),
-				genres: z.array(z.string()).optional(),
-				radius: z.number().min(1).max(50).optional(),
-			})
-			.optional(),
-	})
-	.partial();
-
-const updateLocationSchema = z.object({
-	city: z.string().min(1, "City is required"),
-	country: z.string().min(1, "Country is required"),
-	coordinates: z.tuple([z.number(), z.number()], {
-		required_error: "Coordinates are required",
-	}),
+const updateProfileSchema = z.object({
+	displayName: z.string().min(1, "Display name is required").optional(),
+	bio: z.string().optional(),
+	avatar: z.string().url().optional(),
+	genres: z.array(z.string()).optional(),
+	socialLinks: z.object({
+		instagram: z.string().optional(),
+		spotify: z.string().optional(),
+		youtube: z.string().optional(),
+	}).optional(),
 });
 
+const nearbyUsersSchema = z.object({
+	lat: z.string().transform(Number),
+	lng: z.string().transform(Number),
+	radius: z.string().transform(Number).optional(),
+	role: z.enum(["performer", "audience"]).optional(),
+	genre: z.string().optional(),
+	limit: z.string().transform(Number).optional(),
+});
+
+export interface LoginCredentials {
+	email: string;
+	password: string;
+}
+
+export interface RegisterUserData {
+	email: string;
+	username: string;
+	password: string;
+	role: "performer" | "audience";
+	displayName: string;
+	profile?: {
+		displayName: string;
+		bio?: string;
+		avatar?: string;
+		genres?: string[];
+		socialLinks?: {
+			instagram?: string;
+			spotify?: string;
+			youtube?: string;
+		};
+	};
+	location: {
+		city: string;
+		country: string;
+		coordinates: [number, number];
+	};
+}
+
 export class UserController {
-	private readonly userService = new UserService();
-	private readonly logger = logger.child({ context: "UserController" });
+	private userService: UserService;
+
+	constructor() {
+		this.userService = new UserService();
+	}
 
 	register = async (
 		req: Request,
@@ -81,7 +103,7 @@ export class UserController {
 				throw new ValidationError(validation.error.errors[0].message);
 			}
 
-			const userData: RegisterData = validation.data;
+			const userData: RegisterUserData = validation.data;
 			const result = await this.userService.register(userData);
 
 			res.status(201).json({
@@ -161,18 +183,23 @@ export class UserController {
 			}
 
 			const updateData = validation.data;
-			const updatedUser = await this.userService.updateUser(
-				userId,
-				updateData as Partial<User>,
-			);
+			const user = await this.userService.updateUser(userId, {
+				profile: {
+					displayName: updateData.displayName,
+					bio: updateData.bio,
+					avatar: updateData.avatar,
+					genres: updateData.genres,
+					socialLinks: updateData.socialLinks,
+				}
+			} as any);
 
-			if (!updatedUser) {
+			if (!user) {
 				throw new ApiError(404, "User not found");
 			}
 
 			res.json({
 				success: true,
-				data: updatedUser,
+				data: user,
 				meta: { timestamp: new Date().toISOString() },
 			});
 		} catch (error) {
@@ -180,7 +207,7 @@ export class UserController {
 		}
 	};
 
-	updateLocation = async (
+	deleteProfile = async (
 		req: Request,
 		res: Response,
 		next: NextFunction,
@@ -191,24 +218,16 @@ export class UserController {
 				throw new ApiError(401, "Authentication required");
 			}
 
-			const validation = updateLocationSchema.safeParse(req.body);
-			if (!validation.success) {
-				throw new ValidationError(validation.error.errors[0].message);
-			}
-
-			const locationData = validation.data;
-			const updatedUser = await this.userService.updateUserLocation(
-				userId,
-				locationData,
-			);
-
-			if (!updatedUser) {
-				throw new ApiError(404, "User not found");
-			}
+			// TODO: Implement delete method in UserService
+			// const success = await this.userService.delete(userId);
+			// if (!success) {
+			// 	throw new ApiError(404, "User not found");
+			// }
+			throw new ApiError(501, "Delete user not implemented");
 
 			res.json({
 				success: true,
-				data: updatedUser,
+				data: { message: "User deleted successfully" },
 				meta: { timestamp: new Date().toISOString() },
 			});
 		} catch (error) {
@@ -216,36 +235,26 @@ export class UserController {
 		}
 	};
 
-	getNearbyPerformers = async (
+	getUserById = async (
 		req: Request,
 		res: Response,
 		next: NextFunction,
 	): Promise<void> => {
 		try {
-			const { lat, lng, radius = 5 } = req.query;
-
-			if (!lat || !lng) {
-				throw new ValidationError("Latitude and longitude are required");
+			const userId = req.params.id;
+			if (!userId) {
+				throw new ApiError(400, "User ID is required");
 			}
 
-			const coordinates: [number, number] = [
-				Number.parseFloat(lng as string),
-				Number.parseFloat(lat as string),
-			];
-			const radiusInKm = Number.parseFloat(radius as string);
-
-			const performers = await this.userService.getNearbyPerformers(
-				coordinates,
-				radiusInKm,
-			);
+			const user = await this.userService.getUserById(userId);
+			if (!user) {
+				throw new ApiError(404, "User not found");
+			}
 
 			res.json({
 				success: true,
-				data: performers,
-				meta: {
-					timestamp: new Date().toISOString(),
-					location: { coordinates, radius: radiusInKm },
-				},
+				data: user,
+				meta: { timestamp: new Date().toISOString() },
 			});
 		} catch (error) {
 			next(error);
@@ -293,7 +302,7 @@ export class UserController {
 					location: {
 						city: "Unknown",
 						country: "Unknown",
-						coordinates: [0, 0],
+						coordinates: [0, 0] as [number, number],
 					},
 				};
 
@@ -319,4 +328,120 @@ export class UserController {
 			next(error);
 		}
 	};
+
+	getNearbyUsers = async (
+		req: Request,
+		res: Response,
+		next: NextFunction,
+	): Promise<void> => {
+		try {
+			const validation = nearbyUsersSchema.safeParse(req.query);
+			if (!validation.success) {
+				throw new ValidationError(validation.error.errors[0].message);
+			}
+
+			const { lat, lng, radius = 25, role = "performer", genre, limit = 50 } = validation.data;
+
+			const users = await this.userService.getNearbyUsers({
+				latitude: lat,
+				longitude: lng,
+				radius,
+				role,
+				genre,
+				limit
+			});
+
+			res.json({
+				success: true,
+				data: {
+					users,
+					total: users.length,
+					location: { lat, lng },
+					radius,
+					filters: { role, genre }
+				},
+				meta: { timestamp: new Date().toISOString() },
+			});
+		} catch (error) {
+			next(error);
+		}
+	};
+
+	updateLocation = async (
+		req: Request,
+		res: Response,
+		next: NextFunction,
+	): Promise<void> => {
+		try {
+			const userId = (req as any).user?.userId;
+			if (!userId) {
+				throw new ApiError(401, "Authentication required");
+			}
+
+			const { city, country, coordinates } = req.body;
+			if (!city || !country || !coordinates) {
+				throw new ValidationError("City, country, and coordinates are required");
+			}
+
+			const user = await this.userService.updateUser(userId, {
+				location: {
+					city,
+					country,
+					coordinates,
+				}
+			} as any);
+
+			if (!user) {
+				throw new ApiError(404, "User not found");
+			}
+
+			res.json({
+				success: true,
+				data: user,
+				meta: { timestamp: new Date().toISOString() },
+			});
+		} catch (error) {
+			next(error);
+		}
+	};
+
+	getNearbyPerformers = async (
+		req: Request,
+		res: Response,
+		next: NextFunction,
+	): Promise<void> => {
+		try {
+			const validation = nearbyUsersSchema.safeParse(req.query);
+			if (!validation.success) {
+				throw new ValidationError(validation.error.errors[0].message);
+			}
+
+			const { lat, lng, radius = 25, genre, limit = 50 } = validation.data;
+
+			const users = await this.userService.getNearbyUsers({
+				latitude: lat,
+				longitude: lng,
+				radius,
+				role: "performer",
+				genre,
+				limit
+			});
+
+			res.json({
+				success: true,
+				data: {
+					users,
+					total: users.length,
+					location: { lat, lng },
+					radius,
+					filters: { role: "performer", genre }
+				},
+				meta: { timestamp: new Date().toISOString() },
+			});
+		} catch (error) {
+			next(error);
+		}
+	};
 }
+
+export const userController = new UserController();

@@ -1,4 +1,5 @@
 import { type Router as ExpressRouter, Router } from "express";
+import express from "express";
 import { authenticate } from "../../../shared/middleware/auth";
 import { paymentController } from "../controllers/PaymentController";
 
@@ -20,8 +21,8 @@ router.post("/confirm", authenticate, paymentController.confirmPayment);
 router.get("/transactions/:id", authenticate, paymentController.getTransaction);
 router.get("/earnings", authenticate, paymentController.getEarnings);
 
-// Stripe Connect routes (require authentication)
-router.post("/connect/account", authenticate, paymentController.createConnectAccount);
+// Stripe Connect routes 
+router.post("/connect/account", paymentController.createConnectAccount); // No auth - uses email lookup
 router.get("/connect/account", authenticate, paymentController.getConnectAccount);
 router.post("/connect/link", authenticate, paymentController.createAccountLink);
 

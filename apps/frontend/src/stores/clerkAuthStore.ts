@@ -69,6 +69,7 @@ export const useClerkAuthStore = create<ClerkAuthState>()(
 			},
 
 			clearUser: () => {
+				localStorage.removeItem("auth-token");
 				set({
 					user: null,
 					isLoading: false,
@@ -84,7 +85,7 @@ export const useClerkAuthStore = create<ClerkAuthState>()(
 					const displayName =
 						clerkUser.displayName || clerkUser.username || "User";
 
-					const response = await ApiClient.call<{ data: User }>(
+					const response = await ApiClient.call<{ user: User; token: string }>(
 						api.post("/users/sync-clerk", {
 							clerkId: clerkUser.id,
 							email: clerkUser.email,
@@ -96,9 +97,13 @@ export const useClerkAuthStore = create<ClerkAuthState>()(
 					);
 
 					console.log("Sync response:", response);
-					console.log("Setting user:", response.data);
+					console.log("Setting user:", response.user);
+					console.log("Storing token: [REDACTED]");
 
-					set({ user: response.data, isLoading: false });
+					// Store the JWT token for API calls
+					localStorage.setItem("auth-token", response.token);
+
+					set({ user: response.user, isLoading: false });
 				} catch (error) {
 					console.error("Failed to sync Clerk user with backend:", error);
 					set({

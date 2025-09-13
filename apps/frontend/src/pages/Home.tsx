@@ -201,51 +201,50 @@ export function Home() {
 		<div className="min-h-screen bg-background">
 			{/* Header */}
 			<header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border/50">
-				<div className="max-w-7xl mx-auto px-6 py-4">
+				<div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
 					<div className="flex items-center justify-between">
 						{/* Logo */}
-						<div className="flex items-center gap-2">
-							<div className="w-10 h-10 rounded-full street-gradient flex items-center justify-center">
-								<MapPin className="w-6 h-6 text-white" />
-							</div>
-							<span className="text-xl font-bold">
-								Street<span className="text-gradient">PerformersMap</span>
+						<div className="flex items-center gap-2 flex-shrink-0">
+							<span className="text-2xl sm:text-3xl">🎵</span>
+							<span className="text-lg sm:text-xl font-bold">
+								<span className="hidden sm:inline">Street<span className="text-gradient">PerformersMap</span></span>
+								<span className="sm:hidden">SPM</span>
 							</span>
 						</div>
 
 						{/* Desktop Navigation */}
-						<nav className="hidden md:flex items-center gap-8">
+						<nav className="hidden lg:flex items-center gap-6 xl:gap-8">
 							<a
 								href="#features"
-								className="text-muted-foreground hover:text-foreground transition-colors"
+								className="text-muted-foreground hover:text-foreground transition-colors text-sm"
 							>
 								Features
 							</a>
 							<a
 								href="#how-it-works"
-								className="text-muted-foreground hover:text-foreground transition-colors"
+								className="text-muted-foreground hover:text-foreground transition-colors text-sm"
 							>
 								How It Works
 							</a>
 							<a
 								href="#community"
-								className="text-muted-foreground hover:text-foreground transition-colors"
+								className="text-muted-foreground hover:text-foreground transition-colors text-sm"
 							>
 								Community
 							</a>
 						</nav>
 
 						{/* Desktop Actions */}
-						<div className="hidden md:flex items-center gap-4">
+						<div className="hidden md:flex items-center gap-2 lg:gap-4 flex-shrink-0">
 							{isAuthenticated ? (
 								<>
 									<Link
 										to="/map"
-										className="text-muted-foreground hover:text-foreground transition-colors"
+										className="text-muted-foreground hover:text-foreground transition-colors text-sm"
 									>
 										View Map
 									</Link>
-									<span className="text-muted-foreground">
+									<span className="text-muted-foreground text-sm hidden lg:inline">
 										Welcome, {clerkUser?.fullName || clerkUser?.username}!
 									</span>
 									<UserButton afterSignOutUrl="/" />
@@ -253,12 +252,12 @@ export function Home() {
 							) : (
 								<>
 									<SignInButton mode="modal">
-										<button className="text-muted-foreground hover:text-foreground transition-colors">
+										<button className="text-muted-foreground hover:text-foreground transition-colors text-sm">
 											Sign In
 										</button>
 									</SignInButton>
 									<SignUpButton mode="modal">
-										<button className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2 rounded-lg font-medium transition-colors">
+										<button className="bg-primary hover:bg-primary/90 text-primary-foreground px-3 py-2 rounded-lg font-medium transition-colors text-sm">
 											Get Started
 										</button>
 									</SignUpButton>
@@ -307,9 +306,12 @@ export function Home() {
 											>
 												View Map
 											</Link>
-											<span className="text-muted-foreground py-2">
-												Welcome, {clerkUser?.fullName || clerkUser?.username}!
-											</span>
+											<div className="flex items-center justify-between py-2">
+												<span className="text-muted-foreground">
+													Welcome, {clerkUser?.fullName || clerkUser?.username}!
+												</span>
+												<UserButton afterSignOutUrl="/" />
+											</div>
 										</>
 									) : (
 										<>

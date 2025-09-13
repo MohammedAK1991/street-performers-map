@@ -167,11 +167,10 @@ performanceSchema.index({
 	status: 1,
 });
 
-// Compound index for time-based queries
+// Compound index for time-based queries (expiresAt has separate TTL index)
 performanceSchema.index({
 	status: 1,
 	scheduledFor: 1,
-	expiresAt: 1,
 });
 
 // Index for engagement sorting

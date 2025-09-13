@@ -124,6 +124,7 @@ class NotificationService {
 	private showToast(notification: Notification) {
 		const toastOptions = {
 			duration: 5000,
+			closeButton: true,
 			position: 'top-right' as const,
 		};
 

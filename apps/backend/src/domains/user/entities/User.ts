@@ -6,6 +6,14 @@ export interface UserDocument extends Omit<IUser, "_id">, Document {
 	_id: mongoose.Types.ObjectId;
 	clerkId?: string;
 	password: string;
+	stripe?: {
+		connectAccountId?: string;
+		accountStatus: 'pending' | 'active' | 'restricted' | 'inactive';
+		detailsSubmitted: boolean;
+		chargesEnabled: boolean;
+		payoutsEnabled: boolean;
+		onboardingUrl?: string;
+	};
 	comparePassword(password: string): Promise<boolean>;
 }
 
@@ -137,6 +145,52 @@ const userSchema = new Schema<UserDocument>(
 				type: Number,
 				default: 0,
 			},
+		},
+		stripe: {
+			connectAccountId: {
+				type: String,
+				sparse: true, // Only for performers who connect Stripe
+			},
+			accountStatus: {
+				type: String,
+				enum: ['pending', 'active', 'restricted', 'inactive'],
+				default: 'pending'
+			},
+			detailsSubmitted: {
+				type: Boolean,
+				default: false
+			},
+			chargesEnabled: {
+				type: Boolean,
+				default: false
+			},
+			payoutsEnabled: {
+				type: Boolean,
+				default: false
+			},
+			onboardingUrl: String, // Temporary URL for completing onboarding
+		},
+		onboarding: {
+			isComplete: {
+				type: Boolean,
+				default: false
+			},
+			completedSteps: [{
+				type: String
+			}],
+			currentStep: String,
+			profileCompleted: {
+				type: Boolean,
+				default: false
+			},
+			stripeConnected: {
+				type: Boolean,
+				default: false
+			},
+			emailVerified: {
+				type: Boolean,
+				default: false
+			}
 		},
 	},
 	{

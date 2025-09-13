@@ -8,6 +8,8 @@ export interface User {
 	location: UserLocation;
 	preferences: UserPreferences;
 	statistics: UserStatistics;
+	stripe?: UserStripeInfo;
+	onboarding?: UserOnboarding;
 	createdAt: Date;
 	updatedAt: Date;
 }
@@ -40,6 +42,24 @@ export interface UserStatistics {
 	totalLikes: number;
 	totalTips: number;
 	performanceCount: number;
+}
+
+export interface UserStripeInfo {
+	connectAccountId?: string;
+	accountStatus: 'pending' | 'active' | 'restricted' | 'inactive';
+	detailsSubmitted: boolean;
+	chargesEnabled: boolean;
+	payoutsEnabled: boolean;
+	onboardingUrl?: string;
+}
+
+export interface UserOnboarding {
+	isComplete: boolean;
+	completedSteps: string[];
+	currentStep?: string;
+	profileCompleted: boolean;
+	stripeConnected: boolean;
+	emailVerified: boolean;
 }
 
 // Performance Types

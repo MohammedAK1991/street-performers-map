@@ -1,4 +1,5 @@
 import { useLikePerformance, usePerformance } from "@/hooks/usePerformances";
+import { usePerformancePaymentSummary } from "@/hooks/usePerformancePaymentSummary";
 import { useUser } from "@clerk/clerk-react";
 import type { Performance } from "@spm/shared-types";
 import type React from "react";
@@ -25,8 +26,13 @@ export const PerformanceModal: React.FC<PerformanceModalProps> = ({
 		initialPerformance._id,
 	);
 
+	// Get real-time tip data from the payment API
+	const { data: paymentData, isLoading: paymentLoading } = usePerformancePaymentSummary(
+		performance._id
+	);
+
 	// Check if current user has liked this performance
-	const isLiked = user && performance.engagement.likedBy.includes(user.id);
+	const isLiked = user && performance.engagement?.likedBy?.includes(user.id);
 
 	// ESC key handler
 	useEffect(() => {
@@ -69,6 +75,20 @@ export const PerformanceModal: React.FC<PerformanceModalProps> = ({
 	};
 
 	if (!isOpen) return null;
+
+	// Safety check to ensure performance data is loaded
+	if (!performance || !performance.engagement) {
+		return (
+			<div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+				<div className="bg-background rounded-lg p-6 max-w-md w-full mx-4">
+					<div className="text-center">
+						<div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+						<p className="text-muted-foreground">Loading performance data...</p>
+					</div>
+				</div>
+			</div>
+		);
+	}
 
 	return (
 		<div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -193,19 +213,23 @@ export const PerformanceModal: React.FC<PerformanceModalProps> = ({
 								<div className="flex items-center space-x-2">
 									<span className="text-muted-foreground">❤️</span>
 									<span className="text-muted-foreground text-sm">
-										{performance.engagement.likes} likes
+										{performance.engagement?.likes || 0} likes
 									</span>
 								</div>
 								<div className="flex items-center space-x-2">
 									<span className="text-muted-foreground">👀</span>
 									<span className="text-muted-foreground text-sm">
-										{performance.engagement.views} views
+										{performance.engagement?.views || 0} views
 									</span>
 								</div>
 								<div className="flex items-center space-x-2">
 									<span className="text-muted-foreground">💰</span>
 									<span className="text-muted-foreground text-sm">
-										{performance.engagement.tips} tips
+										{paymentLoading ? (
+											"Loading..."
+										) : (
+											`${paymentData?.summary.tipCount || 0} tips`
+										)}
 									</span>
 								</div>
 							</div>
@@ -233,7 +257,7 @@ export const PerformanceModal: React.FC<PerformanceModalProps> = ({
 									<span>{isLiked ? "💔" : "❤️"}</span>
 									<span>
 										{isLiked ? "Unlike" : "Like"} (
-										{performance.engagement.likes})
+										{performance.engagement?.likes || 0})
 									</span>
 								</>
 							)}

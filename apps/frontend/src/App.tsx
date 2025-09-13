@@ -12,6 +12,10 @@ const CreatePerformance = lazy(() => import("./pages/CreatePerformance").then(m 
 const MapPage = lazy(() => import("./pages/Map").then(m => ({ default: m.Map })));
 const Profile = lazy(() => import("./pages/Profile").then(m => ({ default: m.Profile })));
 const OnboardingWizard = lazy(() => import("./components/onboarding/OnboardingWizard").then(m => ({ default: m.OnboardingWizard })));
+const ArtistsList = lazy(() => import("./pages/ArtistsList").then(m => ({ default: m.ArtistsList })));
+const ArtistProfile = lazy(() => import("./pages/ArtistProfile").then(m => ({ default: m.ArtistProfile })));
+const StripeReturn = lazy(() => import("./pages/connect/StripeReturn").then(m => ({ default: m.StripeReturn })));
+const StripeRefresh = lazy(() => import("./pages/connect/StripeRefresh").then(m => ({ default: m.StripeRefresh })));
 
 // Loading component
 const PageLoader = () => (
@@ -70,6 +74,38 @@ export function App() {
 						element={
 							<SignedIn>
 								<Analytics />
+							</SignedIn>
+						}
+					/>
+					<Route
+						path="/artists"
+						element={
+							<SignedIn>
+								<ArtistsList />
+							</SignedIn>
+						}
+					/>
+					<Route
+						path="/artist/:id"
+						element={
+							<SignedIn>
+								<ArtistProfile />
+							</SignedIn>
+						}
+					/>
+					<Route
+						path="/connect/return"
+						element={
+							<SignedIn>
+								<StripeReturn />
+							</SignedIn>
+						}
+					/>
+					<Route
+						path="/connect/refresh/:accountId"
+						element={
+							<SignedIn>
+								<StripeRefresh />
 							</SignedIn>
 						}
 					/>

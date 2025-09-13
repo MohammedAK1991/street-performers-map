@@ -9,6 +9,8 @@ const userController = new UserController();
 router.post("/register", userController.register);
 router.post("/login", userController.login);
 router.post("/sync-clerk", userController.syncClerkUser);
+router.get("/nearby", userController.getNearbyUsers);
+router.get("/:id", userController.getUserById);
 
 // Protected routes
 router.get("/profile", authenticate, userController.getProfile);

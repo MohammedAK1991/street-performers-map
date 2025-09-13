@@ -161,7 +161,7 @@ const VideoSchema = new Schema<VideoDocument>(
 VideoSchema.index({ userId: 1, uploadDate: 1 }); // Daily limit check
 VideoSchema.index({ performanceId: 1, status: 1 }); // Performance videos
 VideoSchema.index({ status: 1, moderationStatus: 1 }); // Moderation queue
-VideoSchema.index({ expiresAt: 1 }); // TTL cleanup
+// TTL index is already defined in the schema field
 
 // Virtual for checking if video is expired
 VideoSchema.virtual("isExpired").get(function (this: VideoDocument) {

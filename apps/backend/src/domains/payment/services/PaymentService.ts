@@ -75,6 +75,7 @@ export class PaymentService {
 				await stripeService.createTipPaymentIntent(stripeRequest);
 
 			// Create transaction record in database
+			// NOTE: We don't store clientSecret for security - it's ephemeral and only used client-side
 			const transactionData: Partial<ITransaction> = {
 				amount: amountInCents,
 				currency,
@@ -82,7 +83,7 @@ export class PaymentService {
 				toUserId: performerId,
 				performanceId,
 				stripePaymentIntentId: paymentResult.paymentIntentId,
-				stripeClientSecret: paymentResult.clientSecret,
+				// stripeClientSecret: removed for security - don't store ephemeral tokens
 				paymentMethod: "card", // Will be updated when payment is confirmed
 				status: "pending",
 				isAnonymous: isAnonymous || false,
@@ -231,6 +232,28 @@ export class PaymentService {
 			if (status === "completed" && chargeId) {
 				await transaction.markCompleted(chargeId);
 				logger.info(`✅ Transaction ${transaction._id} marked as completed`);
+				
+				// Create transfer to performer's Connect account
+				try {
+					// Get performer's Connect account ID
+					const UserModel = (await import('../../user/entities/User')).UserModel;
+					const performer = await UserModel.findById(transaction.toUserId);
+					
+					if (performer?.stripe?.connectAccountId) {
+						const transferId = await stripeService.createTransfer(
+							transaction.netAmount, // Transfer the net amount after fees
+							performer.stripe.connectAccountId,
+							`tip_${transaction._id}` // Transfer group for tracking
+						);
+						
+						logger.info(`💸 Created transfer ${transferId} to performer ${performer._id} (${performer.stripe.connectAccountId}) for €${(transaction.netAmount / 100).toFixed(2)}`);
+					} else {
+						logger.warn(`⚠️ Performer ${transaction.toUserId} has no Connect account - skipping transfer`);
+					}
+				} catch (transferError) {
+					logger.error(`❌ Failed to create transfer for transaction ${transaction._id}:`, transferError);
+					// Don't fail the whole operation if transfer fails
+				}
 			} else if (status === "failed") {
 				await transaction.markFailed(failureReason || "Payment failed");
 				logger.info(`❌ Transaction ${transaction._id} marked as failed`);

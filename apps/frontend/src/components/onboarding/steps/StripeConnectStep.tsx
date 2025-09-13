@@ -6,7 +6,6 @@ import toast from "react-hot-toast";
 
 interface StripeConnectStepProps {
 	updateData: (data: Partial<OnboardingData>) => void;
-	nextStep: () => void;
 	prevStep: () => void;
 	skipStep: () => void;
 	isLoading: boolean;
@@ -14,7 +13,6 @@ interface StripeConnectStepProps {
 
 export function StripeConnectStep({
 	updateData,
-	nextStep,
 	prevStep,
 	skipStep,
 	isLoading,
@@ -49,18 +47,17 @@ export function StripeConnectStep({
 			const connectAccount = response.data.data;
 			
 			// Step 2: Redirect to Stripe for onboarding
-			if (connectAccount.loginUrl) {
-				// In a real app, this would redirect the user to Stripe
-				// For now, we'll show a success message and continue
-				toast.success("Stripe Connect account created! In production, you'd be redirected to complete setup.");
+			if (connectAccount.onboardingUrl) {
+				toast.success("Redirecting to Stripe to complete your account setup...");
 				
+				// Store the account ID before redirecting
 				updateData({
-					stripeConnected: true,
+					stripeConnected: false, // Will be true after successful onboarding
 					stripeAccountId: connectAccount.accountId,
 				});
 
-				// Complete onboarding
-				nextStep();
+				// Redirect to Stripe's hosted onboarding
+				window.location.href = connectAccount.onboardingUrl;
 			} else {
 				throw new Error("Failed to get Stripe onboarding URL");
 			}
@@ -98,17 +95,6 @@ export function StripeConnectStep({
 			{/* Stripe Info */}
 			<div className="bg-blue-900/20 rounded-lg p-6 border border-blue-500/30">
 				<div className="flex items-start space-x-4">
-					<div className="w-12 h-12 bg-gray-800 rounded-lg flex items-center justify-center flex-shrink-0 border border-gray-600">
-						<img
-							src="/api/placeholder/stripe-logo"
-							alt="Stripe"
-							className="w-8 h-8"
-							onError={(e) => {
-								(e.target as HTMLImageElement).src =
-									'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" fill="%236772E5" viewBox="0 0 100 42"><path d="M6 18c0-5 2-8 7-8 3 0 5 1 6 3v-2h5v15h-5v-2c-1 2-3 3-6 3-5 0-7-3-7-8v-1zm12-4c-1-1-2-2-4-2-2 0-4 1-4 4v1c0 3 2 4 4 4 2 0 3-1 4-2V14z"/></svg>';
-							}}
-						/>
-					</div>
 					<div className="flex-1">
 						<h4 className="font-semibold text-blue-300 mb-2">
 							Secure payments powered by Stripe

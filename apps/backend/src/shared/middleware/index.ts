@@ -82,7 +82,16 @@ export function setupMiddleware(app: express.Application): void {
 	app.use("/api", limiter);
 
 	// Body parsing middleware
-	app.use(express.json({ limit: "10mb" }));
+	// Skip JSON parsing for Stripe webhooks (they need raw body)
+	app.use(express.json({ 
+		limit: "10mb",
+		verify: (req: any, res, buf) => {
+			// Store raw body for webhooks
+			if (req.originalUrl?.includes('/webhooks/stripe')) {
+				req.rawBody = buf;
+			}
+		}
+	}));
 	app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 	// Request logging middleware

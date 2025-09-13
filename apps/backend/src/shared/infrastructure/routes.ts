@@ -2,7 +2,6 @@ import { mediaRoutes } from "../../domains/media/routes/mediaRoutes";
 import { paymentRoutes } from "../../domains/payment/routes/paymentRoutes";
 import { performanceRoutes } from "../../domains/performance/routes/performanceRoutes";
 import { userRoutes } from "../../domains/user/routes/userRoutes";
-import { setup404Handler } from "../middleware";
 import { logger } from "../utils/logger";
 import express from "express";
 

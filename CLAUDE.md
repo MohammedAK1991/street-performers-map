@@ -128,3 +128,6 @@ The architecture is designed for microservices deployment with:
 - AWS S3 for video storage
 
 Refer to TECHNICAL_ARCHITECTURE.md for detailed infrastructure and scaling information.
+
+## Important Notes
+- follow SOLID, YAGNI, and KISS principles

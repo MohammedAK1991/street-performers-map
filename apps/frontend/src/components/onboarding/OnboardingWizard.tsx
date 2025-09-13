@@ -1,5 +1,5 @@
 import { useUser } from "@clerk/clerk-react";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { EmailVerificationStep } from "./steps/EmailVerificationStep";
 import { LocationStep } from "./steps/LocationStep";
@@ -96,25 +96,11 @@ export function OnboardingWizard() {
 	const currentStepData = steps[currentStep];
 	const CurrentStepComponent = currentStepData.component;
 
-	const updateData = (stepData: Partial<OnboardingData>) => {
+	const updateData = useCallback((stepData: Partial<OnboardingData>) => {
 		setOnboardingData((prev) => ({ ...prev, ...stepData }));
-	};
+	}, []);
 
-	const nextStep = async () => {
-		if (currentStep < steps.length - 1) {
-			setCurrentStep((prev) => prev + 1);
-		} else {
-			await completeOnboarding();
-		}
-	};
-
-	const prevStep = () => {
-		if (currentStep > 0) {
-			setCurrentStep((prev) => prev - 1);
-		}
-	};
-
-	const completeOnboarding = async () => {
+	const completeOnboarding = useCallback(async () => {
 		setIsLoading(true);
 		setError(null);
 
@@ -140,9 +126,23 @@ export function OnboardingWizard() {
 		} finally {
 			setIsLoading(false);
 		}
-	};
+	}, [onboardingData, user, navigate]);
 
-	const skipStep = () => {
+	const nextStep = useCallback(async () => {
+		if (currentStep < steps.length - 1) {
+			setCurrentStep((prev) => prev + 1);
+		} else {
+			await completeOnboarding();
+		}
+	}, [currentStep, steps.length, completeOnboarding]);
+
+	const prevStep = useCallback(() => {
+		if (currentStep > 0) {
+			setCurrentStep((prev) => prev - 1);
+		}
+	}, [currentStep]);
+
+	const skipStep = useCallback(() => {
 		// Allow skipping certain steps
 		if (
 			currentStepData.id === "email-verification" ||
@@ -150,7 +150,7 @@ export function OnboardingWizard() {
 		) {
 			nextStep();
 		}
-	};
+	}, [currentStepData.id, nextStep]);
 
 	return (
 		<div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex items-center justify-center p-4">

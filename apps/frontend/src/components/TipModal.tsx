@@ -2,7 +2,9 @@ import { api } from "@/utils/api";
 import { useUser } from "@clerk/clerk-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { loadStripe } from "@stripe/stripe-js";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { Elements } from "@stripe/react-stripe-js";
+import { PaymentElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import toast from "react-hot-toast";
 
 interface TipModalProps {
@@ -30,6 +32,127 @@ interface TipPaymentResult {
 	netAmount: number;
 }
 
+// Initialize Stripe outside component to prevent re-initialization
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY!);
+
+// Payment Form Component (wrapped with Elements)
+function PaymentForm({ 
+	clientSecret, 
+	onClose, 
+	performerName, 
+	amount, 
+	performanceId,
+	queryClient 
+}: {
+	clientSecret: string;
+	onClose: () => void;
+	performerName: string;
+	amount: number;
+	performanceId: string;
+	queryClient: any;
+}) {
+	const stripe = useStripe();
+	const elements = useElements();
+	const [isProcessing, setIsProcessing] = useState(false);
+	const [error, setError] = useState<string | null>(null);
+
+	const handleSubmit = async (event: React.FormEvent) => {
+		event.preventDefault();
+
+		if (!stripe || !elements) {
+			return;
+		}
+
+		setIsProcessing(true);
+		setError(null);
+
+		try {
+			const { error: submitError } = await elements.submit();
+			if (submitError) {
+				throw new Error(submitError.message);
+			}
+
+			const { error: confirmError } = await stripe.confirmPayment({
+				elements,
+				clientSecret,
+				confirmParams: {
+					return_url: `${window.location.origin}/payment-success`,
+				},
+				redirect: 'if_required',
+			});
+
+			if (confirmError) {
+				throw new Error(confirmError.message);
+			}
+
+			// Payment succeeded
+			toast.success(
+				`🎉 Tip sent successfully! Your tip of €${(amount / 100).toFixed(2)} has been sent to ${performerName}`,
+			);
+
+			// Invalidate queries to refresh data
+			queryClient.invalidateQueries({ queryKey: ["performances"] });
+			queryClient.invalidateQueries({ queryKey: ["earnings"] });
+			queryClient.invalidateQueries({ queryKey: ["performance-payment-summary", performanceId] });
+			
+			onClose();
+		} catch (err: any) {
+			console.error("❌ Payment failed:", err);
+			setError(err.message || "Payment failed");
+			toast.error(err.message || "Something went wrong with your payment");
+		} finally {
+			setIsProcessing(false);
+		}
+	};
+
+	return (
+		<form onSubmit={handleSubmit} className="space-y-6">
+			<div>
+				<PaymentElement 
+					options={{
+						layout: 'tabs',
+						paymentMethodOrder: ['apple_pay', 'card'],
+						fields: {
+							billingDetails: 'auto'
+						}
+					}}
+				/>
+			</div>
+
+			{error && (
+				<div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+					<p className="text-sm text-red-700">{error}</p>
+				</div>
+			)}
+
+			<div className="flex gap-3">
+				<button
+					type="button"
+					onClick={onClose}
+					className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-colors"
+					disabled={isProcessing}
+				>
+					Cancel
+				</button>
+				<button
+					type="submit"
+					disabled={!stripe || isProcessing}
+					className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed font-medium transition-colors flex items-center justify-center"
+				>
+					{isProcessing ? (
+						<div className="flex items-center gap-2">
+							<div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+							Processing...
+						</div>
+					) : (
+						`💳 Pay €${(amount / 100).toFixed(2)}`
+					)}
+				</button>
+			</div>
+		</form>
+	);
+}
+
 export function TipModal({
 	isOpen,
 	onClose,
@@ -45,6 +168,8 @@ export function TipModal({
 	const [isAnonymous, setIsAnonymous] = useState(false);
 	const [publicMessage, setPublicMessage] = useState("");
 	const [error, setError] = useState<string | null>(null);
+	const [clientSecret, setClientSecret] = useState<string | null>(null);
+	const [showPaymentForm, setShowPaymentForm] = useState(false);
 
 	const suggestedAmounts = [1, 3, 5, 10];
 
@@ -55,54 +180,14 @@ export function TipModal({
 			const response = await api.post("/payments/tip", request);
 			return response.data.data;
 		},
-		onSuccess: async (result) => {
-			try {
-				// Initialize Stripe
-				const stripe = await loadStripe(
-					import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY ||
-						"pk_test_51234567890abcdef",
-				);
-
-				if (!stripe) {
-					throw new Error("Failed to load Stripe");
-				}
-
-				// For test mode, we'll simulate a successful payment
-				// In production, you'd use stripe.confirmCardPayment with real card details
-				console.log("🎉 Simulating successful payment in test mode");
-
-				// Simulate payment success
-				await new Promise((resolve) => setTimeout(resolve, 1000));
-
-				// Confirm the payment with the backend (for test mode)
-				await api.post("/payments/confirm", {
-					paymentIntentId: result.paymentIntentId,
-				});
-
-				console.log("🎉 Tip payment successful:", result);
-
-				// Show success toast
-				toast.success(
-					`Tip sent successfully! 🎉 Your tip of €${(result.amount / 100).toFixed(2)} has been sent to ${performerName}`,
-				);
-
-				// Invalidate performance queries to refresh tip counts
-				queryClient.invalidateQueries({ queryKey: ["performances"] });
-				queryClient.invalidateQueries({ queryKey: ["earnings"] });
-				onClose();
-			} catch (err: any) {
-				console.error("❌ Stripe payment failed:", err);
-				setError(err.message || "Payment failed");
-
-				// Show error toast
-				toast.error(err.message || "Something went wrong with your payment");
-			}
+		onSuccess: (result) => {
+			console.log("🎯 Payment intent created:", result);
+			setClientSecret(result.clientSecret);
+			setShowPaymentForm(true);
 		},
 		onError: (error: any) => {
 			console.error("❌ Tip creation failed:", error);
 			setError(error?.response?.data?.error?.message || "Failed to create tip");
-
-			// Show error toast
 			toast.error(
 				error?.response?.data?.error?.message || "Failed to send tip",
 			);
@@ -158,8 +243,86 @@ export function TipModal({
 	const amount = getSelectedAmount();
 	const canTip = amount && amount >= 0.5 && amount <= 100 && !isLoading;
 
+	// Reset state when modal closes
+	useEffect(() => {
+		if (!isOpen) {
+			setSelectedAmount(null);
+			setCustomAmount("");
+			setIsAnonymous(false);
+			setPublicMessage("");
+			setError(null);
+			setClientSecret(null);
+			setShowPaymentForm(false);
+		}
+	}, [isOpen]);
+
 	if (!isOpen) return null;
 
+	// Show payment form if we have a client secret
+	if (clientSecret && showPaymentForm) {
+		const finalAmount = getSelectedAmount();
+		if (!finalAmount) return null;
+
+		return (
+			<div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+				<div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
+					{/* Header */}
+					<div className="p-6 border-b">
+						<div className="flex items-center justify-between">
+							<div>
+								<h2 className="text-xl font-semibold text-gray-900">
+									💳 Complete Payment
+								</h2>
+								<p className="text-sm text-gray-600 mt-1">
+									€{(finalAmount).toFixed(2)} tip for {performerName}
+								</p>
+							</div>
+							<button
+								onClick={onClose}
+								className="text-gray-400 hover:text-gray-600 text-2xl leading-none"
+							>
+								×
+							</button>
+						</div>
+					</div>
+
+					{/* Payment Form */}
+					<div className="p-6">
+						<Elements 
+							stripe={stripePromise} 
+							options={{
+								clientSecret,
+								appearance: {
+									theme: 'stripe',
+									variables: {
+										colorPrimary: '#2563eb',
+									}
+								}
+							}}
+						>
+							<PaymentForm
+								clientSecret={clientSecret}
+								onClose={onClose}
+								performerName={performerName}
+								amount={Math.round(finalAmount * 100)} // Convert to cents
+								performanceId={performanceId}
+								queryClient={queryClient}
+							/>
+						</Elements>
+					</div>
+
+					{/* Payment Info */}
+					<div className="p-4 bg-blue-50 border-t">
+						<p className="text-xs text-blue-700">
+							<strong>🔒 Secure Payment:</strong> Your payment is processed securely by Stripe with Apple Pay, Google Pay, and card support.
+						</p>
+					</div>
+				</div>
+			</div>
+		);
+	}
+
+	// Show amount selection form
 	return (
 		<div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
 			<div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
@@ -321,21 +484,19 @@ export function TipModal({
 							{isLoading ? (
 								<div className="flex items-center gap-2">
 									<div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-									Processing...
+									Creating Payment...
 								</div>
 							) : (
-								`💳 Tip €${amount?.toFixed(2) || "0.00"}`
+								`Continue to Payment →`
 							)}
 						</button>
 					</div>
 				</div>
 
-				{/* Development Note */}
-				<div className="p-4 bg-yellow-50 border-t">
-					<p className="text-xs text-yellow-700">
-						<strong>Development Mode:</strong> This will create a mock tip
-						transaction. In production, you'll be redirected to Stripe for
-						secure payment.
+				{/* Payment Info */}
+				<div className="p-4 bg-blue-50 border-t">
+					<p className="text-xs text-blue-700">
+						<strong>🔒 Secure Payment:</strong> Next step will show secure payment options including Apple Pay, Google Pay, and card payments.
 					</p>
 				</div>
 			</div>

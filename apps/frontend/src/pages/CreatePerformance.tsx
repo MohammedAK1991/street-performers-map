@@ -2,11 +2,13 @@ import { GooglePlacesAutocomplete } from "@/components/GooglePlacesAutocomplete"
 import { VideoUpload } from "@/components/VideoUpload";
 import { useCreatePerformance } from "@/hooks/usePerformances";
 import { useToast } from "@/hooks/useToast";
+import { useUserLocation } from "@/hooks/useUserLocation";
 import {
 	useRefreshVideoData,
 	useUploadEligibility,
 } from "@/hooks/useVideoUpload";
 import { useUser } from "@clerk/clerk-react";
+import { useClerkAuthStore } from "@/stores/clerkAuthStore";
 import type { CreatePerformanceDto, Video } from "@spm/shared-types";
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -27,12 +29,13 @@ const GENRES = [
 
 export function CreatePerformance() {
 	const navigate = useNavigate();
-	const { isSignedIn, user } = useUser();
+	const { isSignedIn } = useUser();
+	const { user: backendUser } = useClerkAuthStore();
 	const createPerformanceMutation = useCreatePerformance();
 	const { data: uploadEligibility } = useUploadEligibility();
 	const { refreshMyVideos } = useRefreshVideoData();
 	const { showError, showSuccess } = useToast();
-	// linkVideoMutation removed - not used
+	const { userLocation, isLoading: locationLoading } = useUserLocation();
 
 	const [step, setStep] = useState(1);
 	const [error, setError] = useState<string | null>(null);
@@ -41,25 +44,28 @@ export function CreatePerformance() {
 
 	// Check if user needs onboarding when component mounts
 	useEffect(() => {
-		if (isSignedIn && user) {
-			// Check if user has completed onboarding (you can add more sophisticated checks)
-			const hasCompletedOnboarding = user.unsafeMetadata?.onboardingCompleted;
+		if (isSignedIn && backendUser && backendUser.role === 'performer') {
+			// Check if performer has completed onboarding
+			const hasCompletedOnboarding = backendUser.onboarding?.isComplete;
+			const hasProfilePicture = backendUser.profile?.avatar;
+			const hasStripeConnected = backendUser.stripe?.connectAccountId;
 
-			if (!hasCompletedOnboarding) {
+			if (!hasCompletedOnboarding || !hasProfilePicture || (!hasStripeConnected && backendUser.role === 'performer')) {
 				setShowOnboardingPrompt(true);
 			}
 		}
-	}, [isSignedIn, user]);
+	}, [isSignedIn, backendUser]);
 
-	const [formData, setFormData] = useState<CreatePerformanceDto>({
+	// Initialize form data with user's location or fallback to Central Park
+	const getInitialFormData = (): CreatePerformanceDto => ({
 		title: "",
 		description: "",
 		genre: "jazz",
 		route: {
 			stops: [
 				{
-					location: {
-						coordinates: [-73.9712, 40.7831], // Default to Central Park
+					location: userLocation || {
+						coordinates: [-73.9712, 40.7831], // Fallback to Central Park
 						address: "Central Park, NYC",
 						name: "Bethesda Fountain",
 					},
@@ -70,6 +76,23 @@ export function CreatePerformance() {
 		},
 		scheduledFor: new Date().toISOString(), // Today
 	});
+
+	const [formData, setFormData] = useState<CreatePerformanceDto>(getInitialFormData());
+
+	// Update form data when user location loads
+	useEffect(() => {
+		if (userLocation && !locationLoading) {
+			setFormData(prev => ({
+				...prev,
+				route: {
+					...prev.route,
+					stops: prev.route.stops.map((stop, index) => 
+						index === 0 ? { ...stop, location: userLocation } : stop
+					)
+				}
+			}));
+		}
+	}, [userLocation, locationLoading]);
 
 	// Redirect if not authenticated
 	if (!isSignedIn) {
@@ -418,7 +441,12 @@ export function CreatePerformance() {
 											const datetime = `${date}T${e.target.value}:00.000Z`;
 											updateStop(index, "startTime", datetime);
 										}}
-										className="w-full px-3 py-2 bg-card border border-border rounded-lg text-foreground focus:ring-primary focus:border-primary [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:opacity-100"
+										className="w-full px-3 py-2 bg-card border border-border rounded-lg text-foreground focus:ring-primary focus:border-primary [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:opacity-100 [&::-webkit-datetime-edit]:text-foreground [&::-webkit-datetime-edit-fields-wrapper]:text-foreground [&::-webkit-datetime-edit-text]:text-foreground [&::-webkit-datetime-edit-hour-field]:text-foreground [&::-webkit-datetime-edit-minute-field]:text-foreground [&::-webkit-datetime-edit-ampm-field]:text-foreground [&::-webkit-datetime-edit-month-field]:text-foreground [&::-webkit-datetime-edit-day-field]:text-foreground [&::-webkit-datetime-edit-year-field]:text-foreground [&::-webkit-datetime-edit-ampm-field]:text-foreground"
+										style={{
+											colorScheme: 'dark',
+											backgroundColor: 'hsl(var(--card))',
+											color: 'hsl(var(--foreground))'
+										}}
 									/>
 								</div>
 
@@ -434,7 +462,12 @@ export function CreatePerformance() {
 											const datetime = `${date}T${e.target.value}:00.000Z`;
 											updateStop(index, "endTime", datetime);
 										}}
-										className="w-full px-3 py-2 bg-card border border-border rounded-lg text-foreground focus:ring-primary focus:border-primary [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:opacity-100"
+										className="w-full px-3 py-2 bg-card border border-border rounded-lg text-foreground focus:ring-primary focus:border-primary [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:opacity-100 [&::-webkit-datetime-edit]:text-foreground [&::-webkit-datetime-edit-fields-wrapper]:text-foreground [&::-webkit-datetime-edit-text]:text-foreground [&::-webkit-datetime-edit-hour-field]:text-foreground [&::-webkit-datetime-edit-minute-field]:text-foreground [&::-webkit-datetime-edit-ampm-field]:text-foreground [&::-webkit-datetime-edit-month-field]:text-foreground [&::-webkit-datetime-edit-day-field]:text-foreground [&::-webkit-datetime-edit-year-field]:text-foreground [&::-webkit-datetime-edit-ampm-field]:text-foreground"
+										style={{
+											colorScheme: 'dark',
+											backgroundColor: 'hsl(var(--card))',
+											color: 'hsl(var(--foreground))'
+										}}
 									/>
 								</div>
 							</div>
@@ -614,6 +647,73 @@ export function CreatePerformance() {
 			</div>
 		</div>
 	);
+
+	// Show onboarding prompt if user hasn't completed setup
+	if (showOnboardingPrompt) {
+		return (
+			<div className="min-h-screen bg-background py-8">
+				<div className="max-w-2xl mx-auto px-4">
+					<div className="bg-card border border-orange-500 rounded-lg shadow-lg p-6">
+						<div className="text-center">
+							<div className="mb-6">
+								<div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+									<svg className="w-8 h-8 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.464 0L4.35 16.5c-.77.833.192 2.5 1.732 2.5z" />
+									</svg>
+								</div>
+								<h2 className="text-2xl font-bold text-foreground mb-2">Complete Your Profile First</h2>
+								<p className="text-muted-foreground mb-6">
+									Before creating performances, please complete your profile setup to receive tips and connect with your audience.
+								</p>
+							</div>
+
+							<div className="space-y-3 mb-6 text-left bg-muted/30 rounded-lg p-4">
+								<div className="flex items-center space-x-3">
+									<div className={`w-5 h-5 rounded-full flex items-center justify-center ${backendUser?.profile?.avatar ? 'bg-green-500 text-white' : 'bg-gray-300'}`}>
+										{backendUser?.profile?.avatar ? '✓' : '1'}
+									</div>
+									<span className={backendUser?.profile?.avatar ? 'text-green-600 font-medium' : 'text-muted-foreground'}>
+										Upload profile picture
+									</span>
+								</div>
+								<div className="flex items-center space-x-3">
+									<div className={`w-5 h-5 rounded-full flex items-center justify-center ${backendUser?.stripe?.connectAccountId ? 'bg-green-500 text-white' : 'bg-gray-300'}`}>
+										{backendUser?.stripe?.connectAccountId ? '✓' : '2'}
+									</div>
+									<span className={backendUser?.stripe?.connectAccountId ? 'text-green-600 font-medium' : 'text-muted-foreground'}>
+										Connect Stripe account for tips
+									</span>
+								</div>
+								<div className="flex items-center space-x-3">
+									<div className={`w-5 h-5 rounded-full flex items-center justify-center ${backendUser?.onboarding?.isComplete ? 'bg-green-500 text-white' : 'bg-gray-300'}`}>
+										{backendUser?.onboarding?.isComplete ? '✓' : '3'}
+									</div>
+									<span className={backendUser?.onboarding?.isComplete ? 'text-green-600 font-medium' : 'text-muted-foreground'}>
+										Complete profile information
+									</span>
+								</div>
+							</div>
+
+							<div className="flex space-x-4">
+								<Link 
+									to="/map"
+									className="flex-1 bg-muted hover:bg-muted/80 text-foreground px-6 py-3 rounded-lg font-medium transition-colors"
+								>
+									Cancel
+								</Link>
+								<Link 
+									to="/onboarding"
+									className="flex-1 bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+								>
+									Complete Setup
+								</Link>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		);
+	}
 
 	return (
 		<div className="min-h-screen bg-background py-8">

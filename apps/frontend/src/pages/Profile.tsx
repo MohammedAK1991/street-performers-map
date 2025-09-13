@@ -131,15 +131,20 @@ export function Profile() {
 			<header className="bg-gray-800/50 backdrop-blur-sm border-b border-gray-700/50 sticky top-0 z-40">
 				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 					<div className="flex justify-between items-center h-16">
-						<div className="flex items-center space-x-4">
+						{/* Logo */}
+						<div className="flex items-center space-x-4 flex-shrink-0">
 							<Link
 								to="/"
-								className="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent"
+								className="text-lg sm:text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent flex items-center space-x-2"
 							>
-								🎵 StreetPerformersMap
+								<span className="text-2xl">🎵</span>
+								<span className="hidden sm:inline">StreetPerformersMap</span>
+								<span className="sm:hidden">SPM</span>
 							</Link>
 						</div>
-						<div className="flex items-center space-x-4">
+
+						{/* Desktop Navigation */}
+						<nav className="hidden md:flex items-center space-x-2">
 							<Link
 								to="/map"
 								className="text-gray-300 hover:text-white transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-gray-700/50"
@@ -158,12 +163,40 @@ export function Profile() {
 							>
 								Create Performance
 							</Link>
+						</nav>
+
+						{/* Right side - Notifications and User */}
+						<div className="flex items-center space-x-2 flex-shrink-0">
 							<NotificationCenter />
-							<div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg">
-								<span className="text-white text-sm font-medium">
+							<div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg">
+								<span className="text-white text-xs sm:text-sm font-medium">
 									{user?.fullName?.[0] || user?.username?.[0] || "U"}
 								</span>
 							</div>
+						</div>
+					</div>
+
+					{/* Mobile Navigation */}
+					<div className="md:hidden border-t border-gray-700/50 py-2">
+						<div className="flex flex-wrap gap-2">
+							<Link
+								to="/map"
+								className="text-gray-300 hover:text-white transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-gray-700/50 text-sm"
+							>
+								Map
+							</Link>
+							<Link
+								to="/analytics"
+								className="text-gray-300 hover:text-white transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-gray-700/50 text-sm"
+							>
+								Analytics
+							</Link>
+							<Link
+								to="/create-performance"
+								className="text-gray-300 hover:text-white transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-gray-700/50 text-sm"
+							>
+								Create Performance
+							</Link>
 						</div>
 					</div>
 				</div>

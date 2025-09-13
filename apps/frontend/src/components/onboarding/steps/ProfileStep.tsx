@@ -53,13 +53,24 @@ export function ProfileStep({
 		setIsUploading(true);
 
 		try {
-			// For now, create a data URL preview
-			// In production, you'd upload to your media service
-			const reader = new FileReader();
-			reader.onload = (e) => {
-				setProfileImage(e.target?.result as string);
-			};
-			reader.readAsDataURL(file);
+			// Upload to Cloudinary
+			const formData = new FormData();
+			formData.append('file', file);
+			formData.append('upload_preset', import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || 'ml_default');
+
+			const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload`;
+			
+			const response = await fetch(cloudinaryUrl, {
+				method: 'POST',
+				body: formData
+			});
+
+			if (!response.ok) {
+				throw new Error('Upload failed');
+			}
+
+			const data = await response.json();
+			setProfileImage(data.secure_url);
 		} catch (error) {
 			console.error("Image upload failed:", error);
 			alert("Failed to upload image. Please try again.");

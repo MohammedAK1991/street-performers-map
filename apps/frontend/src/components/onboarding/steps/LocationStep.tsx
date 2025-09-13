@@ -175,17 +175,17 @@ export function LocationStep({
 		<div className="space-y-8">
 			{/* Instructions */}
 			<div className="text-center">
-				<p className="text-gray-600 mb-2">
+				<p className="text-muted-foreground mb-2">
 					Your city is where you'll appear on our global map.
 				</p>
-				<p className="text-sm text-gray-500">
+				<p className="text-sm text-muted-foreground/80">
 					Audiences can find and hire performers in their area.
 				</p>
 			</div>
 
 			{/* City Selection */}
 			<div>
-				<h3 className="font-semibold text-gray-900 mb-4">
+				<h3 className="font-semibold text-foreground mb-4">
 					🗺️ What city do you primarily perform in?
 				</h3>
 
@@ -194,13 +194,13 @@ export function LocationStep({
 					<GooglePlacesAutocomplete
 						onPlaceSelect={handlePlaceSelect}
 						placeholder="Search for your city..."
-						className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+						className="w-full p-3 bg-card border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary focus:border-transparent"
 					/>
 				</div>
 
 				{/* Popular Cities Quick Select */}
 				<div>
-					<p className="text-sm text-gray-300 mb-3">
+					<p className="text-sm text-muted-foreground mb-3">
 						Or select from popular cities:
 					</p>
 					<div className="grid grid-cols-2 md:grid-cols-4 gap-2">
@@ -211,12 +211,12 @@ export function LocationStep({
 								onClick={() => handleCitySelect(city)}
 								className={`p-3 text-sm rounded-lg border transition-all ${
 									selectedCity === city.name && selectedCountry === city.country
-										? "border-blue-500 bg-blue-900/20 text-blue-300"
-										: "border-gray-600 hover:border-blue-400 bg-gray-800 text-white"
+										? "border-primary bg-primary/10 text-primary"
+										: "border-border hover:border-primary/50 bg-card text-foreground hover:bg-card/80"
 								}`}
 							>
 								<div className="font-medium">{city.name}</div>
-								<div className="text-xs text-gray-400">{city.country}</div>
+								<div className="text-xs text-muted-foreground">{city.country}</div>
 							</button>
 						))}
 					</div>
@@ -224,14 +224,14 @@ export function LocationStep({
 
 				{/* Selected City Display */}
 				{selectedCity && selectedCountry && (
-					<div className="mt-4 p-4 bg-green-900/20 border border-green-700 rounded-lg">
+					<div className="mt-4 p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
 						<div className="flex items-center space-x-2">
-							<span className="text-green-400">📍</span>
+							<span className="text-green-500">📍</span>
 							<div>
-								<div className="font-medium text-green-300">
+								<div className="font-medium text-green-600 dark:text-green-400">
 									{selectedCity}, {selectedCountry}
 								</div>
-								<div className="text-sm text-green-400">
+								<div className="text-sm text-green-500/80 dark:text-green-400/80">
 									Your performances will appear here on our map
 								</div>
 							</div>
@@ -243,10 +243,10 @@ export function LocationStep({
 			{/* Performance Areas */}
 			{selectedCity && (
 				<div>
-					<h3 className="font-semibold text-gray-900 mb-4">
+					<h3 className="font-semibold text-foreground mb-4">
 						🎯 Where in {selectedCity} do you usually perform?
 					</h3>
-					<p className="text-sm text-gray-600 mb-4">
+					<p className="text-sm text-muted-foreground mb-4">
 						Select all areas where audiences might find you. This helps with
 						discovery.
 					</p>
@@ -258,19 +258,19 @@ export function LocationStep({
 								onClick={() => handleAreaToggle(area.id)}
 								className={`p-4 rounded-lg border-2 transition-all text-left ${
 									selectedAreas.includes(area.id)
-										? "border-blue-500 bg-blue-50 text-blue-900"
-										: "border-gray-300 hover:border-gray-400 bg-white"
+										? "border-primary bg-primary/10 text-primary"
+										: "border-border hover:border-primary/50 bg-card text-foreground hover:bg-card/80"
 								}`}
 							>
 								<div className="flex items-start space-x-3">
 									<div className="text-xl">{area.icon}</div>
 									<div className="flex-1">
 										<h4 className="font-medium text-sm">{area.name}</h4>
-										<p className="text-xs text-gray-500">{area.description}</p>
+										<p className="text-xs text-muted-foreground">{area.description}</p>
 									</div>
 									{selectedAreas.includes(area.id) && (
-										<div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
-											<span className="text-white text-xs">✓</span>
+										<div className="w-5 h-5 bg-primary rounded-full flex items-center justify-center">
+											<span className="text-primary-foreground text-xs">✓</span>
 										</div>
 									)}
 								</div>
@@ -279,7 +279,7 @@ export function LocationStep({
 					</div>
 
 					{selectedAreas.length > 0 && (
-						<div className="mt-4 text-center text-sm text-gray-500">
+						<div className="mt-4 text-center text-sm text-muted-foreground">
 							{selectedAreas.length} area{selectedAreas.length !== 1 ? "s" : ""}{" "}
 							selected
 						</div>
@@ -289,11 +289,11 @@ export function LocationStep({
 
 			{/* Legal Notice */}
 			{selectedCountry && (
-				<div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-					<h4 className="font-semibold text-yellow-900 mb-2">
+				<div className="p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
+					<h4 className="font-semibold text-yellow-600 dark:text-yellow-400 mb-2">
 						⚠️ Know Your Local Laws
 					</h4>
-					<p className="text-sm text-yellow-800">
+					<p className="text-sm text-yellow-600/80 dark:text-yellow-400/80">
 						Street performing laws vary by city. Make sure you understand local
 						regulations about permits, amplification, and approved locations in{" "}
 						{selectedCity}.
@@ -302,7 +302,7 @@ export function LocationStep({
 							href={`https://google.com/search?q=${selectedCity}+street+performing+busking+permits`}
 							target="_blank"
 							rel="noopener noreferrer"
-							className="underline hover:no-underline"
+							className="underline hover:no-underline text-yellow-600 dark:text-yellow-400"
 						>
 							Search for {selectedCity} busking regulations →
 						</a>
@@ -314,7 +314,7 @@ export function LocationStep({
 			<div className="flex space-x-4 pt-4">
 				<button
 					onClick={prevStep}
-					className="flex-1 bg-gray-100 text-gray-700 py-3 px-6 rounded-lg font-medium hover:bg-gray-200 transition-colors"
+					className="flex-1 bg-secondary text-secondary-foreground py-3 px-6 rounded-lg font-medium hover:bg-secondary/80 transition-colors"
 				>
 					← Back
 				</button>
@@ -322,7 +322,7 @@ export function LocationStep({
 				<button
 					onClick={handleNext}
 					disabled={!canContinue}
-					className="flex-1 bg-blue-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+					className="flex-1 bg-primary text-primary-foreground py-3 px-6 rounded-lg font-medium hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed transition-colors"
 				>
 					{canContinue ? "Continue →" : "Select City & Areas"}
 				</button>

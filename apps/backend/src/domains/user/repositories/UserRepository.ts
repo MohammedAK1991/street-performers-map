@@ -188,4 +188,52 @@ export class UserRepository {
 			throw error;
 		}
 	}
+
+	async findNearby(params: {
+		latitude: number;
+		longitude: number;
+		radius?: number;
+		role?: "performer" | "audience";
+		genre?: string;
+		limit?: number;
+	}): Promise<UserDocument[]> {
+		try {
+			const { latitude, longitude, radius = 25, role = "performer", genre, limit = 50 } = params;
+
+			// Convert radius from km to radians (divide by Earth's radius in km)
+			const radiusInRadians = radius / 6371;
+
+			const query: any = {
+				role,
+				"location.coordinates": {
+					$geoWithin: {
+						$centerSphere: [[longitude, latitude], radiusInRadians]
+					}
+				}
+			};
+
+			// Filter by genre if specified
+			if (genre) {
+				query["profile.genres"] = { $in: [genre] };
+			}
+
+			const users = await UserModel.find(query)
+				.limit(limit)
+				.sort({ "statistics.totalTips": -1, "statistics.performanceCount": -1 }) // Sort by popularity
+				.lean();
+
+			this.logger.debug("Found nearby users", {
+				count: users.length,
+				query: JSON.stringify(query),
+				latitude,
+				longitude,
+				radius
+			});
+
+			return users as UserDocument[];
+		} catch (error) {
+			this.logger.error("Failed to find nearby users", { error, params });
+			throw error;
+		}
+	}
 }

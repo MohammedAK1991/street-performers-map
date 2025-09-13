@@ -261,4 +261,43 @@ export class UserService {
 			throw error;
 		}
 	}
+
+	async getNearbyUsers(params: {
+		latitude: number;
+		longitude: number;
+		radius?: number;
+		role?: "performer" | "audience";
+		genre?: string;
+		limit?: number;
+	}): Promise<User[]> {
+		try {
+			const { latitude, longitude, radius = 25, role = "performer", genre, limit = 50 } = params;
+
+			const users = await this.userRepository.findNearby({
+				latitude,
+				longitude,
+				radius,
+				role,
+				genre,
+				limit
+			});
+
+			this.logger.debug("Found nearby users", {
+				count: users.length,
+				latitude,
+				longitude,
+				radius,
+				role,
+				genre
+			});
+
+			return users.map(user => ({
+			...user,
+			_id: user._id.toString()
+		})) as User[];
+		} catch (error) {
+			this.logger.error("Failed to get nearby users", { error, params });
+			throw error;
+		}
+	}
 }
