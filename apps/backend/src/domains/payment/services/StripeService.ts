@@ -187,7 +187,7 @@ export class StripeService {
       logger.warn('⚠️ Development mode - skipping webhook signature verification');
       try {
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const event = JSON.parse(bodyString);
+        const event = JSON.parse(bodyString as string);
         await this.processWebhookEvent(event);
         return;
       } catch (error) {
@@ -204,7 +204,8 @@ export class StripeService {
 
     try {
       // Use original body (Buffer or string) for signature verification
-      const event = this.stripe.webhooks.constructEvent(body, signature, this.webhookSecret);
+      // constructEvent accepts string | Buffer according to Stripe docs
+      const event = this.stripe.webhooks.constructEvent(body as any, signature, this.webhookSecret);
       await this.processWebhookEvent(event);
     } catch (error: any) {
       logger.error('❌ Webhook signature verification failed:', error);
