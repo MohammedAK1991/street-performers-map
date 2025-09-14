@@ -743,7 +743,7 @@ export function Home() {
 									</Link>
 
 									<Link to="/create-performance">
-										<button className="min-w-52 text-lg py-6 border-2 border-white text-white hover:bg-white hover:text-black font-bold shadow-xl rounded-lg transition-colors flex items-center justify-center gap-2">
+										<button className="min-w-52 text-lg py-6 border-2 border-white text-white hover:bg-white hover:text-black font-bold shadow-xl rounded-lg transition-colors flex items-center justify-center gap-2 px-2">
 											<MapPin className="w-5 h-5" />
 											Become a Performer
 										</button>

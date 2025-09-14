@@ -98,7 +98,9 @@
       "Read(//Users/mohammedabdulkhader/**)",
       "Bash(NODE_ENV=development pnpm dev)",
       "Bash(NODE_ENV=development PORT=3002 pnpm dev)",
-      "Read(//var/folders/tm/f_5g_tz90x5b44kdndcf44pc0000gn/T/TemporaryItems/NSIRD_screencaptureui_8tU7EH/**)"
+      "Read(//var/folders/tm/f_5g_tz90x5b44kdndcf44pc0000gn/T/TemporaryItems/NSIRD_screencaptureui_8tU7EH/**)",
+      "Read(//var/folders/tm/f_5g_tz90x5b44kdndcf44pc0000gn/T/TemporaryItems/NSIRD_screencaptureui_ccsVL9/**)",
+      "Read(//var/folders/tm/f_5g_tz90x5b44kdndcf44pc0000gn/T/TemporaryItems/NSIRD_screencaptureui_J7ch7I/**)"
     ],
     "deny": [],
     "ask": []
