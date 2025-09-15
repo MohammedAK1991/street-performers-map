@@ -13,12 +13,12 @@ import {
 } from "@/utils/performanceFilters";
 import { useUser } from "@clerk/clerk-react";
 import type { Performance } from "@spm/shared-types";
-import { Filter, List, Plus, Search } from "lucide-react";
+import { Filter, List, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 export function Map() {
-	const { user: clerkUser, isSignedIn } = useUser();
+	const { isSignedIn } = useUser();
 	const [userLocation, setUserLocation] = useState<[number, number] | null>(
 		null,
 	);
@@ -66,7 +66,7 @@ export function Map() {
 	);
 
 	// Apply client-side filtering if needed
-	const performances = useClientSideFiltering
+	const filteredPerformances = useClientSideFiltering
 		? filterPerformancesClientSide(
 				nearbyPerformances,
 				{
@@ -77,6 +77,9 @@ export function Map() {
 				userLocation || undefined,
 			)
 		: nearbyPerformances;
+
+	// Use filtered performances directly
+	const performances = filteredPerformances;
 
 	// Modal handlers
 	const handlePerformanceClick = (performance: Performance) => {
@@ -214,103 +217,93 @@ export function Map() {
 		<div className="h-screen flex flex-col overflow-hidden bg-background">
 			{/* Header */}
 			<header className="bg-background/95 backdrop-blur-sm shadow-lg border-b border-border z-20">
-				<div className="px-3 sm:px-4 lg:px-8">
-					<div className="flex justify-between items-center h-14 sm:h-16">
+				<div className="px-4 lg:px-8">
+					<div className="flex justify-between items-center h-16">
 						{/* Logo */}
 						<div className="flex items-center flex-shrink-0">
 							<Link
 								to="/"
-								className="flex items-center space-x-2 text-lg sm:text-xl font-bold text-foreground hover:text-primary transition-colors"
+								className="flex items-center space-x-2 text-xl font-bold text-foreground hover:text-primary transition-colors"
 							>
-								<span className="text-2xl sm:text-3xl">🎵</span>
-								<span>StreetPerformersMap</span>
+								<span className="text-3xl">🎵</span>
+								<span className="hidden sm:block">StreetPerformersMap</span>
 							</Link>
 						</div>
 
-						{/* Desktop Action Buttons */}
-						<div className="hidden md:flex items-center space-x-2 flex-shrink-0">
-							{/* Search Bar */}
-							<div className="flex-1 max-w-md">
-								<div className="relative">
-									<input
-										type="text"
-										placeholder="Search performances..."
-										className="w-full px-4 py-2 pl-10 bg-card border border-border rounded-full text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 shadow-sm"
-									/>
-									<div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-										<Search className="h-4 w-4 text-muted-foreground" />
-									</div>
-								</div>
+						{/* Center Navigation */}
+						<div className="hidden md:flex items-center space-x-6">
+							<Link
+								to="/map"
+								className="text-sm font-medium text-foreground hover:text-primary transition-colors"
+							>
+								Map
+							</Link>
+							<Link
+								to="/artists"
+								className="text-sm font-medium text-foreground hover:text-primary transition-colors"
+							>
+								Artists
+							</Link>
+						</div>
+
+						{/* Right Side Actions */}
+						<div className="flex items-center space-x-3">
+
+							{/* Controls */}
+							<div className="hidden md:flex items-center space-x-2">
+								<button
+									type="button"
+									onClick={() => setShowFilters(!showFilters)}
+									className={`p-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+										showFilters
+											? "bg-primary text-primary-foreground"
+											: "text-foreground hover:bg-muted"
+									}`}
+									title="Filters"
+								>
+									<Filter className="w-4 h-4" />
+								</button>
+
+								<button
+									type="button"
+									onClick={() => setShowList(!showList)}
+									className={`p-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+										showList
+											? "bg-primary text-primary-foreground"
+											: "text-foreground hover:bg-muted"
+									}`}
+									title="List View"
+								>
+									<List className="w-4 h-4" />
+								</button>
 							</div>
-
-							{/* Filter Toggle */}
-							<button
-								type="button"
-								onClick={() => setShowFilters(!showFilters)}
-								className={`px-3 py-2 rounded-full text-sm font-medium transition-all duration-200 flex items-center gap-2 ${
-									showFilters
-										? "bg-primary text-primary-foreground"
-										: "bg-card text-foreground border border-border hover:bg-muted"
-								}`}
-							>
-								<Filter className="w-4 h-4" />
-								<span>Filters</span>
-							</button>
-
-							{/* List Toggle */}
-							<button
-								type="button"
-								onClick={() => setShowList(!showList)}
-								className={`px-3 py-2 rounded-full text-sm font-medium transition-all duration-200 flex items-center gap-2 ${
-									showList
-										? "bg-primary text-primary-foreground"
-										: "bg-card text-foreground border border-border hover:bg-muted"
-								}`}
-							>
-								<List className="w-4 h-4" />
-								<span>List</span>
-							</button>
 
 							{/* User Menu */}
 							{isSignedIn ? (
 								<div className="flex items-center space-x-2">
-									{/* Welcome message */}
-									<span className="text-sm text-muted-foreground">
-										Welcome,{" "}
-										<span className="font-medium text-foreground">
-											{clerkUser?.fullName || clerkUser?.username}
-										</span>
-										!
-									</span>
-									
-									{/* Profile button */}
 									<Link
 										to="/profile"
-										className="bg-card hover:bg-muted text-foreground border border-border px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+										className="hidden md:flex bg-card hover:bg-muted text-foreground border border-border px-3 py-2 rounded-lg text-sm font-medium transition-colors items-center gap-2"
 									>
 										<span>👤</span>
-										<span>Profile</span>
+										<span className="hidden lg:block">Profile</span>
 									</Link>
-									
-									{/* Create Performance button */}
+
 									<Link
 										to="/create-performance"
 										className="bg-primary hover:bg-primary/90 text-primary-foreground px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
 									>
 										<Plus className="w-4 h-4" />
-										<span>Create</span>
+										<span className="hidden sm:block">Create</span>
 									</Link>
 								</div>
 							) : (
-								<div className="flex space-x-2">
-									<Link
-										to="/"
-										className="bg-card hover:bg-muted text-foreground border border-border px-3 py-2 rounded-lg text-sm font-medium transition-colors"
-									>
-										<span className="hidden sm:inline">Go to Home</span>
-										<span className="sm:hidden">🏠</span>
-									</Link>
-								</div>
+								<Link
+									to="/"
+									className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+								>
+									Sign In
+								</Link>
 							)}
 						</div>
 
@@ -331,18 +324,25 @@ export function Map() {
 					{/* Mobile Menu Dropdown */}
 					{showMobileMenu && (
 						<div className="md:hidden border-t border-border bg-background/95 backdrop-blur-sm">
-							<div className="px-4 py-4 space-y-3">
-								{/* Search */}
-								<div className="relative">
-									<input
-										type="text"
-										placeholder="Search performances..."
-										className="w-full px-4 py-2 pl-10 bg-card border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary focus:border-primary"
-									/>
-									<div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-										<Search className="h-4 w-4 text-muted-foreground" />
-									</div>
+							<div className="px-4 py-4 space-y-4">
+								{/* Navigation Links */}
+								<div className="space-y-2">
+									<Link
+										to="/map"
+										onClick={() => setShowMobileMenu(false)}
+										className="block text-foreground hover:text-primary transition-colors py-2"
+									>
+										Map
+									</Link>
+									<Link
+										to="/artists"
+										onClick={() => setShowMobileMenu(false)}
+										className="block text-foreground hover:text-primary transition-colors py-2"
+									>
+										Artists
+									</Link>
 								</div>
+
 
 								{/* Filter and List Toggles */}
 								<div className="flex space-x-2">
@@ -382,9 +382,6 @@ export function Map() {
 								{/* User Actions */}
 								{isSignedIn ? (
 									<div className="space-y-2">
-										<div className="text-sm text-muted-foreground px-2">
-											Welcome, <span className="font-medium text-foreground">{clerkUser?.fullName || clerkUser?.username}</span>!
-										</div>
 										<div className="flex space-x-2">
 											<Link
 												to="/profile"
@@ -408,10 +405,9 @@ export function Map() {
 									<Link
 										to="/"
 										onClick={() => setShowMobileMenu(false)}
-										className="w-full bg-card hover:bg-muted text-foreground border border-border px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+										className="w-full bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center"
 									>
-										<span>🏠</span>
-										<span>Go to Home</span>
+										Sign In
 									</Link>
 								)}
 							</div>

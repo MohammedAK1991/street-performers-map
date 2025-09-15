@@ -64,10 +64,10 @@ export function CreatePerformance() {
 		route: {
 			stops: [
 				{
-					location: userLocation || {
+					location: {
 						coordinates: [-73.9712, 40.7831], // Fallback to Central Park
-						address: "Central Park, NYC",
-						name: "Bethesda Fountain",
+						address: "",
+						name: "",
 					},
 					startTime: "",
 					endTime: "",
@@ -79,15 +79,19 @@ export function CreatePerformance() {
 
 	const [formData, setFormData] = useState<CreatePerformanceDto>(getInitialFormData());
 
-	// Update form data when user location loads
+	// Update form data when user location loads (only if no location is set)
 	useEffect(() => {
 		if (userLocation && !locationLoading) {
 			setFormData(prev => ({
 				...prev,
 				route: {
 					...prev.route,
-					stops: prev.route.stops.map((stop, index) => 
-						index === 0 ? { ...stop, location: userLocation } : stop
+					stops: prev.route.stops.map((stop, index) =>
+						index === 0 &&
+						(!stop.location.address || stop.location.address === "") &&
+						(!stop.location.name || stop.location.name === "")
+							? { ...stop, location: userLocation }
+							: stop
 					)
 				}
 			}));
@@ -441,7 +445,7 @@ export function CreatePerformance() {
 											const datetime = `${date}T${e.target.value}:00.000Z`;
 											updateStop(index, "startTime", datetime);
 										}}
-										className="w-full px-3 py-2 bg-card border border-border rounded-lg text-foreground focus:ring-primary focus:border-primary [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:opacity-100 [&::-webkit-datetime-edit]:text-foreground [&::-webkit-datetime-edit-fields-wrapper]:text-foreground [&::-webkit-datetime-edit-text]:text-foreground [&::-webkit-datetime-edit-hour-field]:text-foreground [&::-webkit-datetime-edit-minute-field]:text-foreground [&::-webkit-datetime-edit-ampm-field]:text-foreground [&::-webkit-datetime-edit-month-field]:text-foreground [&::-webkit-datetime-edit-day-field]:text-foreground [&::-webkit-datetime-edit-year-field]:text-foreground [&::-webkit-datetime-edit-ampm-field]:text-foreground"
+										className="w-full px-3 py-2 bg-card border border-border rounded-lg text-foreground focus:ring-primary focus:border-primary [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:opacity-100 [&::-webkit-calendar-picker-indicator]:brightness-0 [&::-webkit-calendar-picker-indicator]:contrast-[100%] [&::-webkit-datetime-edit]:text-foreground [&::-webkit-datetime-edit-fields-wrapper]:text-foreground [&::-webkit-datetime-edit-text]:text-foreground [&::-webkit-datetime-edit-hour-field]:text-foreground [&::-webkit-datetime-edit-minute-field]:text-foreground [&::-webkit-datetime-edit-ampm-field]:text-foreground [&::-webkit-datetime-edit-month-field]:text-foreground [&::-webkit-datetime-edit-day-field]:text-foreground [&::-webkit-datetime-edit-year-field]:text-foreground [&::-webkit-datetime-edit-ampm-field]:text-foreground"
 										style={{
 											colorScheme: 'dark',
 											backgroundColor: 'hsl(var(--card))',
@@ -462,7 +466,7 @@ export function CreatePerformance() {
 											const datetime = `${date}T${e.target.value}:00.000Z`;
 											updateStop(index, "endTime", datetime);
 										}}
-										className="w-full px-3 py-2 bg-card border border-border rounded-lg text-foreground focus:ring-primary focus:border-primary [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:opacity-100 [&::-webkit-datetime-edit]:text-foreground [&::-webkit-datetime-edit-fields-wrapper]:text-foreground [&::-webkit-datetime-edit-text]:text-foreground [&::-webkit-datetime-edit-hour-field]:text-foreground [&::-webkit-datetime-edit-minute-field]:text-foreground [&::-webkit-datetime-edit-ampm-field]:text-foreground [&::-webkit-datetime-edit-month-field]:text-foreground [&::-webkit-datetime-edit-day-field]:text-foreground [&::-webkit-datetime-edit-year-field]:text-foreground [&::-webkit-datetime-edit-ampm-field]:text-foreground"
+										className="w-full px-3 py-2 bg-card border border-border rounded-lg text-foreground focus:ring-primary focus:border-primary [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:opacity-100 [&::-webkit-calendar-picker-indicator]:brightness-0 [&::-webkit-calendar-picker-indicator]:contrast-[100%] [&::-webkit-datetime-edit]:text-foreground [&::-webkit-datetime-edit-fields-wrapper]:text-foreground [&::-webkit-datetime-edit-text]:text-foreground [&::-webkit-datetime-edit-hour-field]:text-foreground [&::-webkit-datetime-edit-minute-field]:text-foreground [&::-webkit-datetime-edit-ampm-field]:text-foreground [&::-webkit-datetime-edit-month-field]:text-foreground [&::-webkit-datetime-edit-day-field]:text-foreground [&::-webkit-datetime-edit-year-field]:text-foreground [&::-webkit-datetime-edit-ampm-field]:text-foreground"
 										style={{
 											colorScheme: 'dark',
 											backgroundColor: 'hsl(var(--card))',

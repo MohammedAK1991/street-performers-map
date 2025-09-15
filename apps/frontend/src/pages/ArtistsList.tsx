@@ -58,12 +58,12 @@ export function ArtistsList() {
 
 	const handleLocationChange = (place: any) => {
 		const newLocation = {
-			lat: place.geometry.location.lat(),
-			lng: place.geometry.location.lng(),
-			address: place.formatted_address || place.name
+			lat: place.coordinates[1], // latitude is second in coordinates array [lng, lat]
+			lng: place.coordinates[0], // longitude is first in coordinates array
+			address: place.address || place.name
 		};
 		setLocation(newLocation);
-		
+
 		// Update URL params
 		const newParams = new URLSearchParams(searchParams);
 		newParams.set('lat', newLocation.lat.toString());
@@ -118,7 +118,7 @@ export function ArtistsList() {
 								📍 Location
 							</label>
 							<GooglePlacesAutocomplete
-								onPlaceSelect={handleLocationChange}
+								onChange={handleLocationChange}
 								value={location.address}
 								placeholder="Search for a city or area..."
 								className="w-full"
@@ -211,32 +211,32 @@ export function ArtistsList() {
 										<div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-2 border-card"></div>
 									</div>
 									<h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">
-										{artist.profile.displayName}
+										{artist.profile?.displayName || 'Unknown Artist'}
 									</h3>
 									<p className="text-sm text-muted-foreground capitalize">
-										{artist.profile.genres?.slice(0, 2).join(', ') || 'Multi-genre'}
+										{artist.profile?.genres?.slice(0, 2).join(', ') || 'Multi-genre'}
 									</p>
 								</div>
 
 								{/* Stats */}
 								<div className="flex justify-around text-sm text-muted-foreground border-t border-border pt-4">
 									<div className="text-center">
-										<div className="font-semibold text-foreground">{artist.statistics.performanceCount}</div>
+										<div className="font-semibold text-foreground">{artist.statistics?.performanceCount || 0}</div>
 										<div className="text-xs">Shows</div>
 									</div>
 									<div className="text-center">
-										<div className="font-semibold text-foreground">{artist.statistics.totalLikes}</div>
+										<div className="font-semibold text-foreground">{artist.statistics?.totalLikes || 0}</div>
 										<div className="text-xs">Likes</div>
 									</div>
 									<div className="text-center">
-										<div className="font-semibold text-foreground">€{artist.statistics.totalTips}</div>
+										<div className="font-semibold text-foreground">€{artist.statistics?.totalTips || 0}</div>
 										<div className="text-xs">Tips</div>
 									</div>
 								</div>
 
 								{/* Location */}
 								<div className="mt-4 text-xs text-muted-foreground text-center">
-									📍 {artist.location.city}, {artist.location.country}
+									📍 {artist.location?.city || 'Unknown'}, {artist.location?.country || 'Unknown'}
 								</div>
 
 								{/* Action Buttons */}

@@ -287,27 +287,41 @@ export class UserController {
 
 				user = await this.userService.updateUser(user._id, updateData);
 			} else {
-				// Create new user
-				const newUserData = {
-					clerkId,
-					email,
-					username: username || email.split("@")[0],
-					password: "clerk-user", // Will be ignored since we have clerkId
-					role: "audience" as const,
-					displayName: displayName || username || email.split("@")[0],
-					profile: {
-						displayName: displayName || username || email.split("@")[0],
-						avatar: avatar || "",
-					},
-					location: {
-						city: "Unknown",
-						country: "Unknown",
-						coordinates: [0, 0] as [number, number],
-					},
-				};
+				// Check if user exists by email (but without clerkId)
+				const existingUserByEmail = await this.userService.getUserByEmail(email);
 
-				const authResponse = await this.userService.register(newUserData);
-				user = authResponse.user;
+				if (existingUserByEmail) {
+					// Update existing user with clerkId
+					const updateData = {
+						clerkId,
+						username: username || existingUserByEmail.username,
+						"profile.displayName": displayName || existingUserByEmail.profile.displayName,
+						"profile.avatar": avatar || existingUserByEmail.profile.avatar,
+					};
+					user = await this.userService.updateUser(existingUserByEmail._id, updateData);
+				} else {
+					// Create new user
+					const newUserData = {
+						clerkId,
+						email,
+						username: username || email.split("@")[0],
+						password: "clerk-user", // Will be ignored since we have clerkId
+						role: "audience" as const,
+						displayName: displayName || username || email.split("@")[0],
+						profile: {
+							displayName: displayName || username || email.split("@")[0],
+							avatar: avatar || "",
+						},
+						location: {
+							city: "Unknown",
+							country: "Unknown",
+							coordinates: [0, 0] as [number, number],
+						},
+					};
+
+					const authResponse = await this.userService.register(newUserData);
+					user = authResponse.user;
+				}
 			}
 
 			// Generate JWT token for the user

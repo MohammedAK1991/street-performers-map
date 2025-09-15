@@ -1,4 +1,5 @@
 import { toast } from 'react-hot-toast';
+import { io, Socket } from 'socket.io-client';
 
 export interface Notification {
 	id: string;
@@ -43,7 +44,7 @@ export interface PerformanceNotification extends Notification {
 class NotificationService {
 	private notifications: Notification[] = [];
 	private listeners: ((notification: Notification) => void)[] = [];
-	private socket: WebSocket | null = null;
+	private socket: Socket | null = null;
 	private reconnectAttempts = 0;
 	private maxReconnectAttempts = 5;
 	private reconnectDelay = 1000;
@@ -52,38 +53,41 @@ class NotificationService {
 		this.loadFromStorage();
 	}
 
-	// Initialize WebSocket connection for real-time notifications
+	// Initialize Socket.io connection for real-time notifications
 	connect(userId: string) {
-		const wsUrl = import.meta.env.VITE_WS_URL || 'ws://localhost:3001';
-		
-		try {
-			this.socket = new WebSocket(`${wsUrl}?userId=${userId}`);
-			
-			this.socket.onopen = () => {
-				console.log('🔔 Notifications WebSocket connected');
-				this.reconnectAttempts = 0;
-			};
+		const serverUrl = import.meta.env.VITE_API_URL?.replace('/api/v1', '') || 'http://localhost:3001';
 
-			this.socket.onmessage = (event) => {
+		try {
+			this.socket = io(serverUrl, {
+				query: { userId },
+				transports: ['websocket', 'polling'],
+				autoConnect: true,
+			});
+
+			this.socket.on('connect', () => {
+				console.log('🔔 Notifications Socket.io connected');
+				this.reconnectAttempts = 0;
+			});
+
+			this.socket.on('notification', (notification: Notification) => {
 				try {
-					const notification: Notification = JSON.parse(event.data);
 					this.addNotification(notification);
 				} catch (error) {
-					console.error('Failed to parse notification:', error);
+					console.error('Failed to process notification:', error);
 				}
-			};
+			});
 
-			this.socket.onclose = () => {
-				console.log('🔔 Notifications WebSocket disconnected');
+			this.socket.on('disconnect', () => {
+				console.log('🔔 Notifications Socket.io disconnected');
 				this.attemptReconnect(userId);
-			};
+			});
 
-			this.socket.onerror = (error) => {
-				console.error('🔔 WebSocket error:', error);
-			};
+			this.socket.on('connect_error', (error) => {
+				console.error('🔔 Socket.io connection error:', error);
+			});
 
 		} catch (error) {
-			console.error('Failed to connect to notifications WebSocket:', error);
+			console.error('Failed to connect to notifications Socket.io:', error);
 		}
 	}
 
@@ -101,7 +105,7 @@ class NotificationService {
 
 	disconnect() {
 		if (this.socket) {
-			this.socket.close();
+			this.socket.disconnect();
 			this.socket = null;
 		}
 	}

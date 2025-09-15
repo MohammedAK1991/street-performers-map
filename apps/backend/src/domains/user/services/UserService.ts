@@ -13,6 +13,15 @@ export class UserService {
 	private readonly userRepository = new UserRepository();
 	private readonly logger = logger.child({ context: "UserService" });
 
+	// Helper method to safely convert user document to plain object
+	private toUserObject(user: any): User {
+		if (typeof user.toJSON === 'function') {
+			return user.toJSON() as User;
+		} else {
+			return user as User;
+		}
+	}
+
 	async register(userData: RegisterData): Promise<AuthResponse> {
 		try {
 			// Validate email and username uniqueness
@@ -67,7 +76,7 @@ export class UserService {
 			});
 
 			return {
-				user: newUser.toJSON() as User,
+				user: this.toUserObject(newUser),
 				token,
 			};
 		} catch (error) {
@@ -102,7 +111,7 @@ export class UserService {
 			});
 
 			return {
-				user: user.toJSON() as User,
+				user: this.toUserObject(user),
 				token,
 			};
 		} catch (error) {
@@ -114,7 +123,9 @@ export class UserService {
 	async getUserById(id: string): Promise<User | null> {
 		try {
 			const user = await this.userRepository.findById(id);
-			return user ? (user.toJSON() as User) : null;
+			if (!user) return null;
+
+			return this.toUserObject(user);
 		} catch (error) {
 			this.logger.error("Failed to get user by ID", { error, userId: id });
 			throw error;
@@ -124,7 +135,9 @@ export class UserService {
 	async getUserByClerkId(clerkId: string): Promise<User | null> {
 		try {
 			const user = await this.userRepository.findByClerkId(clerkId);
-			return user ? (user.toJSON() as User) : null;
+			if (!user) return null;
+
+			return this.toUserObject(user);
 		} catch (error) {
 			this.logger.error("Failed to get user by Clerk ID", { error, clerkId });
 			throw error;
@@ -134,7 +147,9 @@ export class UserService {
 	async getUserByEmail(email: string): Promise<User | null> {
 		try {
 			const user = await this.userRepository.findByEmail(email);
-			return user ? (user.toJSON() as User) : null;
+			if (!user) return null;
+
+			return this.toUserObject(user);
 		} catch (error) {
 			this.logger.error("Failed to get user by email", { error, email });
 			throw error;
@@ -159,7 +174,7 @@ export class UserService {
 				id,
 				safeUpdateData,
 			);
-			return updatedUser ? (updatedUser.toJSON() as User) : null;
+			return updatedUser ? this.toUserObject(updatedUser) : null;
 		} catch (error) {
 			this.logger.error("Failed to update user", { error, userId: id });
 			throw error;
@@ -181,7 +196,7 @@ export class UserService {
 				coordinates: location.coordinates,
 			});
 
-			return updatedUser ? (updatedUser.toJSON() as User) : null;
+			return updatedUser ? this.toUserObject(updatedUser) : null;
 		} catch (error) {
 			this.logger.error("Failed to update user location", {
 				error,
@@ -201,7 +216,7 @@ export class UserService {
 				radiusInKm,
 				"performer",
 			);
-			return users.map((user) => user.toJSON() as User);
+			return users.map((user) => this.toUserObject(user));
 		} catch (error) {
 			this.logger.error("Failed to get nearby performers", {
 				error,

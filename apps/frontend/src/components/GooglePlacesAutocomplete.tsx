@@ -32,6 +32,9 @@ export function GooglePlacesAutocomplete({
 
 	// Initialize Google Maps API
 	useEffect(() => {
+		let retryCount = 0;
+		const maxRetries = 3;
+
 		const initializeGoogleMaps = async () => {
 			const apiKey =
 				import.meta.env.VITE_GOOGLE_MAPS_API_KEY ||
@@ -45,11 +48,16 @@ export function GooglePlacesAutocomplete({
 			}
 
 			// Check if Google Maps is already loaded
-			if (window.google?.maps?.places) {
-				autocompleteService.current = new google.maps.places.AutocompleteService();
-				getCurrentLocation();
-				setIsLoaded(true);
-				return;
+			if (window.google?.maps?.places?.AutocompleteService) {
+				try {
+					autocompleteService.current = new google.maps.places.AutocompleteService();
+					getCurrentLocation();
+					setIsLoaded(true);
+					setError(null);
+					return;
+				} catch (error) {
+					console.error("Error initializing existing Google Maps API:", error);
+				}
 			}
 
 			try {
@@ -57,35 +65,45 @@ export function GooglePlacesAutocomplete({
 					apiKey: apiKey,
 					version: "weekly",
 					libraries: ["places"],
-					retries: 3, // Retry failed requests
+					retries: 3,
 				});
 
-				await loader.load();
+				// Add timeout to the loading
+				const loadPromise = loader.load();
+				const timeoutPromise = new Promise((_, reject) =>
+					setTimeout(() => reject(new Error("Google Maps API loading timeout")), 10000)
+				);
+
+				await Promise.race([loadPromise, timeoutPromise]);
+
+				// Wait a bit for the API to be fully initialized
+				await new Promise(resolve => setTimeout(resolve, 500));
 
 				// Double-check that the API is actually loaded
-				if (!window.google?.maps?.places) {
+				if (!window.google?.maps?.places?.AutocompleteService) {
 					throw new Error("Google Maps Places API not available after loading");
 				}
 
-				// Initialize services with old API (it still works)
-				autocompleteService.current =
-					new google.maps.places.AutocompleteService();
-
-				// Get user's current location
+				// Initialize services
+				autocompleteService.current = new google.maps.places.AutocompleteService();
 				getCurrentLocation();
-
 				setIsLoaded(true);
-				setError(null); // Clear any previous errors
+				setError(null);
 			} catch (error) {
 				console.error("Error loading Google Maps API:", error);
-				setError("Failed to load Google Maps API. Please check your API key.");
-				
-				// Retry after a delay
-				setTimeout(() => {
-					if (!isLoaded) {
-						initializeGoogleMaps();
-					}
-				}, 2000);
+				retryCount++;
+
+				if (retryCount <= maxRetries) {
+					const delay = Math.min(1000 * Math.pow(2, retryCount), 5000); // Exponential backoff
+					setError(`Loading Google Maps API... (attempt ${retryCount}/${maxRetries})`);
+					setTimeout(() => {
+						if (!isLoaded) {
+							initializeGoogleMaps();
+						}
+					}, delay);
+				} else {
+					setError("Failed to load Google Maps API. Please refresh the page and try again.");
+				}
 			}
 		};
 
@@ -283,27 +301,30 @@ export function GooglePlacesAutocomplete({
 		setTimeout(() => setShowSuggestions(false), 200);
 	};
 
-	// Show fallback UI when API key is missing
-	if (error?.includes("API key is required")) {
+	// Show fallback UI when API fails or is missing
+	if (error && (error.includes("API key is required") || error.includes("Failed to load") || error.includes("Please refresh"))) {
 		return (
 			<div className="relative">
 				<input
 					ref={inputRef}
 					type="text"
 					value={inputValue}
-					onChange={(e) =>
+					onChange={(e) => {
+						setInputValue(e.target.value);
 						onChange?.({
 							name: e.target.value,
 							address: e.target.value,
 							coordinates: [0, 0], // Default coordinates
-						})
-					}
-					placeholder="Enter location manually (Google Places API key required)"
+						});
+					}}
+					placeholder="Enter location manually"
 					className={`w-full px-3 py-2 bg-card border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:ring-primary focus:border-primary ${className}`}
 				/>
 				<div className="mt-1 text-xs text-muted-foreground">
-					Google Places API key required for autocomplete. Enter location
-					manually.
+					{error.includes("API key")
+						? "Google Places API key required for autocomplete. Enter location manually."
+						: "Location autocomplete unavailable. Enter location manually."
+					}
 				</div>
 			</div>
 		);

@@ -86,7 +86,7 @@ export function ArtistProfile() {
 										) : (
 											<div className="w-full h-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center">
 												<span className="text-6xl font-bold text-white">
-													{artist.profile.displayName.charAt(0).toUpperCase()}
+													{(artist.profile?.displayName || 'A').charAt(0).toUpperCase()}
 												</span>
 											</div>
 										)}
@@ -96,15 +96,15 @@ export function ArtistProfile() {
 								{/* Artist Info */}
 								<div className="bg-black/20 backdrop-blur-sm border-2 border-white/30 rounded-lg px-8 py-6 inline-block">
 									<h1 className="text-4xl font-bold mb-2 tracking-wide">
-										{artist.profile.displayName.toUpperCase()}
+										{(artist.profile?.displayName || 'Unknown Artist').toUpperCase()}
 									</h1>
 									<div className="border-t border-white/50 my-4"></div>
 									<div className="flex items-center justify-center space-x-4 text-lg">
 										<span className="bg-orange-500 px-3 py-1 rounded-full text-sm font-medium">
-											{artist.profile.genres?.slice(0, 1)[0]?.toUpperCase() || 'ARTIST'}
+											{artist.profile?.genres?.slice(0, 1)[0]?.toUpperCase() || 'ARTIST'}
 										</span>
 										<span>|</span>
-										<span>{artist.location.city}, {artist.location.country}</span>
+										<span>{artist.location?.city || 'Unknown'}, {artist.location?.country || 'Unknown'}</span>
 									</div>
 								</div>
 
@@ -145,7 +145,7 @@ export function ArtistProfile() {
 					<div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
 						<div className="bg-white rounded-lg shadow-md p-6 text-center border-l-4 border-orange-500">
 							<div className="text-3xl font-bold text-gray-800 mb-2">
-								{artist.statistics.performanceCount}
+								{artist.statistics?.performanceCount || 0}
 							</div>
 							<div className="text-sm text-gray-600 uppercase tracking-wide">
 								Performances
@@ -153,7 +153,7 @@ export function ArtistProfile() {
 						</div>
 						<div className="bg-white rounded-lg shadow-md p-6 text-center border-l-4 border-green-500">
 							<div className="text-3xl font-bold text-gray-800 mb-2">
-								€{artist.statistics.totalTips}
+								€{artist.statistics?.totalTips || 0}
 							</div>
 							<div className="text-sm text-gray-600 uppercase tracking-wide">
 								Tips Earned
@@ -161,7 +161,7 @@ export function ArtistProfile() {
 						</div>
 						<div className="bg-white rounded-lg shadow-md p-6 text-center border-l-4 border-blue-500">
 							<div className="text-3xl font-bold text-gray-800 mb-2">
-								{artist.statistics.totalLikes}
+								{artist.statistics?.totalLikes || 0}
 							</div>
 							<div className="text-sm text-gray-600 uppercase tracking-wide">
 								Likes
@@ -175,9 +175,9 @@ export function ArtistProfile() {
 							<svg className="w-6 h-6 mr-3 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
 							</svg>
-							About {artist.profile.displayName}
+							About {artist.profile?.displayName || 'Artist'}
 						</h2>
-						{artist.profile.bio ? (
+						{artist.profile?.bio ? (
 							<p className="text-gray-600 leading-relaxed">
 								{artist.profile.bio}
 							</p>
@@ -188,7 +188,7 @@ export function ArtistProfile() {
 						)}
 
 						{/* Genres */}
-						{artist.profile.genres && artist.profile.genres.length > 0 && (
+						{artist.profile?.genres && artist.profile.genres.length > 0 && (
 							<div className="mt-6">
 								<h3 className="font-semibold text-gray-800 mb-2">Genres:</h3>
 								<div className="flex flex-wrap gap-2">
@@ -202,7 +202,7 @@ export function ArtistProfile() {
 						)}
 
 						{/* Social Links */}
-						{artist.profile.socialLinks && Object.values(artist.profile.socialLinks).some(link => link) && (
+						{artist.profile?.socialLinks && Object.values(artist.profile.socialLinks).some(link => link) && (
 							<div className="mt-6">
 								<h3 className="font-semibold text-gray-800 mb-3">Connect:</h3>
 								<div className="flex space-x-4">
@@ -285,7 +285,7 @@ export function ArtistProfile() {
 			<TipModal
 				isOpen={showTipModal}
 				performerId={artist._id}
-				performerName={artist.profile.displayName}
+				performerName={artist.profile?.displayName || 'Artist'}
 				performanceId={performances?.[0]?._id || ''} // Use latest performance or empty string
 				onClose={() => setShowTipModal(false)}
 			/>
