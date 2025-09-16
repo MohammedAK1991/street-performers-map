@@ -100,6 +100,9 @@ function PaymentForm({
 			// Payment succeeded
 			toast.success(
 				`🎉 Tip sent successfully! Your tip of €${(amount / 100).toFixed(2)} has been sent to ${performerName}`,
+				{
+					duration: 10000,
+				},
 			);
 
 			// Invalidate queries to refresh data

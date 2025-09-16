@@ -194,7 +194,7 @@ export function GooglePlacesAutocomplete({
 		setInputValue(value);
 	}, [value]);
 
-	const handleInput = async (e: React.ChangeEvent<HTMLInputElement>) => {
+	const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const inputValue = e.target.value;
 		setInputValue(inputValue);
 		setError(null);
@@ -210,40 +210,30 @@ export function GooglePlacesAutocomplete({
 		setIsLoading(true);
 		setShowSuggestions(true);
 
-		try {
-			// Use new AutocompleteSuggestion API
-			if (window.google?.maps?.places?.AutocompleteSuggestion) {
-				const { suggestions } = await google.maps.places.AutocompleteSuggestion.fetchAutocompleteSuggestions({
+		// Use the reliable legacy AutocompleteService API
+		if (!autocompleteService.current && window.google?.maps?.places?.AutocompleteService) {
+			autocompleteService.current = new google.maps.places.AutocompleteService();
+		}
+
+		if (autocompleteService.current) {
+			autocompleteService.current.getPlacePredictions(
+				{
 					input: inputValue,
-					includedPrimaryTypes: ["establishment", "geocode"],
-					// No country restrictions for global results
-				});
-
-				setIsLoading(false);
-				setSuggestions(suggestions || []);
-			} else {
-				// Fallback to legacy API if new one isn't available
-				if (!autocompleteService.current) {
-					autocompleteService.current = new google.maps.places.AutocompleteService();
-				}
-
-				autocompleteService.current.getPlacePredictions(
-					{
-						input: inputValue,
-						types: ["establishment", "geocode"],
-					},
-					(predictions: any, status: any) => {
-						setIsLoading(false);
-						if (status === google.maps.places.PlacesServiceStatus.OK && predictions) {
-							setSuggestions(predictions);
-						} else {
-							setSuggestions([]);
-						}
-					},
-				);
-			}
-		} catch (error) {
-			console.error("Error fetching autocomplete suggestions:", error);
+					types: ["(cities)"],
+					// Removed componentRestrictions to allow global results
+				},
+				(predictions: any, status: any) => {
+					setIsLoading(false);
+					if (status === google.maps.places.PlacesServiceStatus.OK && predictions) {
+						console.log("Places predictions:", predictions);
+						setSuggestions(predictions);
+					} else {
+						console.log("Places API status:", status);
+						setSuggestions([]);
+					}
+				},
+			);
+		} else {
 			setIsLoading(false);
 			setSuggestions([]);
 		}

@@ -407,6 +407,7 @@ export function CreatePerformance() {
 								<GooglePlacesAutocomplete
 									value={stop.location.address || stop.location.name || ""}
 									onChange={(place) => {
+										console.log("place", place);
 										updateStop(index, "location", {
 											name: place.name,
 											address: place.address,
