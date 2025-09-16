@@ -119,7 +119,7 @@ export function ArtistsList() {
 							</label>
 							<GooglePlacesAutocomplete
 								onChange={handleLocationChange}
-								value={location.address}
+								value={location.address || location.name}
 								placeholder="Search for a city or area..."
 								className="w-full"
 							/>
