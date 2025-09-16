@@ -219,7 +219,7 @@ export function GooglePlacesAutocomplete({
 			autocompleteService.current.getPlacePredictions(
 				{
 					input: inputValue,
-					types: ["(cities)"],
+					types: ["establishment", "geocode"],
 					// Removed componentRestrictions to allow global results
 				},
 				(predictions: any, status: any) => {
