@@ -1,4 +1,5 @@
 import type { Performance } from "@spm/shared-types";
+import { StatusBadge } from "@/components/ui/status-badge";
 
 interface PerformanceListProps {
 	performances: Performance[];
@@ -85,17 +86,18 @@ export function PerformanceList({
 								>
 									{/* Status Badge */}
 									<div className="flex justify-between items-start mb-3">
-										<span
-											className={`status-${performance.status === "live" ? "live" : performance.status === "scheduled" ? "scheduled" : "soon"}`}
-										>
-											{performance.status === "live"
-												? "🔴 LIVE"
-												: new Date(currentStop.startTime).getTime() -
-															Date.now() <
-														30 * 60 * 1000
-													? "🟡 SOON"
-													: "🔵 TODAY"}
-										</span>
+										{(() => {
+											const minutesUntil = (new Date(currentStop.startTime).getTime() - Date.now()) / (1000 * 60);
+											const isSoon = performance.status === "scheduled" && minutesUntil < 30;
+
+											return (
+												<StatusBadge
+													status={performance.status}
+													customLabel={isSoon ? "SOON" : undefined}
+													size="sm"
+												/>
+											);
+										})()}
 										<div className="text-right">
 											<p className="text-sm font-semibold text-gray-900">
 												{performance.engagement.likes} ❤️

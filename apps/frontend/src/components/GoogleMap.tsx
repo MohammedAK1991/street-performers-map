@@ -7,6 +7,7 @@ import {
 import { useCallback, useState } from "react";
 
 import type { Performance } from "@spm/shared-types";
+import { StatusBadge } from "@/components/ui/status-badge";
 
 interface GoogleMapProps {
 	performances: Performance[];
@@ -151,20 +152,10 @@ export function GoogleMap({
 					>
 						<div className="p-3 max-w-sm">
 							<div className="flex justify-between items-start mb-2">
-								<span
-									className={`
-                  px-2 py-1 rounded-full text-xs font-medium
-                  ${selectedPerformance.status === "live" ? "bg-green-100 text-green-800" : ""}
-                  ${selectedPerformance.status === "scheduled" ? "bg-blue-100 text-blue-800" : ""}
-                  ${selectedPerformance.status === "completed" ? "bg-gray-100 text-gray-800" : ""}
-                  ${selectedPerformance.status === "cancelled" ? "bg-red-100 text-red-800" : ""}
-                `}
-								>
-									{selectedPerformance.status === "live" && "🔴 LIVE NOW"}
-									{selectedPerformance.status === "scheduled" && "🔵 SCHEDULED"}
-									{selectedPerformance.status === "completed" && "⚫ COMPLETED"}
-									{selectedPerformance.status === "cancelled" && "🚫 CANCELLED"}
-								</span>
+								<StatusBadge
+									status={selectedPerformance.status}
+									size="sm"
+								/>
 								<span className="text-sm font-semibold text-gray-900">
 									{selectedPerformance.engagement.likes} ❤️
 								</span>
