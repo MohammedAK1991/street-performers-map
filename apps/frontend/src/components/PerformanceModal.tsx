@@ -5,6 +5,15 @@ import type { Performance } from "@spm/shared-types";
 import type React from "react";
 import { useEffect, useState } from "react";
 import { TipModal } from "./TipModal";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 interface PerformanceModalProps {
 	performance: Performance;
@@ -79,47 +88,39 @@ export const PerformanceModal: React.FC<PerformanceModalProps> = ({
 	// Safety check to ensure performance data is loaded
 	if (!performance || !performance.engagement) {
 		return (
-			<div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-				<div className="bg-background rounded-lg p-6 max-w-md w-full mx-4">
-					<div className="text-center">
+			<Dialog open={isOpen} onOpenChange={onClose}>
+				<DialogContent className="max-w-md">
+					<div className="text-center py-6">
 						<div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
 						<p className="text-muted-foreground">Loading performance data...</p>
 					</div>
-				</div>
-			</div>
+				</DialogContent>
+			</Dialog>
 		);
 	}
 
 	return (
-		<div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-			<div className="bg-card border border-border rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-				{/* Header */}
-				<div className="flex items-center justify-between p-4 border-b border-border">
-					<div className="flex-1">
-						<h2 className="text-xl font-bold text-foreground">
-							{performance.title}
-						</h2>
-						<span
-							className={`inline-block px-2 py-1 rounded-full text-xs font-medium mt-1 ${
+		<Dialog open={isOpen} onOpenChange={onClose}>
+			<DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+				<DialogHeader>
+					<DialogTitle className="text-xl">
+						{performance.title}
+					</DialogTitle>
+					<DialogDescription asChild>
+						<Badge
+							variant={
 								performance.status === "live"
-									? "bg-red-500/20 text-red-400"
+									? "destructive"
 									: performance.status === "scheduled"
-										? "bg-primary/20 text-primary"
-										: "bg-muted text-muted-foreground"
-							}`}
+										? "default"
+										: "secondary"
+							}
+							className="w-fit"
 						>
 							{getStatusText(performance)}
-						</span>
-					</div>
-					<button
-						type="button"
-						onClick={onClose}
-						className="text-muted-foreground hover:text-foreground text-xl font-bold ml-4"
-						aria-label="Close modal"
-					>
-						✕
-					</button>
-				</div>
+						</Badge>
+					</DialogDescription>
+				</DialogHeader>
 
 				{/* Content */}
 				<div className="p-4">
@@ -238,40 +239,38 @@ export const PerformanceModal: React.FC<PerformanceModalProps> = ({
 
 					{/* Action Buttons */}
 					<div className="flex space-x-3">
-						<button
+						<Button
 							onClick={() => handleLikePerformance(performance._id)}
 							disabled={likePerformanceMutation.isPending}
-							className={`flex-1 px-4 py-3 rounded-lg font-medium transition-colors disabled:opacity-50 flex items-center justify-center space-x-2 ${
-								isLiked
-									? "bg-red-600 hover:bg-red-700 text-white"
-									: "bg-primary hover:bg-primary/90 text-primary-foreground"
-							}`}
+							variant={isLiked ? "destructive" : "default"}
+							className="flex-1"
 						>
 							{likePerformanceMutation.isPending ? (
 								<>
 									<span>⏳</span>
-									<span>Loading...</span>
+									<span className="ml-2">Loading...</span>
 								</>
 							) : (
 								<>
 									<span>{isLiked ? "💔" : "❤️"}</span>
-									<span>
+									<span className="ml-2">
 										{isLiked ? "Unlike" : "Like"} (
 										{performance.engagement?.likes || 0})
 									</span>
 								</>
 							)}
-						</button>
+						</Button>
 
 						{/* Tip Button */}
-						<button
+						<Button
 							onClick={() => setIsTipModalOpen(true)}
-							className="flex-1 px-4 py-3 rounded-lg font-medium transition-colors bg-green-600 hover:bg-green-700 text-white flex items-center justify-center space-x-2"
+							className="flex-1 bg-green-600 hover:bg-green-700"
 						>
 							<span>💰</span>
-							<span>Tip Performer</span>
-						</button>
-						<button
+							<span className="ml-2">Tip Performer</span>
+						</Button>
+
+						<Button
 							onClick={() => {
 								const currentStop =
 									performance.route.stops.find(
@@ -280,24 +279,25 @@ export const PerformanceModal: React.FC<PerformanceModalProps> = ({
 								const url = `https://www.google.com/maps/dir/?api=1&destination=${currentStop.location.coordinates[1]},${currentStop.location.coordinates[0]}`;
 								window.open(url, "_blank");
 							}}
-							className="flex-1 bg-card hover:bg-muted text-foreground border border-border px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center space-x-2"
+							variant="outline"
+							className="flex-1"
 						>
 							<span>🧭</span>
-							<span>Get Directions</span>
-						</button>
+							<span className="ml-2">Get Directions</span>
+						</Button>
 					</div>
 				</div>
-			</div>
 
-			{/* Tip Modal */}
-			<TipModal
-				isOpen={isTipModalOpen}
-				onClose={() => setIsTipModalOpen(false)}
-				performanceId={performance._id}
-				performerId={performance.performerId}
-				performerName={performance.title}
-			/>
-		</div>
+				{/* Tip Modal */}
+				<TipModal
+					isOpen={isTipModalOpen}
+					onClose={() => setIsTipModalOpen(false)}
+					performanceId={performance._id}
+					performerId={performance.performerId}
+					performerName={performance.title}
+				/>
+			</DialogContent>
+		</Dialog>
 	);
 };
 

@@ -102,22 +102,22 @@ export function Profile() {
 			case "live":
 				return "text-green-400";
 			case "completed":
-				return "text-gray-400";
+				return "text-muted-foreground";
 			case "cancelled":
 				return "text-red-400";
 			default:
-				return "text-gray-400";
+				return "text-muted-foreground";
 		}
 	};
 
 	if (!isSignedIn) {
 		return (
-			<div className="min-h-screen bg-gray-900 flex items-center justify-center">
+			<div className="min-h-screen bg-background flex items-center justify-center">
 				<div className="text-center">
-					<h1 className="text-2xl font-bold text-white mb-4">
+					<h1 className="text-2xl font-bold text-foreground mb-4">
 						Please sign in to view your profile
 					</h1>
-					<Link to="/login" className="btn-primary">
+					<Link to="/login" className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg">
 						Sign In
 					</Link>
 				</div>
@@ -126,16 +126,16 @@ export function Profile() {
 	}
 
 	return (
-		<div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
+		<div className="min-h-screen bg-background">
 			{/* Header */}
-			<header className="bg-gray-800/50 backdrop-blur-sm border-b border-gray-700/50 sticky top-0 z-40">
+			<header className="bg-background/95 backdrop-blur-sm border-b border-border sticky top-0 z-40">
 				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 					<div className="flex justify-between items-center h-16">
 						{/* Logo */}
 						<div className="flex items-center space-x-4 flex-shrink-0">
 							<Link
 								to="/"
-								className="text-lg sm:text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent flex items-center space-x-2"
+								className="text-lg sm:text-xl font-bold text-foreground hover:text-primary transition-colors flex items-center space-x-2"
 							>
 								<span className="text-2xl">🎵</span>
 								<span className="hidden sm:inline">StreetPerformersMap</span>
@@ -147,19 +147,19 @@ export function Profile() {
 						<nav className="hidden md:flex items-center space-x-2">
 							<Link
 								to="/map"
-								className="text-gray-300 hover:text-white transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-gray-700/50"
+								className="text-muted-foreground hover:text-foreground transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-muted"
 							>
 								Map
 							</Link>
 							<Link
 								to="/analytics"
-								className="text-gray-300 hover:text-white transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-gray-700/50"
+								className="text-muted-foreground hover:text-foreground transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-muted"
 							>
 								Analytics
 							</Link>
 							<Link
 								to="/create-performance"
-								className="text-gray-300 hover:text-white transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-gray-700/50"
+								className="text-muted-foreground hover:text-foreground transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-muted"
 							>
 								Create Performance
 							</Link>
@@ -168,8 +168,8 @@ export function Profile() {
 						{/* Right side - Notifications and User */}
 						<div className="flex items-center space-x-2 flex-shrink-0">
 							<NotificationCenter />
-							<div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg">
-								<span className="text-white text-xs sm:text-sm font-medium">
+							<div className="w-8 h-8 sm:w-10 sm:h-10 bg-primary rounded-full flex items-center justify-center shadow-lg">
+								<span className="text-primary-foreground text-xs sm:text-sm font-medium">
 									{user?.fullName?.[0] || user?.username?.[0] || "U"}
 								</span>
 							</div>
@@ -177,23 +177,23 @@ export function Profile() {
 					</div>
 
 					{/* Mobile Navigation */}
-					<div className="md:hidden border-t border-gray-700/50 py-2">
+					<div className="md:hidden border-t border-border py-2">
 						<div className="flex flex-wrap gap-2">
 							<Link
 								to="/map"
-								className="text-gray-300 hover:text-white transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-gray-700/50 text-sm"
+								className="text-muted-foreground hover:text-foreground transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-muted text-sm"
 							>
 								Map
 							</Link>
 							<Link
 								to="/analytics"
-								className="text-gray-300 hover:text-white transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-gray-700/50 text-sm"
+								className="text-muted-foreground hover:text-foreground transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-muted text-sm"
 							>
 								Analytics
 							</Link>
 							<Link
 								to="/create-performance"
-								className="text-gray-300 hover:text-white transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-gray-700/50 text-sm"
+								className="text-muted-foreground hover:text-foreground transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-muted text-sm"
 							>
 								Create Performance
 							</Link>
@@ -204,22 +204,22 @@ export function Profile() {
 
 			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 				{/* Profile Header */}
-				<div className="bg-gray-800 rounded-lg p-6 mb-8 border border-gray-700">
+				<div className="bg-card rounded-lg p-6 mb-8 border border-border">
 					<div className="flex items-center space-x-6">
-						<div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-							<span className="text-2xl font-bold text-white">
+						<div className="w-20 h-20 bg-primary rounded-full flex items-center justify-center">
+							<span className="text-2xl font-bold text-primary-foreground">
 								{user?.fullName?.[0] || user?.username?.[0] || "U"}
 							</span>
 						</div>
 						<div>
-							<h1 className="text-2xl font-bold text-white">
+							<h1 className="text-2xl font-bold text-foreground">
 								{user?.fullName || user?.username || "User"}
 							</h1>
-							<p className="text-gray-400">
+							<p className="text-muted-foreground">
 								{user?.emailAddresses?.[0]?.emailAddress}
 							</p>
 							<div className="flex items-center space-x-4 mt-2">
-								<span className="text-sm text-gray-500">
+								<span className="text-sm text-muted-foreground">
 									Member since{" "}
 									{new Date(user?.createdAt || "").toLocaleDateString()}
 								</span>
@@ -230,87 +230,87 @@ export function Profile() {
 
 				{/* Earnings Summary */}
 				{isLoading ? (
-					<div className="bg-gray-800 rounded-lg p-6 mb-8 border border-gray-700">
+					<div className="bg-card rounded-lg p-6 mb-8 border border-border">
 						<div className="animate-pulse">
-							<div className="h-6 bg-gray-700 rounded w-1/4 mb-4"></div>
+							<div className="h-6 bg-muted rounded w-1/4 mb-4"></div>
 							<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 								{Array.from({ length: 3 }).map((_, i) => (
-									<div key={i} className="h-20 bg-gray-700 rounded"></div>
+									<div key={i} className="h-20 bg-muted rounded"></div>
 								))}
 							</div>
 						</div>
 					</div>
 				) : error ? (
-					<div className="bg-red-900/20 border border-red-500/50 rounded-lg p-6 mb-8">
-						<p className="text-red-400">{error}</p>
+					<div className="bg-destructive/10 border border-destructive/20 rounded-lg p-6 mb-8">
+						<p className="text-destructive">{error}</p>
 						<button
 							onClick={fetchUserData}
-							className="mt-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+							className="mt-2 px-4 py-2 bg-destructive text-destructive-foreground rounded-lg hover:bg-destructive/90"
 						>
 							Retry
 						</button>
 					</div>
 				) : earnings ? (
-					<div className="bg-gray-800 rounded-lg p-6 mb-8 border border-gray-700">
-						<h2 className="text-xl font-bold text-white mb-6">
+					<div className="bg-card rounded-lg p-6 mb-8 border border-border">
+						<h2 className="text-xl font-bold text-foreground mb-6">
 							💰 Earnings Summary
 						</h2>
 						<div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-							<div className="bg-gray-700/50 rounded-lg p-4">
+							<div className="bg-muted/50 rounded-lg p-4">
 								<div className="text-2xl font-bold text-green-400">
 									{formatCurrency(earnings.totalNet || 0)}
 								</div>
-								<div className="text-sm text-gray-400">Net Earnings</div>
+								<div className="text-sm text-muted-foreground">Net Earnings</div>
 							</div>
-							<div className="bg-gray-700/50 rounded-lg p-4">
+							<div className="bg-muted/50 rounded-lg p-4">
 								<div className="text-2xl font-bold text-blue-400">
 									{formatCurrency(earnings.totalAmount)}
 								</div>
-								<div className="text-sm text-gray-400">Total Tips</div>
+								<div className="text-sm text-muted-foreground">Total Tips</div>
 							</div>
-							<div className="bg-gray-700/50 rounded-lg p-4">
+							<div className="bg-muted/50 rounded-lg p-4">
 								<div className="text-2xl font-bold text-purple-400">
 									{earnings.transactionCount}
 								</div>
-								<div className="text-sm text-gray-400">Total Tips Received</div>
+								<div className="text-sm text-muted-foreground">Total Tips Received</div>
 							</div>
 						</div>
 						<div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-							<div className="bg-gray-700/50 rounded-lg p-4">
+							<div className="bg-muted/50 rounded-lg p-4">
 								<div className="text-lg font-semibold text-yellow-400">
 									{formatCurrency(earnings.averageAmount || 0)}
 								</div>
-								<div className="text-sm text-gray-400">Average Tip</div>
+								<div className="text-sm text-muted-foreground">Average Tip</div>
 							</div>
-							<div className="bg-gray-700/50 rounded-lg p-4">
+							<div className="bg-muted/50 rounded-lg p-4">
 								<div className="text-lg font-semibold text-red-400">
 									{formatCurrency(earnings.totalFees || 0)}
 								</div>
-								<div className="text-sm text-gray-400">Processing Fees</div>
+								<div className="text-sm text-muted-foreground">Processing Fees</div>
 							</div>
 						</div>
 					</div>
 				) : null}
 
 				{/* Tips History */}
-				<div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
-					<h2 className="text-xl font-bold text-white mb-6">🎭 Recent Tips</h2>
+				<div className="bg-card rounded-lg p-6 border border-border">
+					<h2 className="text-xl font-bold text-foreground mb-6">🎭 Recent Tips</h2>
 
 					{isLoading ? (
 						<div className="space-y-4">
 							{Array.from({ length: 3 }).map((_, i) => (
 								<div key={i} className="animate-pulse">
-									<div className="h-16 bg-gray-700 rounded"></div>
+									<div className="h-16 bg-muted rounded"></div>
 								</div>
 							))}
 						</div>
 					) : tips.length === 0 ? (
 						<div className="text-center py-8">
 							<div className="text-4xl mb-4">💸</div>
-							<h3 className="text-lg font-semibold text-white mb-2">
+							<h3 className="text-lg font-semibold text-foreground mb-2">
 								No tips received yet
 							</h3>
-							<p className="text-gray-400 mb-4">
+							<p className="text-muted-foreground mb-4">
 								Start performing to receive tips from your audience!
 							</p>
 							<Link to="/create-performance" className="btn-primary">
@@ -322,7 +322,7 @@ export function Profile() {
 							{tips.map((tip) => (
 								<div
 									key={tip._id}
-									className="bg-gray-700/50 rounded-lg p-4 border border-gray-600"
+									className="bg-muted/50 rounded-lg p-4 border border-gray-600"
 								>
 									<div className="flex justify-between items-start">
 										<div className="flex-1">
@@ -342,10 +342,10 @@ export function Profile() {
 													{tip.status.toUpperCase()}
 												</span>
 											</div>
-											<div className="text-white font-medium mb-1">
+											<div className="text-foreground font-medium mb-1">
 												Tip for: {tip.performanceTitle}
 											</div>
-											<div className="text-sm text-gray-400">
+											<div className="text-sm text-muted-foreground">
 												From:{" "}
 												{tip.isAnonymous
 													? "Anonymous"
@@ -356,7 +356,7 @@ export function Profile() {
 													"{tip.publicMessage}"
 												</div>
 											)}
-											<div className="text-xs text-gray-500 mt-2">
+											<div className="text-xs text-muted-foreground mt-2">
 												{formatDate(tip.createdAt)}
 											</div>
 										</div>
@@ -368,12 +368,12 @@ export function Profile() {
 				</div>
 
 				{/* My Performances */}
-				<div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+				<div className="bg-card rounded-lg p-6 border border-border">
 					<div className="flex justify-between items-center mb-6">
-						<h2 className="text-xl font-bold text-white">🎭 My Performances</h2>
+						<h2 className="text-xl font-bold text-foreground">🎭 My Performances</h2>
 						<Link
 							to="/create-performance"
-							className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
+							className="px-4 py-2 bg-blue-600 text-foreground rounded-lg hover:bg-blue-700 transition-colors duration-200"
 						>
 							Create New Performance
 						</Link>
@@ -383,17 +383,17 @@ export function Profile() {
 						<div className="space-y-4">
 							{Array.from({ length: 3 }).map((_, i) => (
 								<div key={i} className="animate-pulse">
-									<div className="h-20 bg-gray-700 rounded"></div>
+									<div className="h-20 bg-muted rounded"></div>
 								</div>
 							))}
 						</div>
 					) : performances.length === 0 ? (
 						<div className="text-center py-8">
 							<div className="text-4xl mb-4">🎪</div>
-							<h3 className="text-lg font-semibold text-white mb-2">
+							<h3 className="text-lg font-semibold text-foreground mb-2">
 								No performances yet
 							</h3>
-							<p className="text-gray-400 mb-4">
+							<p className="text-muted-foreground mb-4">
 								Create your first performance to start earning tips!
 							</p>
 							<Link to="/create-performance" className="btn-primary">
@@ -405,18 +405,18 @@ export function Profile() {
 							{performances.map((performance) => (
 								<div
 									key={performance._id}
-									className="bg-gray-700/50 rounded-lg p-4 border border-gray-600 hover:border-gray-500 transition-colors duration-200"
+									className="bg-muted/50 rounded-lg p-4 border border-gray-600 hover:border-gray-500 transition-colors duration-200"
 								>
 									<div className="flex justify-between items-start">
 										<div className="flex-1">
 											<div className="flex items-center space-x-3 mb-2">
-												<h3 className="text-lg font-semibold text-white">
+												<h3 className="text-lg font-semibold text-foreground">
 													{performance.title}
 												</h3>
 												<span
 													className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
 														performance.status,
-													)} bg-gray-800`}
+													)} bg-card`}
 												>
 													{performance.status.toUpperCase()}
 												</span>
@@ -424,7 +424,7 @@ export function Profile() {
 											<p className="text-gray-300 text-sm mb-2 line-clamp-2">
 												{performance.description}
 											</p>
-											<div className="flex items-center space-x-4 text-sm text-gray-400">
+											<div className="flex items-center space-x-4 text-sm text-muted-foreground">
 												<span className="flex items-center space-x-1">
 													<span>🎵</span>
 													<span>{performance.genre || "Unknown"}</span>
@@ -444,7 +444,7 @@ export function Profile() {
 													<span>{performance.likes || 0} likes</span>
 												</span>
 											</div>
-											<div className="text-xs text-gray-500 mt-2">
+											<div className="text-xs text-muted-foreground mt-2">
 												{formatDate(performance.startTime)}
 											</div>
 										</div>

@@ -100,10 +100,10 @@ export function ArtistsList() {
 						</Link>
 					</div>
 					<h1 className="text-3xl font-bold text-foreground mb-2">
-						🎭 Discover Local Artists
+						🎭 Discover Local Street Artists
 					</h1>
 					<p className="text-muted-foreground">
-						Find talented street performers near you and support local music
+						Find talented street performers in your area who need your support and recognition
 					</p>
 				</div>
 			</div>
@@ -172,15 +172,15 @@ export function ArtistsList() {
 				) : artistsData?.users?.length === 0 ? (
 					<div className="text-center py-12">
 						<div className="text-6xl mb-4">🎭</div>
-						<h3 className="text-xl font-semibold text-foreground mb-2">No artists found</h3>
+						<h3 className="text-xl font-semibold text-foreground mb-2">No street artists found</h3>
 						<p className="text-muted-foreground mb-6">
-							Try expanding your search area or changing the genre filter
+							No street performers are currently active in this area. Try expanding your search or check back later.
 						</p>
-						<Link 
+						<Link
 							to="/map"
 							className="inline-block bg-primary text-primary-foreground px-6 py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors"
 						>
-							View Map Instead
+							Explore The Map
 						</Link>
 					</div>
 				) : (

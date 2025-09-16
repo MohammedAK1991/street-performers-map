@@ -16,6 +16,15 @@ import type { Performance } from "@spm/shared-types";
 import { Filter, List, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import {
+	Drawer,
+	DrawerContent,
+	DrawerDescription,
+	DrawerHeader,
+	DrawerTitle,
+} from "@/components/ui/drawer";
+import { Badge } from "@/components/ui/badge";
 
 export function Map() {
 	const { isSignedIn } = useUser();
@@ -194,12 +203,12 @@ export function Map() {
 							<p className="text-primary text-sm mb-3">
 								Location access denied. You can still browse the map!
 							</p>
-							<button
+							<Button
 								onClick={() => setUserLocation([-73.9712, 40.7831])}
-								className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg text-sm transition-colors"
+								size="sm"
 							>
 								📍 Continue with New York City
-							</button>
+							</Button>
 						</div>
 					)}
 
@@ -251,73 +260,70 @@ export function Map() {
 
 							{/* Controls */}
 							<div className="hidden md:flex items-center space-x-2">
-								<button
-									type="button"
+								<Button
+									variant={showFilters ? "default" : "ghost"}
+									size="sm"
 									onClick={() => setShowFilters(!showFilters)}
-									className={`p-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-										showFilters
-											? "bg-primary text-primary-foreground"
-											: "text-foreground hover:bg-muted"
-									}`}
 									title="Filters"
 								>
 									<Filter className="w-4 h-4" />
-								</button>
+								</Button>
 
-								<button
-									type="button"
+								<Button
+									variant={showList ? "default" : "ghost"}
+									size="sm"
 									onClick={() => setShowList(!showList)}
-									className={`p-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-										showList
-											? "bg-primary text-primary-foreground"
-											: "text-foreground hover:bg-muted"
-									}`}
 									title="List View"
 								>
 									<List className="w-4 h-4" />
-								</button>
+								</Button>
 							</div>
 
 							{/* User Menu */}
 							{isSignedIn ? (
 								<div className="flex items-center space-x-2">
-									<Link
-										to="/profile"
-										className="hidden md:flex bg-card hover:bg-muted text-foreground border border-border px-3 py-2 rounded-lg text-sm font-medium transition-colors items-center gap-2"
+									<Button
+										variant="outline"
+										size="sm"
+										asChild
+										className="hidden md:flex"
 									>
-										<span>👤</span>
-										<span className="hidden lg:block">Profile</span>
-									</Link>
+										<Link to="/profile">
+											<span>👤</span>
+											<span className="hidden lg:block ml-2">Profile</span>
+										</Link>
+									</Button>
 
-									<Link
-										to="/create-performance"
-										className="bg-primary hover:bg-primary/90 text-primary-foreground px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+									<Button
+										size="sm"
+										asChild
 									>
-										<Plus className="w-4 h-4" />
-										<span className="hidden sm:block">Create</span>
-									</Link>
+										<Link to="/create-performance">
+											<Plus className="w-4 h-4" />
+											<span className="hidden sm:block ml-2">Create</span>
+										</Link>
+									</Button>
 								</div>
 							) : (
-								<Link
-									to="/"
-									className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-								>
-									Sign In
-								</Link>
+								<Button asChild>
+									<Link to="/">
+										Sign In
+									</Link>
+								</Button>
 							)}
 						</div>
 
 						{/* Mobile Hamburger Menu */}
 						<div className="md:hidden">
-							<button
-								type="button"
+							<Button
+								variant="ghost"
+								size="sm"
 								onClick={() => setShowMobileMenu(!showMobileMenu)}
-								className="p-2 rounded-lg text-foreground hover:bg-muted transition-colors"
 							>
 								<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
 								</svg>
-							</button>
+							</Button>
 						</div>
 					</div>
 
@@ -346,69 +352,69 @@ export function Map() {
 
 								{/* Filter and List Toggles */}
 								<div className="flex space-x-2">
-									<button
-										type="button"
+									<Button
+										variant={showFilters ? "default" : "outline"}
+										size="sm"
+										className="flex-1"
 										onClick={() => {
 											setShowFilters(!showFilters);
 											setShowMobileMenu(false);
 										}}
-										className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
-											showFilters
-												? "bg-primary text-primary-foreground"
-												: "bg-card text-foreground border border-border hover:bg-muted"
-										}`}
 									>
 										<Filter className="w-4 h-4" />
-										<span>Filters</span>
-									</button>
+										<span className="ml-2">Filters</span>
+									</Button>
 
-									<button
-										type="button"
+									<Button
+										variant={showList ? "default" : "outline"}
+										size="sm"
+										className="flex-1"
 										onClick={() => {
 											setShowList(!showList);
 											setShowMobileMenu(false);
 										}}
-										className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
-											showList
-												? "bg-primary text-primary-foreground"
-												: "bg-card text-foreground border border-border hover:bg-muted"
-										}`}
 									>
 										<List className="w-4 h-4" />
-										<span>List</span>
-									</button>
+										<span className="ml-2">List</span>
+									</Button>
 								</div>
 
 								{/* User Actions */}
 								{isSignedIn ? (
 									<div className="space-y-2">
 										<div className="flex space-x-2">
-											<Link
-												to="/profile"
-												onClick={() => setShowMobileMenu(false)}
-												className="flex-1 bg-card hover:bg-muted text-foreground border border-border px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+											<Button
+												variant="outline"
+												size="sm"
+												className="flex-1"
+												asChild
 											>
-												<span>👤</span>
-												<span>Profile</span>
-											</Link>
-											<Link
-												to="/create-performance"
-												onClick={() => setShowMobileMenu(false)}
-												className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+												<Link to="/profile" onClick={() => setShowMobileMenu(false)}>
+													<span>👤</span>
+													<span className="ml-2">Profile</span>
+												</Link>
+											</Button>
+											<Button
+												size="sm"
+												className="flex-1"
+												asChild
 											>
-												<Plus className="w-4 h-4" />
-												<span>Create</span>
-											</Link>
+												<Link to="/create-performance" onClick={() => setShowMobileMenu(false)}>
+													<Plus className="w-4 h-4" />
+													<span className="ml-2">Create</span>
+												</Link>
+											</Button>
 										</div>
 									</div>
 								) : (
-									<Link
-										to="/"
-										onClick={() => setShowMobileMenu(false)}
-										className="w-full bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center"
+									<Button
+										className="w-full"
+										asChild
 									>
-										Sign In
-									</Link>
+										<Link to="/" onClick={() => setShowMobileMenu(false)}>
+											Sign In
+										</Link>
+									</Button>
 								)}
 							</div>
 						</div>
@@ -448,76 +454,117 @@ export function Map() {
 						</div>
 					)}
 
-					{/* Performances Panel (when showList is true) */}
-					{showList && (
-						<div className="absolute top-2 left-2 right-2 sm:top-4 sm:left-auto sm:right-4 sm:w-80 z-10 bg-card border border-border rounded-lg shadow-lg p-3 sm:p-4">
-							<div className="flex items-center justify-between mb-3">
-								<h3 className="text-base sm:text-lg font-semibold text-foreground">
-									Performances
-								</h3>
-								<button
-									type="button"
-									onClick={() => setShowList(false)}
-									className="text-muted-foreground hover:text-foreground p-1"
-								>
-									✕
-								</button>
-							</div>
+					{/* Performances Drawer */}
+					<Drawer open={showList} onOpenChange={setShowList}>
+						<DrawerContent className="max-h-[85vh]">
+							<DrawerHeader className="pb-4">
+								<DrawerTitle className="text-xl font-bold text-center">
+									🎭 Nearby Performances
+								</DrawerTitle>
+								<DrawerDescription className="text-center text-muted-foreground">
+									{performances.length} performance{performances.length !== 1 ? 's' : ''} found
+								</DrawerDescription>
+							</DrawerHeader>
 
-							{performancesLoading ? (
-								<div className="space-y-3 max-h-48 sm:max-h-64 overflow-y-auto">
-									{Array.from({ length: 3 }).map((_, index) => (
-										<PerformanceSkeleton key={index} />
-									))}
-								</div>
-							) : performances.length === 0 ? (
-								<div className="text-center py-6 sm:py-8">
-									<div className="text-3xl sm:text-4xl mb-3">🎭</div>
-									<p className="text-muted-foreground text-xs sm:text-sm">
-										No performances found. Try adjusting your filters or check
-										back later!
-									</p>
-								</div>
-							) : (
-								<div className="space-y-2 sm:space-y-3 max-h-48 sm:max-h-64 overflow-y-auto">
-									{performances.slice(0, 5).map((performance, index) => (
-										<div
-											key={performance._id || index}
-											className="p-2 sm:p-3 bg-muted/50 rounded-lg cursor-pointer hover:bg-muted transition-colors"
-											onClick={() => handlePerformanceClick(performance)}
-										>
-											<div className="flex items-start justify-between">
-												<div className="flex-1 min-w-0">
-													<h4 className="font-medium text-foreground text-xs sm:text-sm truncate">
-														{performance.title}
-													</h4>
-													<p className="text-xs text-muted-foreground mt-1">
-														{performance.genre}
-													</p>
-													<div className="flex items-center gap-1 sm:gap-2 mt-2">
-														<span
-															className={`text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full ${
-																performance.status === "live"
-																	? "bg-red-500/20 text-red-400"
-																	: "bg-blue-500/20 text-blue-400"
-															}`}
-														>
-															{performance.status === "live"
-																? "LIVE"
-																: "SCHEDULED"}
+							<div className="px-4 pb-8 overflow-y-auto">
+								{performancesLoading ? (
+									<div className="space-y-4">
+										{Array.from({ length: 3 }).map((_, index) => (
+											<PerformanceSkeleton key={index} />
+										))}
+									</div>
+								) : performances.length === 0 ? (
+									<div className="text-center py-12">
+										<div className="text-6xl mb-4">🎭</div>
+										<h3 className="text-lg font-semibold text-foreground mb-2">
+											No performances found
+										</h3>
+										<p className="text-muted-foreground">
+											Try adjusting your filters or check back later for live performances!
+										</p>
+									</div>
+								) : (
+									<div className="space-y-4">
+										{performances.map((performance, index) => (
+											<div
+												key={performance._id || index}
+												className="p-4 bg-card border border-border rounded-lg cursor-pointer hover:bg-muted/50 transition-all duration-200 shadow-sm"
+												onClick={() => {
+													handlePerformanceClick(performance);
+													setShowList(false);
+												}}
+											>
+												<div className="flex items-start justify-between mb-3">
+													<div className="flex-1 min-w-0">
+														<h4 className="font-semibold text-foreground text-lg mb-1">
+															{performance.title}
+														</h4>
+														<p className="text-muted-foreground text-sm capitalize mb-2">
+															🎵 {performance.genre}
+														</p>
+													</div>
+													<Badge
+														variant={performance.status === "live" ? "destructive" : "default"}
+														className="ml-2"
+													>
+														{performance.status === "live" ? "🔴 LIVE" : "📅 SCHEDULED"}
+													</Badge>
+												</div>
+
+												{/* Performance Details */}
+												<div className="space-y-2 mb-3">
+													<div className="flex items-center text-sm text-muted-foreground">
+														<span className="mr-2">📍</span>
+														<span className="truncate">
+															{performance.route.stops[0]?.location.name ||
+															 performance.route.stops[0]?.location.address ||
+															 'Location not specified'}
 														</span>
-														<span className="text-xs text-muted-foreground">
-															{performance.engagement?.likes || 0} ❤️
+													</div>
+													<div className="flex items-center text-sm text-muted-foreground">
+														<span className="mr-2">🕐</span>
+														<span>
+															{new Date(performance.scheduledFor).toLocaleDateString()} at{" "}
+															{new Date(performance.scheduledFor).toLocaleTimeString([], {
+																hour: "2-digit",
+																minute: "2-digit",
+															})}
 														</span>
 													</div>
 												</div>
+
+												{/* Engagement Stats */}
+												<div className="flex items-center justify-between pt-2 border-t border-border">
+													<div className="flex items-center space-x-4">
+														<span className="text-sm text-muted-foreground flex items-center">
+															❤️ {performance.engagement?.likes || 0}
+														</span>
+														<span className="text-sm text-muted-foreground flex items-center">
+															👀 {performance.engagement?.views || 0}
+														</span>
+													</div>
+													<Button
+														size="sm"
+														variant="outline"
+														onClick={(e) => {
+															e.stopPropagation();
+															const currentStop = performance.route.stops.find(
+																(stop) => stop.status === "active",
+															) || performance.route.stops[0];
+															const url = `https://www.google.com/maps/dir/?api=1&destination=${currentStop.location.coordinates[1]},${currentStop.location.coordinates[0]}`;
+															window.open(url, "_blank");
+														}}
+													>
+														🧭 Directions
+													</Button>
+												</div>
 											</div>
-										</div>
-									))}
-								</div>
-							)}
-						</div>
-					)}
+										))}
+									</div>
+								)}
+							</div>
+						</DrawerContent>
+					</Drawer>
 				</div>
 			</div>
 

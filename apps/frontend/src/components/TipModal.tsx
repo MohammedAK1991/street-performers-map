@@ -6,6 +6,18 @@ import { useState, useEffect } from "react";
 import { Elements } from "@stripe/react-stripe-js";
 import { PaymentElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import toast from "react-hot-toast";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 
 interface TipModalProps {
 	isOpen: boolean;
@@ -126,18 +138,19 @@ function PaymentForm({
 			)}
 
 			<div className="flex gap-3">
-				<button
+				<Button
 					type="button"
+					variant="outline"
 					onClick={onClose}
-					className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-colors"
 					disabled={isProcessing}
+					className="flex-1"
 				>
 					Cancel
-				</button>
-				<button
+				</Button>
+				<Button
 					type="submit"
 					disabled={!stripe || isProcessing}
-					className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed font-medium transition-colors flex items-center justify-center"
+					className="flex-1"
 				>
 					{isProcessing ? (
 						<div className="flex items-center gap-2">
@@ -147,7 +160,7 @@ function PaymentForm({
 					) : (
 						`💳 Pay €${(amount / 100).toFixed(2)}`
 					)}
-				</button>
+				</Button>
 			</div>
 		</form>
 	);
@@ -264,38 +277,24 @@ export function TipModal({
 		if (!finalAmount) return null;
 
 		return (
-			<div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-				<div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
-					{/* Header */}
-					<div className="p-6 border-b">
-						<div className="flex items-center justify-between">
-							<div>
-								<h2 className="text-xl font-semibold text-gray-900">
-									💳 Complete Payment
-								</h2>
-								<p className="text-sm text-gray-600 mt-1">
-									€{(finalAmount).toFixed(2)} tip for {performerName}
-								</p>
-							</div>
-							<button
-								onClick={onClose}
-								className="text-gray-400 hover:text-gray-600 text-2xl leading-none"
-							>
-								×
-							</button>
-						</div>
-					</div>
+			<Dialog open={isOpen} onOpenChange={onClose}>
+				<DialogContent className="max-w-md max-h-[95vh] overflow-y-auto mx-4">
+					<DialogHeader>
+						<DialogTitle className="text-lg">💳 Complete Payment</DialogTitle>
+						<DialogDescription className="text-sm">
+							€{(finalAmount).toFixed(2)} tip for {performerName}
+						</DialogDescription>
+					</DialogHeader>
 
-					{/* Payment Form */}
-					<div className="p-6">
-						<Elements 
-							stripe={stripePromise} 
+					<div className="space-y-6">
+						<Elements
+							stripe={stripePromise}
 							options={{
 								clientSecret,
 								appearance: {
 									theme: 'stripe',
 									variables: {
-										colorPrimary: '#2563eb',
+										colorPrimary: 'hsl(var(--primary))',
 									}
 								}
 							}}
@@ -309,79 +308,61 @@ export function TipModal({
 								queryClient={queryClient}
 							/>
 						</Elements>
-					</div>
 
-					{/* Payment Info */}
-					<div className="p-4 bg-blue-50 border-t">
-						<p className="text-xs text-blue-700">
-							<strong>🔒 Secure Payment:</strong> Your payment is processed securely by Stripe with Apple Pay, Google Pay, and card support.
-						</p>
+						<div className="p-4 bg-muted rounded-lg">
+							<p className="text-xs text-muted-foreground">
+								<strong>🔒 Secure Payment:</strong> Your payment is processed securely by Stripe with Apple Pay, Google Pay, and card support.
+							</p>
+						</div>
 					</div>
-				</div>
-			</div>
+				</DialogContent>
+			</Dialog>
 		);
 	}
 
 	// Show amount selection form
 	return (
-		<div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-			<div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
-				{/* Header */}
-				<div className="p-6 border-b">
-					<div className="flex items-center justify-between">
-						<div>
-							<h2 className="text-xl font-semibold text-gray-900">
-								💰 Tip {performerName}
-							</h2>
-							<p className="text-sm text-gray-600 mt-1">
-								Support this street performance
-							</p>
-						</div>
-						<button
-							onClick={onClose}
-							className="text-gray-400 hover:text-gray-600 text-2xl leading-none"
-							disabled={isLoading}
-						>
-							×
-						</button>
-					</div>
-				</div>
+		<Dialog open={isOpen} onOpenChange={onClose}>
+			<DialogContent className="max-w-md max-h-[95vh] overflow-y-auto mx-4 p-4 sm:p-6">
+				<DialogHeader>
+					<DialogTitle className="text-lg sm:text-xl">💰 Tip {performerName}</DialogTitle>
+					<DialogDescription className="text-sm">
+						Support this street performance
+					</DialogDescription>
+				</DialogHeader>
 
-				{/* Content */}
-				<div className="p-6 space-y-6">
+				<div className="space-y-6">
 					{/* Suggested Amounts */}
 					<div>
-						<label className="block text-sm font-medium text-gray-700 mb-3">
+						<Label className="text-sm font-medium mb-3 block">
 							Choose Amount
-						</label>
-						<div className="grid grid-cols-2 gap-3">
+						</Label>
+						<div className="grid grid-cols-2 gap-2 sm:gap-3">
 							{suggestedAmounts.map((amount) => (
-								<button
+								<Button
 									key={amount}
+									variant={selectedAmount === amount ? "default" : "outline"}
 									onClick={() => handleAmountSelect(amount)}
-									className={`p-3 rounded-lg border-2 font-medium transition-colors ${
-										selectedAmount === amount
-											? "border-blue-600 bg-blue-50 text-blue-700"
-											: "border-gray-300 hover:border-blue-300 text-gray-700"
-									}`}
 									disabled={isLoading}
+									className="p-3 h-12 sm:h-auto text-base sm:text-sm"
 								>
 									€{amount}
-								</button>
+								</Button>
 							))}
 						</div>
 					</div>
 
 					{/* Custom Amount */}
 					<div>
-						<label className="block text-sm font-medium text-gray-700 mb-2">
+						<Label htmlFor="custom-amount" className="text-sm font-medium mb-2 block">
 							Or Enter Custom Amount
-						</label>
+						</Label>
 						<div className="relative">
-							<span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+							<span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground text-base">
 								€
 							</span>
-							<input
+							<Input
+								id="custom-amount"
 								type="number"
 								value={customAmount}
 								onChange={(e) => handleCustomAmountChange(e.target.value)}
@@ -389,71 +370,64 @@ export function TipModal({
 								min="0.50"
 								max="100"
 								step="0.50"
-								className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+								className="pl-8 h-12 sm:h-auto text-base sm:text-sm"
 								disabled={isLoading}
 							/>
 						</div>
-						<p className="text-xs text-gray-500 mt-1">
+						<p className="text-xs text-muted-foreground mt-1">
 							Minimum €0.50, Maximum €100.00
 						</p>
 					</div>
 
 					{/* Public Message */}
 					<div>
-						<label className="block text-sm font-medium text-gray-700 mb-2">
+						<Label htmlFor="message" className="text-sm font-medium mb-2 block">
 							Message (Optional)
-						</label>
-						<textarea
+						</Label>
+						<Textarea
+							id="message"
 							value={publicMessage}
 							onChange={(e) => setPublicMessage(e.target.value)}
 							placeholder="Great performance! 🎵"
 							maxLength={200}
 							rows={3}
-							className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+							className="resize-none"
 							disabled={isLoading}
 						/>
-						<p className="text-xs text-gray-500 mt-1">
+						<p className="text-xs text-muted-foreground mt-1">
 							{publicMessage.length}/200 characters
 						</p>
 					</div>
 
 					{/* Anonymous Toggle */}
-					<div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+					<div className="flex items-center justify-between p-3 bg-muted rounded-lg">
 						<div>
-							<p className="text-sm font-medium text-gray-700">Anonymous Tip</p>
-							<p className="text-xs text-gray-500">
+							<p className="text-sm font-medium">Anonymous Tip</p>
+							<p className="text-xs text-muted-foreground">
 								Hide your name from other users
 							</p>
 						</div>
-						<button
-							onClick={() => setIsAnonymous(!isAnonymous)}
-							className={`relative w-11 h-6 rounded-full transition-colors ${
-								isAnonymous ? "bg-blue-600" : "bg-gray-300"
-							}`}
+						<Switch
+							checked={isAnonymous}
+							onCheckedChange={setIsAnonymous}
 							disabled={isLoading}
-						>
-							<span
-								className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform ${
-									isAnonymous ? "translate-x-5" : "translate-x-0"
-								}`}
-							/>
-						</button>
+						/>
 					</div>
 
 					{/* Amount Summary */}
 					{amount && (
-						<div className="p-4 bg-blue-50 rounded-lg">
+						<div className="p-4 bg-muted rounded-lg">
 							<div className="flex justify-between items-center">
-								<span className="text-sm text-gray-600">Tip Amount:</span>
-								<span className="font-semibold text-gray-900">
+								<span className="text-sm text-muted-foreground">Tip Amount:</span>
+								<span className="font-semibold">
 									€{amount.toFixed(2)}
 								</span>
 							</div>
-							<div className="flex justify-between items-center text-xs text-gray-500 mt-1">
+							<div className="flex justify-between items-center text-xs text-muted-foreground mt-1">
 								<span>Processing Fee:</span>
 								<span>~€{(amount * 0.029 + 0.3).toFixed(2)}</span>
 							</div>
-							<div className="flex justify-between items-center text-xs text-gray-500">
+							<div className="flex justify-between items-center text-xs text-muted-foreground">
 								<span>Performer Receives:</span>
 								<span>~€{(amount - (amount * 0.029 + 0.3)).toFixed(2)}</span>
 							</div>
@@ -462,44 +436,45 @@ export function TipModal({
 
 					{/* Error Display */}
 					{error && (
-						<div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-							<p className="text-sm text-red-700">{error}</p>
+						<div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
+							<p className="text-sm text-destructive">{error}</p>
 						</div>
 					)}
 
 					{/* Action Buttons */}
-					<div className="flex gap-3">
-						<button
+					<div className="flex flex-col sm:flex-row gap-3">
+						<Button
+							variant="outline"
 							onClick={onClose}
-							className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-colors"
 							disabled={isLoading}
+							className="flex-1 h-12 sm:h-auto text-base sm:text-sm"
 						>
 							Cancel
-						</button>
-						<button
+						</Button>
+						<Button
 							onClick={handleTip}
 							disabled={!canTip}
-							className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed font-medium transition-colors flex items-center justify-center"
+							className="flex-1 h-12 sm:h-auto text-base sm:text-sm"
 						>
 							{isLoading ? (
 								<div className="flex items-center gap-2">
 									<div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-									Creating Payment...
+									<span className="text-sm sm:text-base">Creating Payment...</span>
 								</div>
 							) : (
 								`Continue to Payment →`
 							)}
-						</button>
+						</Button>
+					</div>
+
+					{/* Payment Info */}
+					<div className="p-4 bg-muted rounded-lg">
+						<p className="text-xs text-muted-foreground">
+							<strong>🔒 Secure Payment:</strong> Next step will show secure payment options including Apple Pay, Google Pay, and card payments.
+						</p>
 					</div>
 				</div>
-
-				{/* Payment Info */}
-				<div className="p-4 bg-blue-50 border-t">
-					<p className="text-xs text-blue-700">
-						<strong>🔒 Secure Payment:</strong> Next step will show secure payment options including Apple Pay, Google Pay, and card payments.
-					</p>
-				</div>
-			</div>
-		</div>
+			</DialogContent>
+		</Dialog>
 	);
 }

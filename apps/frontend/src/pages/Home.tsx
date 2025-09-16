@@ -20,7 +20,11 @@ import {
 	TrendingUp,
 	Users,
 	Video,
+	Sparkles,
+	Star,
+	ArrowRight,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import heroImage from "../assets/hero-street-performance.jpg";
@@ -95,54 +99,54 @@ export function Home() {
 	const musicianFeatures = [
 		{
 			icon: <Video className="w-8 h-8" />,
-			title: "Share Your Performance",
+			title: "Get Noticed",
 			description:
-				"Upload 30-second videos of your street performances. Two videos per day, refreshed daily for a dynamic experience.",
+				"Showcase your street performances to people who care. No venue required - just your talent and passion.",
 		},
 		{
 			icon: <Route className="w-8 h-8" />,
-			title: "Plan Your Route",
+			title: "Plan Your Spots",
 			description:
-				"Set up to 5 performance stops with scheduled times. Your route gets highlighted on the interactive map for fans to follow.",
+				"Map out your performance locations and times. Let people find you wherever you choose to perform on the streets.",
 		},
 		{
 			icon: <TrendingUp className="w-8 h-8" />,
-			title: "Build Your Following",
+			title: "Gain Recognition",
 			description:
-				"Gain hearts from fans and climb the trending performers leaderboard. Get featured in stories feeds across the platform.",
+				"Build a following of people who appreciate street art. Get the exposure and recognition you deserve.",
 		},
 		{
 			icon: <DollarSign className="w-8 h-8" />,
-			title: "Receive Tips",
+			title: "Receive Support",
 			description:
-				"Connect with fans who appreciate your art. Receive digital tips directly through the platform's integrated payment system.",
+				"Get direct financial support from people who value your art. Every tip helps you continue doing what you love.",
 		},
 	];
 
 	const fanFeatures = [
 		{
 			icon: <MapPin className="w-8 h-8" />,
-			title: "Discover Live Performances",
+			title: "Find Street Artists",
 			description:
-				"Find street performances happening near you in real-time. Markers change size and color based on popularity and timing.",
+				"Discover talented performers in your area who are creating art on the streets and need your support.",
 		},
 		{
 			icon: <Filter className="w-8 h-8" />,
-			title: "Filter by Your Taste",
+			title: "Explore Different Talents",
 			description:
-				"Search by genre, time, location, and more. Find exactly the type of performance you're in the mood for.",
+				"Find musicians, dancers, poets, and artists of all kinds performing in public spaces near you.",
 		},
 		{
 			icon: <Heart className="w-8 h-8" />,
-			title: "Support Artists",
+			title: "Make a Real Difference",
 			description:
-				"Heart performances you love and help talented musicians gain visibility. Your engagement helps build the community.",
+				"Your support directly helps struggling artists continue pursuing their passion and sharing their gifts.",
 		},
 		{
 			icon: <Timer className="w-8 h-8" />,
-			title: "Never Miss a Show",
+			title: "Connect Directly",
 			description:
-				"Get notified about performances starting soon. Plan your day around the artists you want to see.",
+				"Watch their performances, send tips, and show appreciation for artists who bring life to our streets.",
 		},
 	];
 
@@ -172,28 +176,31 @@ export function Home() {
 
 	const featuredPerformers = [
 		{
-			name: "Maya Rodriguez",
+			name: "Sofia Martinez",
 			genre: "Acoustic Folk",
-			location: "Washington Square Park",
-			hearts: 1247,
+			location: "Central Park, NYC",
+			hearts: 234,
 			isLive: true,
 			image: "🎸",
+			description: "Beautiful acoustic melodies in the heart of the city"
 		},
 		{
 			name: "Jazz Collective",
 			genre: "Jazz Fusion",
-			location: "Union Square",
-			hearts: 892,
+			location: "Union Square, NYC",
+			hearts: 189,
 			isLive: false,
 			image: "🎷",
+			description: "Smooth jazz vibes and improvisational magic"
 		},
 		{
-			name: "Street Beats",
+			name: "Urban Beats",
 			genre: "Hip Hop",
-			location: "Times Square",
-			hearts: 2156,
+			location: "Times Square, NYC",
+			hearts: 567,
 			isLive: true,
 			image: "🥁",
+			description: "High-energy beats that make the crowd move"
 		},
 	];
 
@@ -347,9 +354,9 @@ export function Home() {
 						<div className="absolute inset-0 bg-background/80 backdrop-blur-sm" />
 					</div>
 
-					{/* Floating Elements */}
+					{/* Enhanced Floating Elements */}
 					<div className="absolute top-20 left-10 opacity-70 float-animation">
-						<div className="bg-accent/20 rounded-full p-3 backdrop-blur-sm">
+						<div className="bg-accent/20 rounded-full p-4 backdrop-blur-sm border border-accent/30 shadow-lg">
 							<Play className="w-6 h-6 text-accent" />
 						</div>
 					</div>
@@ -358,7 +365,7 @@ export function Home() {
 						className="absolute top-32 right-16 opacity-70 float-animation"
 						style={{ animationDelay: "1s" }}
 					>
-						<div className="bg-primary/20 rounded-full p-3 backdrop-blur-sm">
+						<div className="bg-primary/20 rounded-full p-4 backdrop-blur-sm border border-primary/30 shadow-lg">
 							<MapPin className="w-6 h-6 text-primary" />
 						</div>
 					</div>
@@ -367,76 +374,90 @@ export function Home() {
 						className="absolute bottom-32 left-20 opacity-70 float-animation"
 						style={{ animationDelay: "2s" }}
 					>
-						<div className="bg-secondary/20 rounded-full p-3 backdrop-blur-sm">
+						<div className="bg-secondary/20 rounded-full p-4 backdrop-blur-sm border border-secondary/30 shadow-lg">
 							<Heart className="w-6 h-6 text-secondary" />
+						</div>
+					</div>
+
+					<div
+						className="absolute top-1/2 right-8 opacity-60 float-animation"
+						style={{ animationDelay: "0.5s" }}
+					>
+						<div className="bg-accent/15 rounded-lg p-3 backdrop-blur-sm border border-accent/20">
+							<Sparkles className="w-5 h-5 text-accent" />
+						</div>
+					</div>
+
+					<div
+						className="absolute bottom-1/4 right-32 opacity-60 float-animation"
+						style={{ animationDelay: "1.5s" }}
+					>
+						<div className="bg-primary/15 rounded-lg p-3 backdrop-blur-sm border border-primary/20">
+							<Music className="w-5 h-5 text-primary" />
 						</div>
 					</div>
 
 					{/* Main Content */}
 					<div className="relative z-10 text-center max-w-4xl mx-auto px-6">
+						<div className="mb-4">
+							<div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-full px-4 py-2 mb-6">
+								<Heart className="w-4 h-4 text-primary" />
+								<span className="text-primary text-sm font-medium">Supporting Street Artists Worldwide</span>
+							</div>
+						</div>
 						<h1 className="text-6xl md:text-8xl font-black mb-6 leading-tight">
-							<span className="text-gradient">Street</span>
+							<span className="text-gradient hover:scale-105 transition-transform duration-300 inline-block">Street</span>
 							<br />
-							<span className="text-foreground">Performers</span>
+							<span className="text-foreground hover:scale-105 transition-transform duration-300 inline-block">Performers</span>
 							<br />
-							<span className="text-gradient">Map</span>
+							<span className="text-gradient hover:scale-105 transition-transform duration-300 inline-block">Map</span>
 						</h1>
 
 						<p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-2xl mx-auto leading-relaxed">
-							Discover live street performances around you. Connect with
-							talented musicians, find amazing shows, and support street artists
-							in your city.
+							Giving street artists the visibility they deserve. Help struggling performers get noticed,
+							gain exposure, and receive the support they need to thrive.
 						</p>
 
 						<div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
 							{isAuthenticated ? (
-								<Link to="/map">
-									<button
-										type="button"
-										className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-6 rounded-lg font-bold text-lg transition-colors min-w-48 flex items-center justify-center gap-2"
-									>
-										<Play className="w-5 h-5" />
+								<Button size="lg" className="min-w-52 text-lg py-6 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105" asChild>
+									<Link to="/map">
+										<Play className="w-5 h-5 mr-2" />
 										Find Performances
-									</button>
-								</Link>
+									</Link>
+								</Button>
 							) : (
 								<>
 									<SignUpButton mode="modal">
-										<button
-											type="button"
-											className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-6 rounded-lg font-bold text-lg transition-colors min-w-48 flex items-center justify-center gap-2"
-										>
-											<Play className="w-5 h-5" />
+										<Button size="lg" className="min-w-52 text-lg py-6 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
+											<Play className="w-5 h-5 mr-2" />
 											Find Performances
-										</button>
+										</Button>
 									</SignUpButton>
 
-									<Link to="/create-performance">
-										<button
-											type="button"
-											className="border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground px-8 py-6 rounded-lg font-bold text-lg transition-colors min-w-48 flex items-center justify-center gap-2"
-										>
-											<MapPin className="w-5 h-5" />
+									<Button variant="outline" size="lg" className="min-w-52 text-lg py-6 border-2 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105" asChild>
+										<Link to="/create-performance">
+											<MapPin className="w-5 h-5 mr-2" />
 											Start Performing
-										</button>
-									</Link>
+										</Link>
+									</Button>
 								</>
 							)}
 						</div>
 
 						{/* Stats */}
 						<div className="mt-16 grid grid-cols-3 gap-8 max-w-md mx-auto">
-							<div className="text-center">
-								<div className="text-3xl font-bold text-primary">500+</div>
+							<div className="text-center group">
+								<div className="text-3xl font-bold text-primary group-hover:scale-110 transition-transform duration-300">50+</div>
 								<div className="text-sm text-muted-foreground">Performers</div>
 							</div>
-							<div className="text-center">
-								<div className="text-3xl font-bold text-secondary">50+</div>
+							<div className="text-center group">
+								<div className="text-3xl font-bold text-secondary group-hover:scale-110 transition-transform duration-300">15+</div>
 								<div className="text-sm text-muted-foreground">Cities</div>
 							</div>
-							<div className="text-center">
-								<div className="text-3xl font-bold text-accent">10K+</div>
-								<div className="text-sm text-muted-foreground">Fans</div>
+							<div className="text-center group">
+								<div className="text-3xl font-bold text-accent group-hover:scale-110 transition-transform duration-300">1K+</div>
+								<div className="text-sm text-muted-foreground">Music Lovers</div>
 							</div>
 						</div>
 					</div>
@@ -447,13 +468,12 @@ export function Home() {
 					<div className="max-w-7xl mx-auto">
 						<div className="text-center mb-16">
 							<h2 className="text-4xl md:text-5xl font-bold mb-6">
-								Built for <span className="text-gradient">Musicians</span> &{" "}
-								<span className="text-gradient">Music Lovers</span>
+								Supporting <span className="text-gradient">Street Artists</span> &{" "}
+								<span className="text-gradient">Their Communities</span>
 							</h2>
 							<p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-								Whether you're performing on the streets or seeking amazing live
-								music, StreetPerformersMap connects the creative community like
-								never before.
+								Connecting struggling street performers with people who care. Help artists get the
+								recognition and support they need to keep sharing their talents.
 							</p>
 						</div>
 
@@ -461,10 +481,10 @@ export function Home() {
 						<div className="mb-20">
 							<div className="text-center mb-12">
 								<h3 className="text-3xl font-bold mb-4 text-secondary">
-									For Street Musicians
+									For Street Artists
 								</h3>
 								<p className="text-lg text-muted-foreground">
-									Share your talent, build your audience, earn support
+									Get the visibility and support you deserve for your street performances
 								</p>
 							</div>
 
@@ -488,14 +508,12 @@ export function Home() {
 							</div>
 
 							<div className="text-center mt-8">
-								<Link to="/create-performance">
-									<button
-										type="button"
-										className="bg-secondary hover:bg-secondary/90 text-secondary-foreground px-8 py-4 rounded-lg font-bold text-lg transition-colors"
-									>
-										Start Performing Today
-									</button>
-								</Link>
+								<Button size="lg" className="bg-secondary hover:bg-secondary/90 text-secondary-foreground shadow-lg hover:shadow-xl transition-all duration-300" asChild>
+									<Link to="/create-performance">
+										<Star className="w-5 h-5 mr-2" />
+										Share Your Street Art
+									</Link>
+								</Button>
 							</div>
 						</div>
 
@@ -503,10 +521,10 @@ export function Home() {
 						<div>
 							<div className="text-center mb-12">
 								<h3 className="text-3xl font-bold mb-4 text-primary">
-									For Music Lovers
+									For Supporters
 								</h3>
 								<p className="text-lg text-muted-foreground">
-									Discover incredible talent in your neighborhood
+									Help street artists in your community get the recognition they deserve
 								</p>
 							</div>
 
@@ -530,11 +548,12 @@ export function Home() {
 							</div>
 
 							<div className="text-center mt-8">
-								<Link to="/map">
-									<button className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-4 rounded-lg font-bold text-lg transition-colors">
-										Explore Performances
-									</button>
-								</Link>
+								<Button size="lg" className="shadow-lg hover:shadow-xl transition-all duration-300" asChild>
+									<Link to="/map">
+										<MapPin className="w-5 h-5 mr-2" />
+										Find Artists to Support
+									</Link>
+								</Button>
 							</div>
 						</div>
 					</div>
@@ -648,14 +667,19 @@ export function Home() {
 												</div>
 											</div>
 
-											<div className="flex items-center gap-1 text-sm text-muted-foreground mb-4">
+											<div className="flex items-center gap-1 text-sm text-muted-foreground mb-3">
 												<MapPin className="w-4 h-4" />
 												{performer.location}
 											</div>
 
-											<button className="w-full border border-border text-foreground hover:bg-muted px-4 py-2 rounded-lg transition-colors">
-												View Profile
-											</button>
+											<p className="text-sm text-muted-foreground mb-4 italic">
+												{performer.description}
+											</p>
+
+											<Button variant="outline" size="sm" className="w-full hover:shadow-md transition-all duration-300">
+												<ArrowRight className="w-4 h-4 mr-2" />
+												View Performance
+											</Button>
 										</div>
 									</div>
 								</div>
@@ -664,35 +688,39 @@ export function Home() {
 
 						{/* Stats Section */}
 						<div className="bg-card rounded-2xl p-8 border border-border">
+							<div className="text-center mb-8">
+								<h3 className="text-2xl font-bold mb-2">Growing Community</h3>
+								<p className="text-muted-foreground">Real-time platform statistics</p>
+							</div>
 							<div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-								<div className="text-center">
-									<div className="text-3xl font-bold text-primary mb-2">
-										2.5M
+								<div className="text-center group">
+									<div className="text-3xl font-bold text-primary mb-2 group-hover:scale-110 transition-transform duration-300">
+										5.2K
 									</div>
 									<div className="text-sm text-muted-foreground">
-										Videos Watched
+										Performance Views
 									</div>
 								</div>
-								<div className="text-center">
-									<div className="text-3xl font-bold text-secondary mb-2">
-										850K
+								<div className="text-center group">
+									<div className="text-3xl font-bold text-secondary mb-2 group-hover:scale-110 transition-transform duration-300">
+										1.8K
 									</div>
 									<div className="text-sm text-muted-foreground">
-										Hearts Given
+										Likes Given
 									</div>
 								</div>
-								<div className="text-center">
-									<div className="text-3xl font-bold text-accent mb-2">
-										$125K
+								<div className="text-center group">
+									<div className="text-3xl font-bold text-accent mb-2 group-hover:scale-110 transition-transform duration-300">
+										€2.5K
 									</div>
 									<div className="text-sm text-muted-foreground">Tips Sent</div>
 								</div>
-								<div className="text-center">
-									<div className="text-3xl font-bold text-primary mb-2">
-										15K
+								<div className="text-center group">
+									<div className="text-3xl font-bold text-primary mb-2 group-hover:scale-110 transition-transform duration-300">
+										120
 									</div>
 									<div className="text-sm text-muted-foreground">
-										Routes Created
+										Performance Routes
 									</div>
 								</div>
 							</div>
@@ -732,27 +760,23 @@ export function Home() {
 								</p>
 
 								<div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-									<Link to="/map">
-										<button
-											type="button"
-											className="min-w-52 text-lg py-6 bg-white text-black hover:bg-white/90 font-bold shadow-xl rounded-lg transition-colors flex items-center justify-center gap-2"
-										>
-											<Play className="w-5 h-5" />
+									<Button size="lg" className="min-w-52 text-lg py-6 bg-white text-black hover:bg-white/90 font-bold shadow-xl transition-all duration-300 hover:scale-105" asChild>
+										<Link to="/map">
+											<Play className="w-5 h-5 mr-2" />
 											Start Exploring
-										</button>
-									</Link>
+										</Link>
+									</Button>
 
-									<Link to="/create-performance">
-										<button className="min-w-52 text-lg py-6 border-2 border-white text-white hover:bg-white hover:text-black font-bold shadow-xl rounded-lg transition-colors flex items-center justify-center gap-2 px-2">
-											<MapPin className="w-5 h-5" />
+									<Button variant="outline" size="lg" className="min-w-52 text-lg py-6 border-2 border-white text-white hover:bg-white hover:text-black font-bold shadow-xl transition-all duration-300 hover:scale-105" asChild>
+										<Link to="/create-performance">
+											<MapPin className="w-5 h-5 mr-2" />
 											Become a Performer
-										</button>
-									</Link>
+										</Link>
+									</Button>
 								</div>
 
 								<div className="mt-8 text-white/80 text-sm">
-									Join thousands of musicians and music lovers already on the
-									platform
+									Join the growing community of street musicians and music enthusiasts
 								</div>
 							</div>
 						</div>

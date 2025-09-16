@@ -1,4 +1,3 @@
-import { Loader } from "@googlemaps/js-api-loader";
 import { useEffect, useRef, useState } from "react";
 
 interface GooglePlacesAutocompleteProps {
@@ -32,82 +31,135 @@ export function GooglePlacesAutocomplete({
 
 	// Initialize Google Maps API
 	useEffect(() => {
+		let isMounted = true;
 		let retryCount = 0;
-		const maxRetries = 3;
+		const maxRetries = 2;
+		let timeoutId: NodeJS.Timeout;
 
 		const initializeGoogleMaps = async () => {
-			const apiKey =
-				import.meta.env.VITE_GOOGLE_MAPS_API_KEY ||
-				"AIzaSyCkm_qSNWEQ0o95mRsqjM8ClF288s6s6qY";
+			if (!isMounted) return;
 
-			if (!apiKey || apiKey === "your_google_maps_api_key_here") {
-				setError(
-					"Google Maps API key is required. Please add VITE_GOOGLE_MAPS_API_KEY to your .env file.",
-				);
+			const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+
+			if (!apiKey) {
+				if (isMounted) {
+					setError("Google Maps API key is required.");
+				}
 				return;
 			}
 
 			// Check if Google Maps is already loaded
-			if (window.google?.maps?.places?.AutocompleteService) {
-				try {
-					autocompleteService.current = new google.maps.places.AutocompleteService();
+			if (window.google?.maps?.places) {
+				if (isMounted) {
 					getCurrentLocation();
 					setIsLoaded(true);
 					setError(null);
-					return;
-				} catch (error) {
-					console.error("Error initializing existing Google Maps API:", error);
 				}
+				return;
 			}
 
 			try {
-				const loader = new Loader({
-					apiKey: apiKey,
-					version: "weekly",
-					libraries: ["places"],
-					retries: 3,
-				});
-
-				// Add timeout to the loading
-				const loadPromise = loader.load();
-				const timeoutPromise = new Promise((_, reject) =>
-					setTimeout(() => reject(new Error("Google Maps API loading timeout")), 10000)
-				);
-
-				await Promise.race([loadPromise, timeoutPromise]);
-
-				// Wait a bit for the API to be fully initialized
-				await new Promise(resolve => setTimeout(resolve, 500));
-
-				// Double-check that the API is actually loaded
-				if (!window.google?.maps?.places?.AutocompleteService) {
-					throw new Error("Google Maps Places API not available after loading");
+				if (isMounted) {
+					setError(`Loading Google Maps API... (attempt ${retryCount + 1}/${maxRetries + 1})`);
 				}
 
-				// Initialize services
-				autocompleteService.current = new google.maps.places.AutocompleteService();
-				getCurrentLocation();
-				setIsLoaded(true);
-				setError(null);
+				// Use direct script injection to avoid loader conflicts
+				await new Promise<void>((resolve, reject) => {
+					// Check if script is already being loaded
+					const existingScript = document.querySelector('script[src*="maps.googleapis.com"]');
+					if (existingScript) {
+						// Wait for existing script to load
+						if (window.google?.maps?.places) {
+							resolve();
+							return;
+						}
+						// Set up listener for when it loads
+						const checkLoaded = setInterval(() => {
+							if (window.google?.maps?.places) {
+								clearInterval(checkLoaded);
+								resolve();
+							}
+						}, 100);
+						setTimeout(() => {
+							clearInterval(checkLoaded);
+							if (!window.google?.maps?.places) {
+								reject(new Error("Existing script failed to load"));
+							}
+						}, 10000);
+						return;
+					}
+
+					const script = document.createElement('script');
+					const callbackName = `initGoogleMaps_${Date.now()}_${retryCount}`;
+					script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&v=weekly&callback=${callbackName}`;
+					script.async = true;
+					script.defer = true;
+
+					// Set up global callback
+					(window as any)[callbackName] = () => {
+						try {
+							if (window.google?.maps?.places) {
+								resolve();
+							} else {
+								throw new Error("Google Maps Places API not available");
+							}
+						} catch (error) {
+							reject(error);
+						} finally {
+							// Clean up
+							delete (window as any)[callbackName];
+						}
+					};
+
+					script.onerror = () => {
+						reject(new Error("Failed to load Google Maps script"));
+						delete (window as any)[callbackName];
+					};
+
+					document.head.appendChild(script);
+
+					// Timeout fallback
+					setTimeout(() => {
+						if (!window.google?.maps?.places) {
+							reject(new Error("Google Maps API loading timeout"));
+							delete (window as any)[callbackName];
+						}
+					}, 15000);
+				});
+
+				// Initialize services only if component is still mounted
+				if (isMounted) {
+					getCurrentLocation();
+					setIsLoaded(true);
+					setError(null);
+				}
 			} catch (error) {
-				console.error("Error loading Google Maps API:", error);
+				console.error("Google Maps API loading failed:", error);
 				retryCount++;
 
-				if (retryCount <= maxRetries) {
-					const delay = Math.min(1000 * Math.pow(2, retryCount), 5000); // Exponential backoff
-					setError(`Loading Google Maps API... (attempt ${retryCount}/${maxRetries})`);
-					setTimeout(() => {
-						if (!isLoaded) {
+				if (retryCount <= maxRetries && isMounted) {
+					const delay = Math.min(2000 * retryCount, 5000);
+					setError(`Loading Google Maps API... (attempt ${retryCount + 1}/${maxRetries + 1})`);
+					timeoutId = setTimeout(() => {
+						if (isMounted && !isLoaded) {
 							initializeGoogleMaps();
 						}
 					}, delay);
-				} else {
-					setError("Failed to load Google Maps API. Please refresh the page and try again.");
+				} else if (isMounted) {
+					setError("Google Maps API failed to load. Please refresh the page.");
 				}
 			}
 		};
 
 		initializeGoogleMaps();
+
+		// Cleanup function
+		return () => {
+			isMounted = false;
+			if (timeoutId) {
+				clearTimeout(timeoutId);
+			}
+		};
 	}, []);
 
 	// Get user's current location
@@ -142,12 +194,12 @@ export function GooglePlacesAutocomplete({
 		setInputValue(value);
 	}, [value]);
 
-	const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+	const handleInput = async (e: React.ChangeEvent<HTMLInputElement>) => {
 		const inputValue = e.target.value;
 		setInputValue(inputValue);
 		setError(null);
 
-		if (!isLoaded || !autocompleteService.current) return;
+		if (!isLoaded || !window.google?.maps?.places) return;
 
 		if (inputValue.length < 2) {
 			setSuggestions([]);
@@ -158,25 +210,43 @@ export function GooglePlacesAutocomplete({
 		setIsLoading(true);
 		setShowSuggestions(true);
 
-		// Use the old API but without country restriction
-		autocompleteService.current.getPlacePredictions(
-			{
-				input: inputValue,
-				types: ["establishment", "geocode"],
-				// Removed componentRestrictions to allow global results
-			},
-			(predictions: any, status: any) => {
+		try {
+			// Use new AutocompleteSuggestion API
+			if (window.google?.maps?.places?.AutocompleteSuggestion) {
+				const { suggestions } = await google.maps.places.AutocompleteSuggestion.fetchAutocompleteSuggestions({
+					input: inputValue,
+					includedPrimaryTypes: ["establishment", "geocode"],
+					// No country restrictions for global results
+				});
+
 				setIsLoading(false);
-				if (
-					status === google.maps.places.PlacesServiceStatus.OK &&
-					predictions
-				) {
-					setSuggestions(predictions);
-				} else {
-					setSuggestions([]);
+				setSuggestions(suggestions || []);
+			} else {
+				// Fallback to legacy API if new one isn't available
+				if (!autocompleteService.current) {
+					autocompleteService.current = new google.maps.places.AutocompleteService();
 				}
-			},
-		);
+
+				autocompleteService.current.getPlacePredictions(
+					{
+						input: inputValue,
+						types: ["establishment", "geocode"],
+					},
+					(predictions: any, status: any) => {
+						setIsLoading(false);
+						if (status === google.maps.places.PlacesServiceStatus.OK && predictions) {
+							setSuggestions(predictions);
+						} else {
+							setSuggestions([]);
+						}
+					},
+				);
+			}
+		} catch (error) {
+			console.error("Error fetching autocomplete suggestions:", error);
+			setIsLoading(false);
+			setSuggestions([]);
+		}
 	};
 
 	const handleSelect = (prediction: any) => {
